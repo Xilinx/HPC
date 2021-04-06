@@ -126,7 +126,7 @@ VPP_LDFLAGS_fcn_sigmoid_3cu += --kernel_frequency 250
 
 
 # Kernel linker flags
-VPP_LDFLAGS_fcn_sigmoid_3cu_temp := --config $(XFLIB_DIR)/L2/designs/mlp/common/cfg/opts.cfg
+VPP_LDFLAGS_fcn_sigmoid_3cu_temp := --config $(XFLIB_DIR)/L2/designs/mlp/common/cfg/opts.cfg  --config $(XFLIB_DIR)/L2/designs/mlp/common/cfg/xclbin_noencrypt.cfg
 VPP_LDFLAGS_fcn_sigmoid_3cu += $(VPP_LDFLAGS_fcn_sigmoid_3cu_temp)
 
 # ############################ Declaring Binary Containers ##########################

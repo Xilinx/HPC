@@ -74,7 +74,7 @@
     "containers": [
         {
             "name": "fcn_sigmoid_3cu", 
-            "ldclflags": "--config LIB_DIR/L2/designs/mlp/common/cfg/opts.cfg", 
+            "ldclflags": "--config LIB_DIR/L2/designs/mlp/common/cfg/opts.cfg --config LIB_DIR/L2/designs/mlp/common/cfg/xclbin_noencrypt.cfg", 
             "frequency": 250,
             "accelerators": [
                 {
