@@ -148,6 +148,7 @@ class row_block_param:
 
 class partition:
     def __init__(self):
+        self.totalPars = 0
         self.row = []
         self.col = []
         self.data = []
