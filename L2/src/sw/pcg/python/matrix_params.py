@@ -152,6 +152,16 @@ class partition:
         self.row = []
         self.col = []
         self.data = []
+        self.minColId = []
+        self.minRowId = []
+        self.rows = []
+        self.cols = []
+        self.nnzs = []
+        self.minChColId = []
+        self.minChRowId = []
+        self.chCols = []
+        self.chRows = []
+        self.chNnzs = []
 
 class par_param:
     def __init__(self, memBits, channels):
@@ -175,9 +185,11 @@ class par_param:
             self.chInfo32Arr[i] = p_info[i]
         self.buf.extend(self.chInfo32Arr.tobytes())
 
-    def add_parInfo(self, p_info):
-        for i in range(self.memBytes // 4):
-            self.int32Arr[i] = p_info[i]
+    def add_parInfo(self, p_baseColAddr, p_colBks, p_rows, p_nnzs):
+        self.int32Arr[0:4] = [p_baseColAddr, p_colBks, p_rows, p_nnzs]
+        self.buf.extend(self.int32Arr.tobytes())
+
+    def add_dummyInfo(self):
         self.buf.extend(self.int32Arr.tobytes())
 
     def get_par_offset(self, p_parId):

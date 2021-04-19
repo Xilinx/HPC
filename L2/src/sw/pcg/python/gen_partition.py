@@ -67,45 +67,11 @@ class gen_partition:
             print("ERROR: cannot sort matrix in along rows")
             return
 
-    def gen_pars(p_rbParam, p_rb, p_par):
-        p_par.totalPars = 0
-        for i in range(l_totalRbs):
-            l_rbPars = 0
-            l_row=[]
-            l_col=[]
-            l_data=[]
-            l_minColId = p_rbParam.get_rbInfo(i, 0)[1] 
-            l_nnzs  = p_rbParam.get_rbInfo(i, 1)[1]
-            l_sId,l_eId = 0,0
-            while (l_nnzs > 0):
-                if (l_sId >= l_nnzs):
-                    l_minColId = (min(p_rb.col[i]) // self.parEntries) * self.parEntries
-                    p_par.row.append(l_row)
-                    p_par.col.append(l_col)
-                    p_par.data.append(l_data)
-                    l_rbPars++
-                    l_row,l_col,l_data = [],[],[]
-                    l_sId, l_eId = 0,0
-                else:
-                    while l_eId < l_nnzs and p_rb.col[i][l_eId] < l_minColId + maxCols:
-                        l_eId++
-                    l_row.extend(p_rb.row[i][l_sId:l_eId])
-                    l_col.extend(p_rb.col[i][l_sId:l_eId])
-                    l_data.extend(p_rb.data[i][l_sId:l_eId])
-                    del p_rb.row[i][l_sId:l_eId]
-                    del p_rb.col[i][l_sId:l_eId]
-                    del p_rb.data[i][l_sId:l_eId]
-                    l_nnzs = l_nnzs - (l_eId - l_sId)
-                    while l_sId < l_nnzs and p_rb.col[i][l_sId] >= l_minColId + maxCols
-                        l_sId++
-                    l_eId = l_sId
-            p_rbParam.set_numPars(i, l_rbPars)
-            p_par.totalPars += l_rbPars
-
     def pad_par(p_row, p_col, p_data):
         l_parNnzs = 0
         l_nnzs = len(p_row)
         l_row,l_col,l_data = [],[],[]
+        l_accRowNnzs = [0]
         l_rowNnzs = Counter(p_row)
         l_rows = len(l_rowNnzs)
         while l_nnzs > 0:
@@ -150,4 +116,93 @@ class gen_partition:
         p_row = l_row[:]
         p_col = l_col[:]
         p_data = l_data[:]
-        return [l_rows, l_parNnzs, l_rowNnzs]    
+        return [l_rows, l_parNnzs, l_rowNnzs]
+ 
+    def gen_pars(p_rbParam, p_rb, p_par):
+        p_par.totalPars = 0
+        l_totalRbs = p_rbParam.totalRbs
+        for i in range(l_totalRbs):
+            l_rbPars = 0
+            l_row=[]
+            l_col=[]
+            l_data=[]
+            l_minColId = p_rbParam.get_rbInfo(i, 0)[1] 
+            l_nnzs  = p_rbParam.get_rbInfo(i, 1)[1]
+            l_sId,l_eId = 0,0
+            while (l_nnzs > 0):
+                if (l_sId >= l_nnzs):
+                    l_minColId = (min(p_rb.col[i]) // self.parEntries) * self.parEntries
+                    p_par.row.append(l_row)
+                    p_par.col.append(l_col)
+                    p_par.data.append(l_data)
+                    l_rbPars++
+                    l_row,l_col,l_data = [],[],[]
+                    l_sId, l_eId = 0,0
+                else:
+                    while l_eId < l_nnzs and p_rb.col[i][l_eId] < l_minColId + maxCols:
+                        l_eId++
+                    l_row.extend(p_rb.row[i][l_sId:l_eId])
+                    l_col.extend(p_rb.col[i][l_sId:l_eId])
+                    l_data.extend(p_rb.data[i][l_sId:l_eId])
+                    del p_rb.row[i][l_sId:l_eId]
+                    del p_rb.col[i][l_sId:l_eId]
+                    del p_rb.data[i][l_sId:l_eId]
+                    l_nnzs = l_nnzs - (l_eId - l_sId)
+                    l_sId = l_eId
+            p_rbParam.set_numPars(i, l_rbPars)
+            p_par.totalPars += l_rbPars
+
+    def gen_chPars(p_par):
+        l_totalPars = p_par.totalPars
+        p_parParam.totalPars = l_totalPars
+        for i in range(l_totalPars):
+            l_row = p_par.row[i]
+            l_col = p_par.col[i]
+            l_data = p_par.data[i]
+            [l_rows, l_parNnzs, l_rowNnzs] = pad_par(l_row, l_col, l_data)
+            l_maxColId, l_minColId = max(l_col), min(l_col)
+            if l_parNnzs == 0:
+                l_cols = 0
+            else:
+                l_cols = (l_maxColId+1-l_minColId)
+            l_minRowId = l_row[0]
+            self.minColId.append(l_minColId)
+            self.minRowId.append(l_minRowId)
+            self.rows.append(l_rows)
+            self.cols.append(l_cols)
+            self.nnzs.append(l_parNnzs)
+            l_nnzsPerCh = l_parNnzs // self.channels
+            l_minChColId = np.zeros(self.channels, dtype=np.uint32)
+            l_minChRowId = np.zeros(self.channels, dtype=np.uint32)
+            l_chRows = np.zeros(self.channels, dtype=np.uint32)
+            l_chCols = np.zeros(self.channels, dtype=np.uint32)
+            l_chNnzs = np.zeros(self.channels, dtype=np.uint32)
+            l_idx = 0
+            for c in range(self.channels):
+                if l_idx < l_parNnzs:
+                    l_sIdx = l_idx
+                    l_rowId = l_row[l_idx]
+                    l_minChRowId[c] = l_rowId
+                    l_allocatedNnzs = l_rowNnzs[l_rowId] 
+                    while l_allocatedNnzs < l_nnzsPerCh and l_idx < l_parNnzs:
+                        l_idx = l_idx + l_rowNnzs[l_rowId]
+                        if l_idx < l_parNnzs:
+                            l_rowId = l_row[l_idx] 
+                            l_allocatedNnzs = l_allocatedNnzs + l_rowNnzs[l_rowId]
+                    l_minChColId[c] = min(l_col[l_sIdx:l_idx])
+                    l_chNnzs[c] = l_allocatedNnzs
+                    l_chCols[c] = max(l_col[l_sIdx:l_idx])+1-min(l_col[l_sIdx:l_idx])
+                    l_chRows[c] = max(l_row[l_sIdx:l_idx])+1-min(l_row[l_sIdx:l_idx])
+                else:
+                    l_chNnzs[c] = 0
+                    l_chCols[c] = 0
+                    l_chRows[c] = 0
+                    l_minChRowId[c] = 0
+                    l_minChColId[c] = 0
+            self.minChColId.append(l_minChColId)
+            self.minChRowId.append(l_minChRowId)
+            self.chNnzs.append(l_chNnzs)
+            self.chCols.append(l_chCols)
+            self.chRows.append(l_chRows)
+            
+        
