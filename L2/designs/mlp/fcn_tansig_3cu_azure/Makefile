@@ -74,9 +74,10 @@ export XCL_BINDIR = $(XCLBIN_DIR)
 
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
-HOST_SRCS += $(APP_DIR)/../Vitis_Libraries/hpc/L2/src/sw/mlp/api_fcn_multiInstr.cpp
+HOST_SRCS += $(APP_DIR)/L2/src/sw/mlp/api_fcn_multiInstr.cpp
 HOST_SRCS += $(APP_DIR)/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp
-CXXFLAGS += -I$(APP_DIR)/../Vitis_Libraries/hpc/L2/include/sw/mlp
+CXXFLAGS += -I$(APP_DIR)/L2/include/sw/mlp
+CXXFLAGS += -I$(APP_DIR)/L2/include/sw/hls
 CXXFLAGS += -I$(APP_DIR)/../Vitis_Libraries/blas/L1/include/hw/xf_blas/helpers/utils
 CXXFLAGS += -I$(APP_DIR)/../Vitis_Libraries/blas/L2/include/xcl2
 CXXFLAGS += -I$(APP_DIR)/../Vitis_Libraries/blas/L2/include/memKernel/sw
@@ -91,7 +92,7 @@ CXXFLAGS += -D HW_EMU_TEST
 endif
 
 # ######################### Host compiler global settings ############################
-CXXFLAGS += -I$(XILINX_XRT)/include -I$(APP_DIR)/L2/include/sw/hls -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
+CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
 CXXFLAGS += -fmessage-length=0 -O3
 CXXFLAGS += -I$(CUR_DIR)/src/ 
@@ -100,14 +101,14 @@ CXXFLAGS += -I$(CUR_DIR)/src/
 
 EXE_NAME := host.exe
 EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
-HOST_ARGS := $(BUILD_DIR)/fcn_sigmoid_3cu.xclbin 32 32 32 32 32 32 32 1 0 1 0 A B C X
+HOST_ARGS := $(BUILD_DIR)/fcn_tansig_3cu.xclbin 32 32 32 false A B C X
 
 # ##################### Kernel compiler global settings ##########################
 VPP_FLAGS += -t $(TARGET) --platform $(XPLATFORM) --save-temps --optimize 2
 VPP_FLAGS += --hls.jobs 8
 VPP_LDFLAGS += --vivado.synth.jobs 8 --vivado.impl.jobs 8
 ifneq (,$(shell echo $(XPLATFORM) | awk '/u250/'))
-VPP_FLAGS += --config $(CUR_DIR)/conn_u250.cfg
+VPP_FLAGS += --config $(APP_DIR)/L2/designs/mlp/common/cfg/conn_u250_azure_3cu.cfg
 endif
 
 VPP_FLAGS += -I$(APP_DIR)/../Vitis_Libraries/hpc/L1/include/hw/mlp
@@ -121,20 +122,19 @@ VPP_FLAGS += -I$(APP_DIR)/../Vitis_Libraries/blas/L2/include/memKernel/
 VPP_FLAGS += -I$(APP_DIR)/../Vitis_Libraries/blas/L2/include/memKernel/hw/xf_blas
 
 fcnKernel_VPP_FLAGS += --hls.clock 270000000:fcnKernel
-VPP_LDFLAGS_fcn_sigmoid_3cu += --kernel_frequency 250
+VPP_LDFLAGS_fcn_tansig_3cu += --kernel_frequency 250
 
 
 # Kernel linker flags
-VPP_LDFLAGS_fcn_sigmoid_3cu_temp := --config opts.cfg
-VPP_LDFLAGS_fcn_sigmoid_3cu += $(VPP_LDFLAGS_fcn_sigmoid_3cu_temp)
+VPP_LDFLAGS_fcn_tansig_3cu_temp := --config $(APP_DIR)/L2/designs/mlp/common/cfg/opts.cfg --config $(APP_DIR)/L2/designs/mlp/common/cfg/xclbin_noencrypt.cfg
+VPP_LDFLAGS_fcn_tansig_3cu += $(VPP_LDFLAGS_fcn_tansig_3cu_temp)
 
 # ############################ Declaring Binary Containers ##########################
 
-BINARY_CONTAINERS += $(BUILD_DIR)/fcn_sigmoid_3cu.xclbin
-BINARY_CONTAINER_fcn_sigmoid_3cu_OBJS += $(TEMP_DIR)/fcnKernel.xo
+BINARY_CONTAINERS += $(BUILD_DIR)/fcn_tansig_3cu.xclbin
+BINARY_CONTAINER_fcn_tansig_3cu_OBJS += $(TEMP_DIR)/fcnKernel.xo
 
 # ######################### Setting Targets of Makefile ################################
-
 -include ./params.mk
 .PHONY: all clean cleanall docs emconfig
 all: check_vpp check_platform check_sysroot $(EXE_FILE) $(BINARY_CONTAINERS) emconfig
@@ -155,9 +155,9 @@ $(TEMP_DIR)/fcnKernel.xo: $(APP_DIR)/../Vitis_Libraries/hpc/L2/src/hw/mlp/fcnKer
 	$(VPP) -c $(fcnKernel_VPP_FLAGS) $(VPP_FLAGS) -k fcnKernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
 
 
-$(BUILD_DIR)/fcn_sigmoid_3cu.xclbin: $(BINARY_CONTAINER_fcn_sigmoid_3cu_OBJS)
+$(BUILD_DIR)/fcn_tansig_3cu.xclbin: $(BINARY_CONTAINER_fcn_tansig_3cu_OBJS)
 	mkdir -p $(BUILD_DIR)
-	$(VPP) -l $(VPP_FLAGS) --temp_dir $(TEMP_DIR) --report_dir $(BUILD_REPORT_DIR)/fcn_sigmoid_3cu $(VPP_LDFLAGS) $(VPP_LDFLAGS_fcn_sigmoid_3cu) -o '$@' $(+)
+	$(VPP) -l $(VPP_FLAGS) --temp_dir $(TEMP_DIR) --report_dir $(BUILD_REPORT_DIR)/fcn_tansig_3cu $(VPP_LDFLAGS) $(VPP_LDFLAGS_fcn_tansig_3cu) -o '$@' $(+)
 
 
 # ################# Setting Rules for Host (Building Host Executable) ################

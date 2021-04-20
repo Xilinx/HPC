@@ -4,8 +4,8 @@ The HPC repository provides the FPGA-based accelerators and applications for HPC
 
 ## Accelerators
 Following hardware accelerator designs are provided.
-* Fully connected network inference (support float32 data type)
-* Linear solvers (support float64 data type)
+* Dense layer + activation layer/linear layer for MLP (support float32 data type)
+* Preconditioned conjugate gradient solver (support float64 data type)
 
 ## Applications
 

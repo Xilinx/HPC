@@ -21,7 +21,7 @@
             "v++": {
                 "compiler": {
                     "cflags": [
-                        "--config PROJECT/conn_u250.cfg"
+                        "--config LIB_DIR/L2/designs/mlp/common/cfg/conn_u250_azure_3cu.cfg"
                     ]
                 }
             }
@@ -35,18 +35,19 @@
     "launch": [
         {
             "name": "generic launch for all flows", 
-            "cmd_args": "BUILD/fcn_sigmoid_3cu.xclbin 32 32 32 32 32 32 32 1 0 1 0 A B C X"
+            "cmd_args": "BUILD/fcn_sigmoid_3cu.xclbin 32 32 32 false A B C X"
         }
     ], 
     "host": {
         "host_exe": "host.exe", 
         "compiler": {
             "sources": [
-                "LIB_DIR/../Vitis_Libraries/hpc/L2/src/sw/mlp/api_fcn_multiInstr.cpp",
+                "LIB_DIR/L2/src/sw/mlp/api_fcn_multiInstr.cpp",
                 "LIB_DIR/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp"
             ], 
             "includepaths": [
-                "LIB_DIR/../Vitis_Libraries/hpc/L2/include/sw/mlp",
+                "LIB_DIR/L2/include/sw/mlp",
+                "LIB_DIR/L2/include/sw/hls",
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/hw/xf_blas/helpers/utils",
                 "LIB_DIR/../Vitis_Libraries/blas/L2/include/xcl2",
                 "LIB_DIR/../Vitis_Libraries/blas/L2/include/memKernel/sw",
@@ -73,7 +74,7 @@
     "containers": [
         {
             "name": "fcn_sigmoid_3cu", 
-            "ldclflags": "--config opts.cfg", 
+            "ldclflags": "--config LIB_DIR/L2/designs/mlp/common/cfg/opts.cfg --config LIB_DIR/L2/designs/mlp/common/cfg/xclbin_noencrypt.cfg", 
             "frequency": 250,
             "accelerators": [
                 {
