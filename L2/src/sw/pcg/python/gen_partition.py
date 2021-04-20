@@ -38,7 +38,7 @@ class gen_partition:
         self.parEntries,self.accLatency,self.channels = parEntries,accLatency,channels
         self.maxRows,self.maxCols,self.memBits=maxRows,maxCols,memBits
     
-    def gen_rbs(p_spm, p_rbParam, p_rb):
+    def gen_rbs(self, p_spm, p_rbParam, p_rb):
         p_rbParam.totalRows=p_spm.m
         p_rbParam.totalRbs = 0
         l_numPars = 0
@@ -67,7 +67,7 @@ class gen_partition:
             print("ERROR: cannot sort matrix in along rows")
             return
 
-    def pad_par(p_row, p_col, p_data):
+    def pad_par(self, p_row, p_col, p_data):
         l_parNnzs = 0
         l_nnzs = len(p_row)
         l_row,l_col,l_data = [],[],[]
@@ -118,7 +118,7 @@ class gen_partition:
         p_data = l_data[:]
         return [l_rows, l_parNnzs, l_rowNnzs]
  
-    def gen_pars(p_rbParam, p_rb, p_par):
+    def gen_pars(self, p_rbParam, p_rb, p_par):
         p_par.totalPars = 0
         l_totalRbs = p_rbParam.totalRbs
         for i in range(l_totalRbs):
@@ -152,9 +152,8 @@ class gen_partition:
             p_rbParam.set_numPars(i, l_rbPars)
             p_par.totalPars += l_rbPars
 
-    def gen_chPars(p_par):
+    def gen_chPars(self, p_par):
         l_totalPars = p_par.totalPars
-        p_parParam.totalPars = l_totalPars
         for i in range(l_totalPars):
             l_row = p_par.row[i]
             l_col = p_par.col[i]
@@ -171,26 +170,28 @@ class gen_partition:
             self.rows.append(l_rows)
             self.cols.append(l_cols)
             self.nnzs.append(l_parNnzs)
-            l_nnzsPerCh = l_parNnzs // self.channels
+            l_nnzsPerCh = (l_parNnzs // self.channels) * 90 // 100
             l_minChColId = np.zeros(self.channels, dtype=np.uint32)
             l_minChRowId = np.zeros(self.channels, dtype=np.uint32)
             l_chRows = np.zeros(self.channels, dtype=np.uint32)
             l_chCols = np.zeros(self.channels, dtype=np.uint32)
             l_chNnzs = np.zeros(self.channels, dtype=np.uint32)
-            l_idx = 0
+            l_sIdx,l_idx = 0,0
             for c in range(self.channels):
                 if l_idx < l_parNnzs:
                     l_sIdx = l_idx
                     l_rowId = l_row[l_idx]
                     l_minChRowId[c] = l_rowId
                     l_allocatedNnzs = l_rowNnzs[l_rowId] 
+                    l_idx = l_idx + l_rowNnzs[l_rowId]
                     while l_allocatedNnzs < l_nnzsPerCh and l_idx < l_parNnzs:
+                        l_rowId = l_row[l_idx] 
+                        l_allocatedNnzs = l_allocatedNnzs + l_rowNnzs[l_rowId]
                         l_idx = l_idx + l_rowNnzs[l_rowId]
-                        if l_idx < l_parNnzs:
-                            l_rowId = l_row[l_idx] 
-                            l_allocatedNnzs = l_allocatedNnzs + l_rowNnzs[l_rowId]
+                    if c == self.channels -1:
+                        l_idx = l_parNnzs
                     l_minChColId[c] = min(l_col[l_sIdx:l_idx])
-                    l_chNnzs[c] = l_allocatedNnzs
+                    l_chNnzs[c] = l_idx - l_sIdx
                     l_chCols[c] = max(l_col[l_sIdx:l_idx])+1-min(l_col[l_sIdx:l_idx])
                     l_chRows[c] = max(l_row[l_sIdx:l_idx])+1-min(l_row[l_sIdx:l_idx])
                 else:
@@ -203,6 +204,46 @@ class gen_partition:
             self.minChRowId.append(l_minChRowId)
             self.chNnzs.append(l_chNnzs)
             self.chCols.append(l_chCols)
-            self.chRows.append(l_chRows)
-            
-        
+            self.chRows.append(l_chRows) 
+    
+    def update_rbParams(self, p_par, p_rbParam):
+        l_totalRbs = p_rbParam.totalRbs
+        l_sRbParId = 0
+        for rbId in range(l_totalRbs):
+            [l_sRbRowId, l_minRbColId, l_maxRbColId, l_rbNumPars] = p_rbParam.get_rbInfo(rbId, 0)[0:4]
+            l_chRbMinRowId = []
+            l_chRbRows = [0] * self.channels
+            l_chRbNnzs = [0] * self.channels
+            for c in range(self.channels):
+                l_minRowId = p_par.minChRowId[l_sRbParId][c]
+                for parId in range(l_rbNumPars):
+                    l_parId = l_sRbParId+parId
+                    if l_minRowId > p_par.minChRowId[l_parId][c]:
+                        l_minRowId = p_par.minChRowId[l_parId][c]
+                    l_chRbRows[c] = l_chRbRows[c] + p_par.chRows[l_parId][c]
+                    l_chNnzs[c] = l_chNnzs[c] +  p_par.chNnzs[l_parId][c]
+
+                l_chRbMinRowId.append(l_minRowId-l_sRbMinRowId)
+            p_rbParam.set_chInfo16(rbId, 0, l_chRbMinRowId)
+            p_rbParam.set_chInfo16(rbId, 1, l_chRbRows)
+            p_rbParam.set_chInfo32(rbId, l_chNnzs)                 
+            l_sRbParId += l_rbNumPars
+
+    def gen_parParams(self, p_par, p_parParam):
+        l_totalPars = p_par.totalPars
+        p_parParam.totalPars = l_totalPars
+        for parId in range(l_totalPars):
+            p_parParam.add_chInfo32(p_par.chCols[parId])
+            p_parParam.add_chInfo32(p_par.chNnzs[parId])
+            l_baseColAddr = p_par.minColId[parId] // self.parEntries
+            l_colBks = p_par.cols[parId] // self.parEntries
+            l_rows = p_par.rows[parId]
+            l_nnzs = p_par.nnzs[parId]
+            p_parParam.add_parInfo(l_baseColAddr, l_colBks, l_rows, l_nnzs)
+            l_chBaseAddr = []
+            for c in range(self.channels):
+                l_chBaseAddr.append(p_par.minChColId[parId][c] // self.parEntries - l_baseColAddr)
+            p_parParam.add_chInfo16(l_chBaseAddr)
+            p_parParam.add_chInfo16(p_par.chCols[parId] // self.parEntries)
+            p_parParam.add_dummyInfo()
+ 

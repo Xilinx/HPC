@@ -250,6 +250,45 @@ class par_param:
         self.totalPars = self.int32Arr[0]
         fi.close()
 
+class nnz_store:
+    def __init__(self, membits, parEntries, accLatency):
+        self.memBytes = memBits // 8
+        self.parEntries = parEntries
+        self.accLatency = accLatency
+        self.totalBks = 0
+        self.totalRowIdxBks = 0
+        self.totalColIdxBks = 0
+        self.totalNnzBks = 0
+        self.buf = bytearray()
+        self.int32Arr = np.zeros(self.memBytes//4, dtype=np.uint32)
+        self.int16Arr = np.zeros(self.memBytes//2, dtype=np.uint16)
+        self.float64Arr = np.zeros(self.memBytes//8, dtype=np.float64)
+        self.buf.extend(self.int32Arr.tobytes)
+   
+    def add_idxArr(self, p_idxArr):
+        for i in range(self.memBytes // 2):
+            self.int16Arr[i] = p_idxArr[i]
+        self.buf.extend(self.int16Arr.tobytes())
+
+    def add_nnzArr(self, p_nnzArr):
+        for i in range(self.memBytes // 8):
+            self.float64Arr[i] = p_nnzArr[i]
+        self.buf.extend(self.float64Arr.tobytes())
+    
+    def write_file(self, filename):
+        self.int32Arr[0:4] = [self.totalBks, self.totalRowIdxBks, self.totalColIdxBks, self.totalNnzBks]
+        self.buf[:self.memBytes] = self.int32Arr.tobytes()
+        fo = open(filename, "wb")
+        fo.write(self.buf)
+        fo.close()
+
+    def read_file(self, filename):
+        fi = open(filename, "rb")
+        self.buf = fi.read()
+        self.int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes//4, offset=0)
+        [self.totalBks, self.totalRowIdxBks, self.totalColIdxBks, self.totalNnzBks] = self.int32Arr[0:4]
+        fi.close()
+
 class sparse_matrix:
     def __init__(self):
       pass
