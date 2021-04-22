@@ -30,9 +30,8 @@ import numpy as np
 import scipy.io as sio
 import scipy.sparse as sp
 import math
-import utils as ut
 
-clas row_block:
+class row_block:
     def __init__(self):
         self.row = []
         self.col = []
@@ -173,7 +172,7 @@ class par_param:
         self.chInfo16Arr = np.zeros(self.channels, dtype=np.uint16)
         self.chInfo32Arr = np.zeros(self.channels, dtype=np.uint16)
         self.int32Arr[0] = self.totalPars
-        self.buf.extend(self.int32Arr.tobytes)
+        self.buf.extend(self.int32Arr.tobytes())
     
     def add_chInfo16(self, p_info):
         for i in range(self.channels):
@@ -202,7 +201,7 @@ class par_param:
         l_chInfo16 = np.frombuffer(self.buf, dtype=np.uint16, count=self.channels, offset=l_offset)
         return l_chInfo16
 
-    def set_chInfo16(self, p_parId, p_chInfo16Id, p_info);
+    def set_chInfo16(self, p_parId, p_chInfo16Id, p_info):
         for i in range(self.channels):
             self.chInfo16Arr[i] = p_info[i]
         l_offset = self.get_par_offset(p_parId)
@@ -251,7 +250,7 @@ class par_param:
         fi.close()
 
 class nnz_store:
-    def __init__(self, membits, parEntries, accLatency):
+    def __init__(self, memBits, parEntries, accLatency):
         self.memBytes = memBits // 8
         self.parEntries = parEntries
         self.accLatency = accLatency
@@ -263,7 +262,7 @@ class nnz_store:
         self.int32Arr = np.zeros(self.memBytes//4, dtype=np.uint32)
         self.int16Arr = np.zeros(self.memBytes//2, dtype=np.uint16)
         self.float64Arr = np.zeros(self.memBytes//8, dtype=np.float64)
-        self.buf.extend(self.int32Arr.tobytes)
+        self.buf.extend(self.int32Arr.tobytes())
    
     def add_idxArr(self, p_idxArr):
         for i in range(self.memBytes // 2):
@@ -291,19 +290,42 @@ class nnz_store:
 
 class sparse_matrix:
     def __init__(self):
-      pass
+        self.row,self.col,self.data = [],[],[]
+        self.m,self.n,self.nnz = 0,0,0
+        self.mtxName=""
     
     def read_matrix(self, mtxFullName, mtxName):
-        self.mat = sio.mmread(mtxFullName)
+        mat = sio.mmread(mtxFullName)
         if sp.issparse(mat):
             mat.eliminate_zeros()
+            self.row = mat.row
+            self.col = mat.col
+            self.data = mat.data
             self.mtxName = mtxName
             self.m,self.n = mat.shape
-            self.nnz = self.mat.nnz
+            self.nnz = mat.nnz
             return True
         else:
             return False
 
+    def sort_coo(self, p_order):
+        if p_order =='r':
+            order = np.lexsort((self.col, self.row))
+        elif p_order == 'c':
+            order = np.lexsort((self.row, self.col))
+        else:
+            print("ERROR: order input must be \'r\' or \'c\'")
+            return False
+        self.row = self.row[order]
+        self.col = self.col[order]
+        self.data = self.data[order]
+        return True
+
     def sort(self, p_order):
-        l_res = ut.sort_coo(self.mat.row, self.mat.col, self.mat.data, p_order)
+        l_res = self.sort_coo(p_order)
         return l_res
+
+    def to_list(self):
+        self.row = list(self.row)
+        self.col = list(self.col)
+        self.data = list(self.data)
