@@ -36,9 +36,7 @@ class gen_partition:
         self.maxRows,self.maxCols,self.memBits=maxRows,maxCols,memBits
         self.rbParam = row_block_param(memBits, channels)
         self.parParam = par_param(memBits, channels)
-        self.nnzStores = []
-        for i in range(channels):
-            self.nnzStores.append(nnz_store(memBits, parEntries, accLatency))
+        self.nnzStore = nnz_store(memBits, parEntries, accLatency,channels)
     
     def gen_rbs(self, p_spm, p_rb):
         self.rbParam.totalRows=p_spm.m
@@ -94,9 +92,10 @@ class gen_partition:
             while l_idx < l_cRowNnzs:
                 l_dataItem = l_oneData[l_idx]
                 l_colId = l_oneCol[l_idx]
-                l_colIdBase = (l_colId // self.parEntries) * self.parEntries
+                if l_modId == 0:
+                    l_colIdBase = (l_colId // self.parEntries) * self.parEntries
                 l_colIdMod = l_colId % self.parEntries
-                if (l_colIdMod != l_modId):
+                if (l_colId != l_colIdBase+l_modId):
                     l_row.append(l_rowId)
                     l_col.append(l_colIdBase+l_modId)
                     l_data.append(0)
@@ -176,7 +175,7 @@ class gen_partition:
             p_par.rows.append(l_rows)
             p_par.cols.append(l_cols)
             p_par.nnzs.append(l_parNnzs)
-            l_nnzsPerCh = (l_parNnzs // self.channels) * 90 // 100
+            l_nnzsPerCh = l_parNnzs // self.channels
             l_minChColId = np.zeros(self.channels, dtype=np.uint32)
             l_minChRowId = np.zeros(self.channels, dtype=np.uint32)
             l_chRows = np.zeros(self.channels, dtype=np.uint32)
@@ -206,6 +205,8 @@ class gen_partition:
                     l_chRows[c] = 0
                     l_minChRowId[c] = 0
                     l_minChColId[c] = 0
+            if sum(l_chNnzs) != l_parNnzs:
+                print("ERROR: sum of nnzs in channel partitions != nnzs in the partition")
             p_par.minChColId.append(l_minChColId)
             p_par.minChRowId.append(l_minChRowId)
             p_par.chNnzs.append(l_chNnzs)
@@ -254,7 +255,6 @@ class gen_partition:
             self.parParam.add_dummyInfo()
 
     def gen_nnzStore(self, p_par):
-        self.nnzStores = [nnz_store(self.memBits, self.parEntries, self.accLatency)]*self.channels
         l_memIdxWidth = self.memBits//16
         l_rowIdxGap = self.parEntries * self.accLatency
         l_rowIdxMod = l_memIdxWidth * l_rowIdxGap
@@ -278,30 +278,30 @@ class gen_partition:
 
                     for i in range(0, p_par.chNnzs[l_parId][c], self.parEntries):
                         if i % l_rowIdxMod == 0:
-                            for j in range(l_rowIdxGap):
+                            for j in range(l_memIdxWidth):
                                 if i+j*l_rowIdxGap < p_par.chNnzs[l_parId][c]:
                                     l_rowIdx.append(p_par.row[l_parId][l_sChIdx+i+j*l_rowIdxGap] - l_sRbRowId - l_sChRbRowId)
                                 else:
                                     l_rowIdx.append(0)
-                            self.nnzStores[c].add_idxArr(l_rowIdx)
+                            self.nnzStore.add_idxArr(c, l_rowIdx)
                             l_totalRowIdxBks += 1
                         if i % l_colIdxMod == 0:
-                            for j in range(l_rowIdxGap):
+                            for j in range(l_memIdxWidth):
                                 if i+j*self.parEntries < p_par.chNnzs[l_parId][c]:
-                                    l_colIdx.append(p_par.col[l_parId][l_sChIdx+i+j*self.parEntries]-l_sParColId-l_sChParColId)
+                                    l_colIdx.append(p_par.col[l_parId][l_sChIdx+i+j*self.parEntries]//self.parEntries-l_sParColId-l_sChParColId)
                                 else:
                                     l_colIdx.append(0)
-                            self.nnzStores[c].add_idxArr(l_colIdx)
+                            self.nnzStore.add_idxArr(c,l_colIdx)
                             l_totalColIdxBks += 1
                         l_nnz = p_par.data[l_parId][l_sChIdx+i:l_sChIdx+i+self.parEntries]
-                        self.nnzStores[c].add_nnzArr(l_nnz)
+                        self.nnzStore.add_nnzArr(c,l_nnz)
                         l_totalNnzBks += 1
                     l_sChIdx += p_par.chNnzs[l_parId][c]
                     l_totalBks = l_totalNnzBks + l_totalRowIdxBks + l_totalColIdxBks
-                    self.nnzStores[c].totalBks += l_totalBks
-                    self.nnzStores[c].totalRowIdxBks += l_totalRowIdxBks
-                    self.nnzStores[c].totalColIdxBks += l_totalColIdxBks
-                    self.nnzStores[c].totalNnzBks += l_totalNnzBks
+                    self.nnzStore.totalBks[c] += l_totalBks
+                    self.nnzStore.totalRowIdxBks[c] += l_totalRowIdxBks
+                    self.nnzStore.totalColIdxBks[c] += l_totalColIdxBks
+                    self.nnzStore.totalNnzBks[c] += l_totalNnzBks
                 p_par.row[l_parId] = []
                 p_par.col[l_parId] = []
                 p_par.data[l_parId] = []
@@ -324,5 +324,4 @@ class gen_partition:
         self.parParam.write_file(fileName)
 
     def store_nnz(self, fileNames):
-        for i in range(self.channels):
-            self.nnzStores[i].write_file(fileNames[i])
+        self.nnzStore.write_file(fileNames)
