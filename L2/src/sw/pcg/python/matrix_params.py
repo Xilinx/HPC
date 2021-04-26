@@ -31,12 +31,6 @@ import scipy.io as sio
 import scipy.sparse as sp
 import math
 
-class row_block:
-    def __init__(self):
-        self.row = []
-        self.col = []
-        self.data = []
-
 class row_block_param:
     def __init__(self, memBits, channels):
         self.channels = channels
@@ -44,33 +38,32 @@ class row_block_param:
         self.totalRows = 0
         self.totalRbs = 0
         self.buf = bytearray()
-        self.int32Arr = np.zeros(memBits//32, dtype=np.uint32)
-        self.chInfo16Arr = np.zeros(channels, dtype=np.uint16)
-        self.chInfo32Arr = np.zeros(channels, dtype=np.uint32)
-        self.int32Arr[0] = self.totalRows
-        self.int32Arr[1] = self.totalRbs
-        self.buf.extend(self.int32Arr.tobytes())
 
     def add_rbIdxInfo(self, p_minRowId, p_minColId, p_numCols, p_numPars):
-        self.int32Arr[0:4] = [p_minRowId, p_minColId, p_numCols, p_numPars]
-        self.buf.extend(self.int32Arr.tobytes())
+        int32Arr = np.zeros(self.memBytes // 4, dtype=np.uint32)
+        int32Arr[0:4] = [p_minRowId, p_minColId, p_numCols, p_numPars]
+        self.buf.extend(int32Arr.tobytes())
 
     def add_rbSizeInfo(self, p_numRows, p_numNnzs):
-        self.int32Arr[0:2] = [p_numRows, p_numNnzs]
-        self.buf.extend(self.int32Arr.tobytes())
+        int32Arr = np.zeros(self.memBytes // 4, dtype=np.uint32)
+        int32Arr[0:2] = [p_numRows, p_numNnzs]
+        self.buf.extend(int32Arr.tobytes())
 
     def add_dummyInfo(self):
-        self.buf.extend(self.int32Arr.tobytes())
+        int32Arr = np.zeros(self.memBytes // 4, dtype=np.uint32)
+        self.buf.extend(int32Arr.tobytes())
 
     def add_chInfo16(self, p_info):
+        chInfo16Arr = np.zeros(self.channels, dtype=np.uint16)
         for i in range(self.channels):
-            self.chInfo16Arr[i] = p_info[i]
-        self.buf.extend(self.chInfo16Arr.tobytes())
+            chInfo16Arr[i] = p_info[i]
+        self.buf.extend(chInfo16Arr.tobytes())
 
     def add_chInfo32(self, p_info):
-        for i in range(self.channels):
-            self.chInfo32Arr[i] = p_info[i]
-        self.buf.extend(self.chInfo32Arr.tobytes())
+        chInfo32Arr = np.zeros(self.channels, dtype=np.uint32)
+        for i in range(channels):
+            chInfo32Arr[i] = p_info[i]
+        self.buf.extend(chInfo32Arr.tobytes())
         
     def get_rb_offset(self, p_rbId):
         l_offset = self.memBytes
@@ -86,22 +79,22 @@ class row_block_param:
     
     def set_rbColInfo(self, p_rbId, p_minColId, p_numCols):
         l_offset = self.get_rb_offset(p_rbId)
-        self.int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes // 4, offset=l_offset)
-        self.int32Arr[1:3] = [p_minColId, p_numCols]
-        self.buf[l_offset : l_offset+self.memBytes] = self.int32Arr.tobytes()
+        int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes // 4, offset=l_offset)
+        int32Arr[1:3] = [p_minColId, p_numCols]
+        self.buf[l_offset : l_offset+self.memBytes] = int32Arr.tobytes() 
 
     def set_numPars(self, p_rbId, p_numPars):
         l_offset = self.get_rb_offset(p_rbId)
-        self.int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes // 4, offset=l_offset)
-        self.int32Arr[3] = p_numPars
-        self.buf[l_offset : l_offset+self.memBytes] = self.int32Arr.tobytes()
+        int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes // 4, offset=l_offset)
+        int32Arr[3] = p_numPars
+        self.buf[l_offset : l_offset+self.memBytes] = int32Arr.tobytes()
 
     def set_numNnzs(self, p_rbId, p_numNnzs):
         l_offset = self.get_rb_offset(p_rbId)
         l_offset += self.memBytes
-        self.int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes // 4, offset=l_offset)
-        self.int32Arr[1] = p_numNnzs
-        self.buf[l_offset : l_offset+self.memBytes] = self.int32Arr.tobytes()
+        int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes // 4, offset=l_offset)
+        int32Arr[1] = p_numNnzs
+        self.buf[l_offset : l_offset+self.memBytes] = int32Arr.tobytes() 
 
     def get_chInfo16(self, p_rbId, p_chInfo16Id):
         l_offset = self.get_rb_offset(p_rbId)
@@ -110,11 +103,12 @@ class row_block_param:
         return l_chInfo16
 
     def set_chInfo16(self, p_rbId, p_chInfo16Id, p_info):
+        chInfo16Arr = np.zeros(self.channels, dtype=np.uint16)
         for i in range(self.channels):
-            self.chInfo16Arr[i] = p_info[i]
+            chInfo16Arr[i] = p_info[i]
         l_offset = self.get_rb_offset(p_rbId)
         l_offset += self.memBytes * (2 + p_chInfo16Id)
-        self.buf[l_offset:l_offset+self.channels*2] = self.chInfo16Arr.tobytes()
+        self.buf[l_offset:l_offset+self.memBytes] = chInfo16Arr.tobytes()
 
     def get_chInfo32(self, p_rbId):
         l_offset = self.get_rb_offset(p_rbId)
@@ -123,26 +117,28 @@ class row_block_param:
         return l_chInfo32
 
     def set_chInfo32(self, p_rbId, p_info):
+        chInfo32Arr = np.zeros(self.channels, dtype=np.uint32)
         for i in range(self.channels):
-            self.chInfo32Arr[i] = p_info[i]
+            chInfo32Arr[i] = p_info[i]
         l_offset = self.get_rb_offset(p_rbId)
         l_offset += self.memBytes * 4
-        self.buf[l_offset:l_offset+self.channels*4] = self.chInfo32Arr.tobytes()
+        self.buf[l_offset:l_offset+self.channels*4] = chInfo32Arr.tobytes()
 
     def write_file(self, fileName):
         fo = open(fileName, "wb")
-        self.int32Arr[0] = self.totalRows
-        self.int32Arr[1] = self.totalRbs
-        self.buf[:self.memBytes] = self.int32Arr.tobytes()
+        int32Arr = np.zeros(self.memBytes//4, dtype=np.uint32)
+        int32Arr[0] = self.totalRows
+        int32Arr[1] = self.totalRbs
+        self.buf[:self.memBytes] = int32Arr.tobytes()
         fo.write(self.buf)
         fo.close()
 
-    def read_file(self, filename):
+    def read_file(self, fileName):
         fi = open(fileName, "rb")
         self.buf = fi.read()
-        self.int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes // 4, offset=0)
-        self.totalRows = self.int32Arr[0]
-        self.totalRbs = self.int32Arr[1]
+        int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes // 4, offset=0)
+        self.totalRows = int32Arr[0]
+        self.totalRbs = int32Arr[1]
         fi.close()
 
 class par_param:
@@ -151,28 +147,27 @@ class par_param:
         self.channels = channels
         self.totalPars = 0
         self.buf = bytearray()
-        self.int32Arr = np.zeros(self.memBytes//4, dtype=np.uint32)
-        self.chInfo16Arr = np.zeros(self.channels, dtype=np.uint16)
-        self.chInfo32Arr = np.zeros(self.channels, dtype=np.uint16)
-        self.int32Arr[0] = self.totalPars
-        self.buf.extend(self.int32Arr.tobytes())
     
     def add_chInfo16(self, p_info):
+        chInfo16Arr = np.zeros(self.channels, dtype=np.uint16)
         for i in range(self.channels):
-            self.chInfo16Arr[i] = p_info[i]
-        self.buf.extend(self.chInfo16Arr.tobytes())
+            chInfo16Arr[i] = p_info[i]
+        self.buf.extend(chInfo16Arr.tobytes())
 
     def add_chInfo32(self, p_info):
+        chInfo32Arr = np.zeros(self.channels, np.uint32)
         for i in range(self.channels):
-            self.chInfo32Arr[i] = p_info[i]
-        self.buf.extend(self.chInfo32Arr.tobytes())
+            chInfo32Arr[i] = p_info[i]
+        self.buf.extend(chInfo32Arr.tobytes())
 
     def add_parInfo(self, p_baseColAddr, p_colBks, p_rows, p_nnzs):
-        self.int32Arr[0:4] = [p_baseColAddr, p_colBks, p_rows, p_nnzs]
-        self.buf.extend(self.int32Arr.tobytes())
+        int32Arr = np.zeros(self.memBytes//4, dtype=np.uint32)
+        int32Arr[0:4] = [p_baseColAddr, p_colBks, p_rows, p_nnzs]
+        self.buf.extend(int32Arr.tobytes())
 
     def add_dummyInfo(self):
-        self.buf.extend(self.int32Arr.tobytes())
+        int32Arr = np.zeros(self.memBytes//4, dtype=np.uint32)
+        self.buf.extend(int32Arr.tobytes())
 
     def get_par_offset(self, p_parId):
         l_offset = self.memBytes + p_parId * 8 * self.memBytes
@@ -185,24 +180,26 @@ class par_param:
         return l_chInfo16
 
     def set_chInfo16(self, p_parId, p_chInfo16Id, p_info):
+        chInfo16Arr = np.zeros(self.channels, dtype=np.uint16)
         for i in range(self.channels):
-            self.chInfo16Arr[i] = p_info[i]
+            chInfo16Arr[i] = p_info[i]
         l_offset = self.get_par_offset(p_parId)
         l_offset += (5+p_chInfo16Id)*self.memBytes
-        self.buf[l_offset:l_offset+2*self.channels] = self.chInfo16Arr.tobytes()
+        self.buf[l_offset:l_offset+2*self.channels] = chInfo16Arr.tobytes()
 
     def get_chInfo32(self, p_parId, p_chInfo32Id):
         l_offset = self.get_par_offset(p_parId)
-        l_offset += p_chInfo32Id * self.memBytes
+        l_offset += p_chInfo32Id * self.memBytes*2 
         l_chInfo32 = np.frombuffer(self.buf, dtype=np.uint32, count=self.channels, offset=l_offset)
         return l_chInfo32
 
     def set_chInfo32(self, p_parId, p_chInfo32Id, p_info):
+        chInfo32Arr = np.zeros(self.channels, dtype=np.uint32)
         for i in range(self.channels):
-            self.chInfo32Arr[i] = p_info[i]
+            chInfo32Arr[i] = p_info[i]
         l_offset = self.get_par_offset(p_parId)
-        l_offset += p_chInfo32Id * self.memBytes
-        self.buf[l_offset:l_offset+4*self.channels] = self.chInfo32Arr.tobytes()
+        l_offset += p_chInfo32Id * chInfo32Arr.shape[0]*4
+        self.buf[l_offset:l_offset+4*self.channels] = chInfo32Arr.tobytes()
 
     def get_parInfo(self, p_parId):
         l_offset = self.get_par_offset(p_parId)
@@ -211,16 +208,18 @@ class par_param:
         return l_int32Arr
 
     def set_parInfo(self, p_parId, p_info):
+        int32Arr = np.zeros(self.memBytes//4, dtype=np.uint32)
         for i in range(self.memBytes // 4):
-            self.int32Arr[i] = p_info[i]
+            int32Arr[i] = p_info[i]
         l_offset = self.get_par_offset(p_parId)
         l_offset += 4*self.memBytes
         self.buf[l_offset: l_offset+self.memBytes] = sef.int32Arr.tobytes()
 
 
     def write_file(self, filename):
-        self.int32Arr[0] = self.totalPars
-        self.buf[:self.memBytes] = self.int32Arr.tobytes()
+        int32Arr = np.zeros(self.memBytes//4, dtype=np.uint32)
+        int32Arr[0] = self.totalPars
+        self.buf[:self.memBytes] = int32Arr.tobytes()
         fo = open(filename, "wb")
         fo.write(self.buf)
         fo.close() 
@@ -228,8 +227,8 @@ class par_param:
     def read_file(self, filename):
         fi = open(filename, "rb")
         self.buf = fi.read()
-        self.int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes//4, offset=0)
-        self.totalPars = self.int32Arr[0]
+        int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes//4, offset=0)
+        self.totalPars = int32Arr[0]
         fi.close()
 
 class nnz_store:
@@ -242,38 +241,68 @@ class nnz_store:
         self.totalRowIdxBks = [0]*channels
         self.totalColIdxBks = [0]*channels
         self.totalNnzBks = [0]*channels
-        self.buf = [bytearray()]*channels
-        self.int32Arr = np.zeros(self.memBytes//4, dtype=np.uint32)
-        self.int16Arr = np.zeros(self.memBytes//2, dtype=np.uint16)
-        self.float64Arr = np.zeros(self.memBytes//8, dtype=np.float64)
+        self.buf = [] 
         for i in range(channels):
-            self.buf[i] = bytearray()
-            self.buf[i].extend(self.int32Arr.tobytes())
-   
+            self.buf.append(bytearray())
+  
+    def add_dummyInfo(self, p_chId):
+        int32Arr = np.zeros(self.memBytes//4, dtype=np.uint32)
+        self.buf[p_chId].extend(int32Arr.tobytes())
+ 
     def add_idxArr(self, p_chId, p_idxArr):
+        int16Arr = np.zeros(self.memBytes//2, dtype=np.uint16)
         for i in range(self.memBytes // 2):
-            self.int16Arr[i] = p_idxArr[i]
-        self.buf[p_chId].extend(self.int16Arr.tobytes())
+            int16Arr[i] = p_idxArr[i]
+        self.buf[p_chId].extend(int16Arr.tobytes())
 
     def add_nnzArr(self, p_chId,  p_nnzArr):
+        float64Arr = np.zeros(self.memBytes//8, dtype=np.float64)
         for i in range(self.memBytes // 8):
-            self.float64Arr[i] = p_nnzArr[i]
-        self.buf[p_chId].extend(self.float64Arr.tobytes())
+            float64Arr[i] = p_nnzArr[i]
+        self.buf[p_chId].extend(float64Arr.tobytes())
+
+    def get_chPar(self, p_chId, p_offset, p_nnzIdx, p_nnzs, p_sRowId, p_sColId):
+        l_memIdxWidth = self.memBytes//2
+        l_rowIdxGap = self.parEntries * self.accLatency
+        l_rowIdxMod = l_memIdxWidth * l_rowIdxGap
+        l_colIdxMod = l_memIdxWidth * self.parEntries
+        l_row,l_col,l_data=[],[],[]
+        l_offset,l_nnzIdx,l_nnzs = p_offset,p_nnzIdx,p_nnzs
+        while l_nnzs > 0 :
+            if l_nnzIdx % l_rowIdxMod == 0:
+                l_rowIdx = np.frombuffer(self.buf[p_chId], dtype=np.uint16, count=l_memIdxWidth, offset=l_offset)
+                for i in range(l_memIdxWidth):
+                    l_row.extend([l_rowIdx[i]+p_sRowId]*l_rowIdxGap)
+                l_offset += self.memBytes
+            if l_nnzIdx % l_colIdxMod == 0:
+                l_colIdx = np.frombuffer(self.buf[p_chId], dtype=np.uint16, count=l_memIdxWidth, offset=l_offset)
+                for i in range(l_memIdxWidth):
+                    for j in range(self.parEntries):
+                        l_col.append((l_colIdx[i]+p_sColId)*self.parEntries+j)
+                l_offset += self.memBytes
+            l_data.extend(np.frombuffer(self.buf[p_chId], dtype=np.float64, count=self.parEntries, offset=l_offset))
+            l_offset += self.memBytes
+            l_nnzIdx += self.parEntries
+            l_nnzs -= self.parEntries
+        return [l_row,l_col,l_data, l_offset]
+       
     
     def write_file(self, filenames):
         for i in range(self.channels):
-            self.int32Arr[0:4] = [self.totalBks[i], self.totalRowIdxBks[i], self.totalColIdxBks[i], self.totalNnzBks[i]]
-            self.buf[i][:self.memBytes] = self.int32Arr.tobytes()
+            int32Arr = np.zeros(self.memBytes//4, dtype=np.uint32)
+            int32Arr[0:4] = [self.totalBks[i], self.totalRowIdxBks[i], self.totalColIdxBks[i], self.totalNnzBks[i]]
+            self.buf[i][:self.memBytes] = int32Arr.tobytes()
             fo = open(filenames[i], "wb")
             fo.write(self.buf[i])
             fo.close()
 
     def read_file(self, filenames):
         for i in range(self.channels):
+            int32Arr = np.zeros(self.memBytes//4, dtype=np.uint32)
             fi = open(filenames[i], "rb")
-            self.buf = fi.read()
-            self.int32Arr = np.frombuffer(self.buf[i], dtype=np.uint32, count=self.memBytes//4, offset=0)
-            [self.totalBks[i], self.totalRowIdxBks[i], self.totalColIdxBks[i], self.totalNnzBks[i]] = self.int32Arr[0:4]
+            self.buf[i] = fi.read()
+            int32Arr = np.frombuffer(self.buf[i], dtype=np.uint32, count=self.memBytes//4, offset=0)
+            [self.totalBks[i], self.totalRowIdxBks[i], self.totalColIdxBks[i], self.totalNnzBks[i]] = int32Arr[0:4]
             fi.close()
 
 class sparse_matrix:
@@ -326,6 +355,16 @@ class sparse_matrix:
 
     def sort(self, p_order):
         l_res = self.sort_coo(p_order)
+        return l_res
+
+    def is_equal(self, p_spm):
+        p_spm.sort('r')
+        self.sort('r')
+        l_equalRow = self.row == p_spm.row
+        l_equalCol = self.col == p_spm.col
+        l_equalData = self.data == p_spm.data
+        l_equalParam = (self.m == p_spm.m) and (self.n==p_spm.n) and (self.nnz == p_spm.nnz)
+        l_res = l_equalRow.all() and l_equalCol.all() and l_equalData.all() and l_equalParam
         return l_res
 
     def to_list(self):

@@ -40,6 +40,7 @@ class signature:
     
     def gen_rbs(self, p_spm):
         l_rbSpms = []
+        self.rbParam.add_dummyInfo()
         self.rbParam.totalRows=p_spm.m
         self.rbParam.totalRbs = 0
         l_numPars = 0
@@ -67,6 +68,7 @@ class signature:
                     self.rbParam.totalRbs += 1
                     if l_eId < p_spm.nnz:
                         l_minRowId = l_row[l_eId]
+                l_sId = l_eId
         else:
             print("ERROR: cannot sort matrix along rows")
         return l_rbSpms
@@ -167,8 +169,17 @@ class signature:
                 print("ERROR: cannot sort matrix along rows")
         return l_paddedParSpms
 
+    def add_spm(self, p_row, p_col, p_data, p_list):
+        l_spm = sparse_matrix()
+        l_spm.create_matrix(p_row, p_col, p_data)
+        p_list.append(l_spm)
+        return [l_spm.m,l_spm.n,l_spm.nnz,l_spm.minRowId,l_spm.minColId]
+
     def gen_chPars(self, p_paddedParSpms):
-        l_chParSpms= [[]]*self.channels
+        self.parParam.add_dummyInfo()
+        l_chParSpms=[]
+        for c in range(self.channels):
+            l_chParSpms.append([]) 
         l_totalPars = len(p_paddedParSpms) 
         l_chBaseAddr = np.zeros(self.channels, dtype=np.uint32)
         l_chCols = np.zeros(self.channels, dtype=np.uint32)
@@ -176,7 +187,7 @@ class signature:
         for i in range(l_totalPars):
             l_parSpm = p_paddedParSpms[i]
             l_baseParAddr = l_parSpm.minColId // self.parEntries
-            l_colBks = l_parSpm.n // self.parEntries
+            l_colBks = math.ceil(l_parSpm.n / self.parEntries)
             l_rows = l_parSpm.m
             l_nnzs = l_parSpm.nnz
             l_nnzsPerCh = l_nnzs // self.channels
@@ -192,12 +203,10 @@ class signature:
                 l_col = l_parSpm.col[l_sId:l_eId]
                 l_data= l_parSpm.data[l_sId:l_eId]
                 l_sId = l_eId
-                l_chParSpm = sparse_matrix()
-                l_chParSpm.create_matrix(l_row, l_col, l_data)
-                l_chParSpms[c].append(l_chParSpm)
-                l_chBaseAddr[c] = (l_chParSpm.minColId // self.parEntries)-l_baseParAddr
-                l_chCols[c] = l_chParSpm.n
-                l_chNnzs[c] = l_chParSpm.nnz
+                [l_m,l_n,l_nnz,l_minRowId,l_minColId] = self.add_spm(l_row, l_col, l_data, l_chParSpms[c])
+                l_chBaseAddr[c] = (l_minColId // self.parEntries)-l_baseParAddr
+                l_chCols[c] = l_n
+                l_chNnzs[c] = l_nnz
             assert np.sum(l_chNnzs) == l_nnzs
             self.parParam.add_chInfo32(l_chCols)
             self.parParam.add_chInfo32(l_chNnzs)
@@ -232,6 +241,8 @@ class signature:
             l_sRbParId += l_rbNumPars
 
     def gen_nnzStore(self, p_chParSpms):
+        for c in range(self.channels):
+            self.nnzStore.add_dummyInfo(c)
         l_memIdxWidth = self.memBits//16
         l_rowIdxGap = self.parEntries * self.accLatency
         l_rowIdxMod = l_memIdxWidth * l_rowIdxGap
@@ -294,3 +305,52 @@ class signature:
 
     def store_nnz(self, fileNames):
         self.nnzStore.write_file(fileNames)
+    
+    def load_rbParam(self, fileName):
+        self.rbParam.read_file(fileName)
+
+    def load_parParam(self, fileName):
+        self.parParam.read_file(fileName)
+
+    def load_nnz(self, fileNames):
+        self.nnzStore.read_file(fileNames)
+
+    def create_spm(self):
+        l_memBytes = self.memBits//8
+        l_totalRbs = self.rbParam.totalRbs
+        l_row,l_col,l_data=[],[],[]
+        l_sParId = 0;
+        l_chOffset=np.zeros(self.channels, dtype=np.uint32)
+        l_chIdx = np.zeros(self.channels, dtype=np.uint32)
+        l_chOffset += l_memBytes
+        l_spmRow,l_spmCol,l_spmData = [],[],[]
+        for rbId in range(l_totalRbs):
+            [l_sRbRowId,l_minRbColId,l_rbCols,l_pars] = self.rbParam.get_rbInfo(rbId,0)[0:4]
+            [l_rbRows, l_rbNnzs] = self.rbParam.get_rbInfo(rbId,1)[0:2]
+            l_chRowOff = self.rbParam.get_chInfo16(rbId, 0)
+            for c in range(self.channels):
+                l_sChRowId = l_sRbRowId + l_chRowOff[c]
+                for parId in range(l_pars):
+                    l_parId = l_sParId + parId
+                    [l_sParColId,l_parColBks,l_parRows,l_parNnzs]=self.parParam.get_parInfo(l_parId)[0:4]
+                    l_chColOff = self.parParam.get_chInfo16(l_parId,0)[c]
+                    l_sChColId = l_sParColId + l_chColOff
+                    l_chNnzs = self.parParam.get_chInfo32(l_parId,1)[c]
+                    [l_row,l_col,l_data,l_offset] = self.nnzStore.get_chPar(c, l_chOffset[c], l_chIdx[c], l_chNnzs, l_sChRowId, l_sChColId)
+                    l_chOffset[c] = l_offset
+                    l_chIdx[c] += l_chNnzs
+                    for i in range(l_chNnzs):
+                        if l_data[i] != 0:
+                            l_spmRow.append(l_row[i])
+                            l_spmCol.append(l_col[i])
+                            l_spmData.append(l_data[i])
+            l_sParId += l_pars
+        l_spm = sparse_matrix()
+        l_spm.create_matrix(l_spmRow,l_spmCol,l_spmData)
+        return l_spm
+    
+    def check(self, mtxFullName, mtxName):
+        l_spm = sparse_matrix()
+        l_spm.read_matrix(mtxFullName, mtxName)
+        l_sigSpm = self.create_spm()
+        return l_spm.is_equal(l_sigSpm)

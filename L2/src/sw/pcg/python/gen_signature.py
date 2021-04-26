@@ -49,8 +49,25 @@ def partition_matrix(mtxName, mtxFullName, maxRows, maxCols, channels, parEntrie
     l_sig.store_parParam(l_parParamFileName)
     l_sig.store_nnz(l_nnzFileNames)
     
+def check_signature(mtxName, mtxFullName, maxRows, maxCols, channels, parEntries, accLatency, memBits, mtxSigPath):
+    l_nnzFileNames = []
+    for i in range(channels):
+        l_nnzFileNames.append(mtxSigPath+'/nnzVal_' + str(i) + '.dat')
+
+    l_parParamFileName = mtxSigPath+'/parParam.dat'
+    l_rbParamFileName = mtxSigPath+'/rbParam.dat'
+    l_sig = signature(parEntries, accLatency, channels, maxRows, maxCols, memBits)
+    l_sig.load_rbParam(l_rbParamFileName)
+    l_sig.load_parParam(l_parParamFileName)
+    l_sig.load_nnz(l_nnzFileNames)
+    if l_sig.check(mtxFullName, mtxName):
+        print("INFO: {} signature verification pass!".format(mtxName))
+        return True 
+    else:
+        print("ERROR: {} signature verification failed!".format(mtxName))
+        return False
     
-def process_matrices(isPartition, isCheck, isClean, mtxList, maxRows, maxCols, channels, parEntries, accLatency, memBits, sigPath):
+def process_matrices(isPartition, isClean, isCheck, mtxList, maxRows, maxCols, channels, parEntries, accLatency, memBits, sigPath):
     download_list = open(mtxList, 'r')
     download_names = download_list.readlines()
     if not path.exists(sigPath):
@@ -73,6 +90,8 @@ def process_matrices(isPartition, isCheck, isClean, mtxList, maxRows, maxCols, c
             subprocess.run(["tar", "-xzf", './mtx_files/'+mtxFileName, "-C", "./mtx_files"])
         if isPartition:
             partition_matrix(mtxName, mtxFullName, maxRows, maxCols, channels, parEntries, accLatency, memBits, mtxSigPath)
+        if isCheck:
+            l_equal = l_equal and check_signature(mtxName, mtxFullName, maxRows, maxCols, channels, parEntries, accLatency, memBits, mtxSigPath)
         if isClean:
             subprocess.run(["rm", "-rf", './mtx_files/'+mtxName+'/'])
     if isClean:
