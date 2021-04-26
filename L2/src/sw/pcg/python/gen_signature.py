@@ -34,7 +34,7 @@ import subprocess
 import argparse
 import math
 from matrix_params import *
-from gen_partition import *
+from signature import *
 
 def partition_matrix(mtxName, mtxFullName, maxRows, maxCols, channels, parEntries, accLatency, memBits, mtxSigPath):
     l_nnzFileNames = []
@@ -43,11 +43,11 @@ def partition_matrix(mtxName, mtxFullName, maxRows, maxCols, channels, parEntrie
 
     l_parParamFileName = mtxSigPath+'/parParam.dat'
     l_rbParamFileName = mtxSigPath+'/rbParam.dat'
-    l_genPar = gen_partition(parEntries, accLatency, channels, maxRows, maxCols, memBits)
-    l_genPar.process(mtxFullName, mtxName)
-    l_genPar.store_rbParam(l_rbParamFileName)
-    l_genPar.store_parParam(l_parParamFileName)
-    l_genPar.store_nnz(l_nnzFileNames)
+    l_sig = signature(parEntries, accLatency, channels, maxRows, maxCols, memBits)
+    l_sig.process(mtxFullName, mtxName)
+    l_sig.store_rbParam(l_rbParamFileName)
+    l_sig.store_parParam(l_parParamFileName)
+    l_sig.store_nnz(l_nnzFileNames)
     
     
 def process_matrices(isPartition, isCheck, isClean, mtxList, maxRows, maxCols, channels, parEntries, accLatency, memBits, sigPath):

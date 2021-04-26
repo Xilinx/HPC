@@ -30,7 +30,7 @@ import numpy as np
 from collections import Counter
 from matrix_params import * 
 
-class gen_partition:
+class signature:
     def __init__(self, parEntries, accLatency, channels, maxRows, maxCols, memBits):
         self.parEntries,self.accLatency,self.channels = parEntries,accLatency,channels
         self.maxRows,self.maxCols,self.memBits=maxRows,maxCols,memBits
