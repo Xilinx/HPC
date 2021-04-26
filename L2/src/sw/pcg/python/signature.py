@@ -38,6 +38,12 @@ class signature:
         self.parParam = par_param(memBits, channels)
         self.nnzStore = nnz_store(memBits, parEntries, accLatency,channels)
     
+    def add_spm(self, p_row, p_col, p_data, p_list):
+        l_spm = sparse_matrix()
+        l_spm.create_matrix(p_row, p_col, p_data)
+        p_list.append(l_spm)
+        return [l_spm.m,l_spm.n,l_spm.nnz,l_spm.minRowId,l_spm.minColId]
+
     def gen_rbs(self, p_spm):
         l_rbSpms = []
         self.rbParam.add_dummyInfo()
@@ -57,12 +63,10 @@ class signature:
                     l_row.extend(p_spm.row[l_sId:l_eId])
                     l_col.extend(p_spm.col[l_sId:l_eId])
                     l_data.extend(p_spm.data[l_sId:l_eId])
-                    l_rbSpm = sparse_matrix()
-                    l_rbSpm.create_matrix(l_row, l_col, l_data)
-                    l_rbSpms.append(l_rbSpm)
+                    [l_m,l_n,l_nnz,l_spmMinRowId,l_spmMinColId] = self.add_spm(l_row,l_col,l_data,l_rbSpms)
                     l_sId = l_eId
-                    self.rbParam.add_rbIdxInfo(l_rbSpm.minRowId, l_rbSpm.minColId, l_rbSpm.n, l_numPars)
-                    self.rbParam.add_rbSizeInfo(l_rbSpm.m, l_rbSpm.nnz)
+                    self.rbParam.add_rbIdxInfo(l_spmMinRowId, l_spmMinColId, l_n, l_numPars)
+                    self.rbParam.add_rbSizeInfo(l_m, l_nnz)
                     for i in range(6):
                         self.rbParam.add_dummyInfo()
                     self.rbParam.totalRbs += 1
@@ -96,9 +100,7 @@ class signature:
                         l_row.extend(l_rbSpm.row[l_sId:l_eId])
                         l_col.extend(l_rbSpm.col[l_sId:l_eId])
                         l_data.extend(l_rbSpm.data[l_sId:l_eId])
-                        l_parSpm = sparse_matrix()
-                        l_parSpm.create_matrix(l_row, l_col, l_data)
-                        l_parSpms.append(l_parSpm)
+                        [l_m,l_n,l_nnz,l_spmMinRowId,l_spmMinColId] = self.add_spm(l_row,l_col,l_data,l_parSpms)
                         l_sId = l_eId
                         l_rbPars += 1
                         if l_eId < l_rbSpm.nnz:
@@ -169,11 +171,6 @@ class signature:
                 print("ERROR: cannot sort matrix along rows")
         return l_paddedParSpms
 
-    def add_spm(self, p_row, p_col, p_data, p_list):
-        l_spm = sparse_matrix()
-        l_spm.create_matrix(p_row, p_col, p_data)
-        p_list.append(l_spm)
-        return [l_spm.m,l_spm.n,l_spm.nnz,l_spm.minRowId,l_spm.minColId]
 
     def gen_chPars(self, p_paddedParSpms):
         self.parParam.add_dummyInfo()
