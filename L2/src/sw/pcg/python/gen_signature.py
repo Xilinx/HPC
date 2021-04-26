@@ -43,11 +43,13 @@ def partition_matrix(mtxName, mtxFullName, maxRows, maxCols, channels, parEntrie
 
     l_parParamFileName = mtxSigPath+'/parParam.dat'
     l_rbParamFileName = mtxSigPath+'/rbParam.dat'
+    l_infoFileName = mtxSigPath+'/info.dat'
     l_sig = signature(parEntries, accLatency, channels, maxRows, maxCols, memBits)
     l_sig.process(mtxFullName, mtxName)
     l_sig.store_rbParam(l_rbParamFileName)
     l_sig.store_parParam(l_parParamFileName)
     l_sig.store_nnz(l_nnzFileNames)
+    l_sig.store_info(l_infoFileName)
     
 def check_signature(mtxName, mtxFullName, maxRows, maxCols, channels, parEntries, accLatency, memBits, mtxSigPath):
     l_nnzFileNames = []
@@ -56,10 +58,12 @@ def check_signature(mtxName, mtxFullName, maxRows, maxCols, channels, parEntries
 
     l_parParamFileName = mtxSigPath+'/parParam.dat'
     l_rbParamFileName = mtxSigPath+'/rbParam.dat'
+    l_infoFileName = mtxSigPath+'/info.dat'
     l_sig = signature(parEntries, accLatency, channels, maxRows, maxCols, memBits)
     l_sig.load_rbParam(l_rbParamFileName)
     l_sig.load_parParam(l_parParamFileName)
     l_sig.load_nnz(l_nnzFileNames)
+    l_sig.load_info(l_infoFileName)
     if l_sig.check(mtxFullName, mtxName):
         print("INFO: {} signature verification pass!".format(mtxName))
         return True 

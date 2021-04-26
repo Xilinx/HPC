@@ -37,6 +37,8 @@ class signature:
         self.rbParam = row_block_param(memBits, channels)
         self.parParam = par_param(memBits, channels)
         self.nnzStore = nnz_store(memBits, parEntries, accLatency,channels)
+        self.m,self.n,self.nnz = 0,0,0
+        self.mPad,self.nPad,self.nnzPad = 0,0,0
     
     def add_spm(self, p_row, p_col, p_data, p_list):
         l_spm = sparse_matrix()
@@ -46,6 +48,9 @@ class signature:
 
     def gen_rbs(self, p_spm):
         l_rbSpms = []
+        self.m,self.n,self.nnz = p_spm.m,p_spm.n,p_spm.nnz
+        self.mPad = p_spm.m
+        self.nPad = math.ceil(p_spm.n / self.parEntries)*self.parEntries
         self.rbParam.add_dummyInfo()
         self.rbParam.totalRows=p_spm.m
         self.rbParam.totalRbs = 0
@@ -188,6 +193,7 @@ class signature:
             l_rows = l_parSpm.m
             l_nnzs = l_parSpm.nnz
             l_nnzsPerCh = l_nnzs // self.channels
+            self.nnzPad += l_nnzs
             l_sId,l_eId = 0,0
             for c in range(self.channels):
                 if (c == self.channels-1) or (l_sId+l_nnzsPerCh >= l_parSpm.nnz):
@@ -293,6 +299,10 @@ class signature:
         self.update_rbParams(l_chParSpms)
         self.gen_nnzStore(l_chParSpms)
         del l_chParSpms
+        print("INFO: matrix {} parition done.".format(mtxName))
+        print("      Original m, n, nnzs = {}, {}, {}".format(self.m, self.n, self.nnz))
+        print("      After padding m, n, nnzs = {}, {}, {}".format(self.mPad, self.nPad, self.nnzPad))
+        print("      Padding overhead is {}".format((self.nnzPad-self.nnz)/self.nnz))
 
     def store_rbParam(self, fileName):
         self.rbParam.write_file(fileName)
@@ -302,6 +312,12 @@ class signature:
 
     def store_nnz(self, fileNames):
         self.nnzStore.write_file(fileNames)
+
+    def store_info(self, fileName):
+        of = open(fileName, 'wb')
+        int32Arr = [self.m,self.n,self.nnz,self.mPad,self.nPad,self.nnzPad]
+        np.array(int32Arr).astype(np.uint32).tofile(of)
+        of.close()
     
     def load_rbParam(self, fileName):
         self.rbParam.read_file(fileName)
@@ -311,6 +327,13 @@ class signature:
 
     def load_nnz(self, fileNames):
         self.nnzStore.read_file(fileNames)
+
+    def load_info(self, fileName):
+        fi = open(fileName, 'rb')
+        int32Arr = np.fromfile(fi, dtype=np.uint32)
+        self.m,self.n,self.nnz = int32Arr[0],int32Arr[1],int32Arr[2]
+        self.mPad,self.nPad,self.nnzPad = int32Arr[3],int32Arr[4],int32Arr[5]
+        fi.close()
 
     def create_spm(self):
         l_memBytes = self.memBits//8
