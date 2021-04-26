@@ -51,8 +51,8 @@ class row_block_param:
         self.int32Arr[1] = self.totalRbs
         self.buf.extend(self.int32Arr.tobytes())
 
-    def add_rbIdxInfo(self, p_minRowId, p_minColId, p_maxColId, p_numPars):
-        self.int32Arr[0:4] = [p_minRowId, p_minColId, p_maxColId, p_numPars]
+    def add_rbIdxInfo(self, p_minRowId, p_minColId, p_numCols, p_numPars):
+        self.int32Arr[0:4] = [p_minRowId, p_minColId, p_numCols, p_numPars]
         self.buf.extend(self.int32Arr.tobytes())
 
     def add_rbSizeInfo(self, p_numRows, p_numNnzs):
@@ -84,10 +84,10 @@ class row_block_param:
         l_infoArr = np.frombuffer(self.buf, dtype=np.uint32, count=l_size, offset=l_offset)
         return l_infoArr
     
-    def set_minMaxColId(self, p_rbId, p_minColId, p_maxColId):
+    def set_rbColInfo(self, p_rbId, p_minColId, p_numCols):
         l_offset = self.get_rb_offset(p_rbId)
         self.int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes // 4, offset=l_offset)
-        self.int32Arr[1:3] = [p_minColId, p_maxColId]
+        self.int32Arr[1:3] = [p_minColId, p_numCols]
         self.buf[l_offset : l_offset+self.memBytes] = self.int32Arr.tobytes()
 
     def set_numPars(self, p_rbId, p_numPars):
@@ -144,23 +144,6 @@ class row_block_param:
         self.totalRows = self.int32Arr[0]
         self.totalRbs = self.int32Arr[1]
         fi.close()
-
-class partition:
-    def __init__(self):
-        self.totalPars = 0
-        self.row = []
-        self.col = []
-        self.data = []
-        self.minColId = []
-        self.minRowId = []
-        self.rows = []
-        self.cols = []
-        self.nnzs = []
-        self.minChColId = []
-        self.minChRowId = []
-        self.chCols = []
-        self.chRows = []
-        self.chNnzs = []
 
 class par_param:
     def __init__(self, memBits, channels):
@@ -295,23 +278,38 @@ class nnz_store:
 
 class sparse_matrix:
     def __init__(self):
-        self.row,self.col,self.data = [],[],[]
         self.m,self.n,self.nnz = 0,0,0
+        self.minColId, self.minRowId = 0,0
         self.mtxName=""
     
     def read_matrix(self, mtxFullName, mtxName):
         mat = sio.mmread(mtxFullName)
         if sp.issparse(mat):
             mat.eliminate_zeros()
-            self.row = mat.row
-            self.col = mat.col
-            self.data = mat.data
+            self.row = mat.row.astype(np.uint32)
+            self.col = mat.col.astype(np.uint32)
+            self.data = mat.data.astype(np.float64)
             self.mtxName = mtxName
             self.m,self.n = mat.shape
             self.nnz = mat.nnz
+            self.minRowId = np.amin(self.row)
+            self.minColId = np.amin(self.col)
             return True
         else:
             return False
+
+    def create_matrix(self, p_row, p_col, p_data):
+        self.row = np.asarray(p_row).astype(np.uint32)
+        self.col = np.asarray(p_col).astype(np.uint32)
+        self.data = np.asarray(p_data).astype(np.float64)
+        self.minRowId = np.amin(self.row)
+        self.minColId = np.amin(self.col)
+        self.nnz = self.row.shape[0]
+        if self.nnz != 0:
+            self.m = np.amax(self.row)+1-self.minRowId
+            self.n = np.amax(self.col)+1-self.minColId
+        else:
+            self.m,self.n=0,0
 
     def sort_coo(self, p_order):
         if p_order =='r':

@@ -43,10 +43,8 @@ def partition_matrix(mtxName, mtxFullName, maxRows, maxCols, channels, parEntrie
 
     l_parParamFileName = mtxSigPath+'/parParam.dat'
     l_rbParamFileName = mtxSigPath+'/rbParam.dat'
-    l_spm = sparse_matrix()
-    l_spm.read_matrix(mtxFullName, mtxName)
     l_genPar = gen_partition(parEntries, accLatency, channels, maxRows, maxCols, memBits)
-    l_genPar.process(l_spm)
+    l_genPar.process(mtxFullName, mtxName)
     l_genPar.store_rbParam(l_rbParamFileName)
     l_genPar.store_parParam(l_parParamFileName)
     l_genPar.store_nnz(l_nnzFileNames)
