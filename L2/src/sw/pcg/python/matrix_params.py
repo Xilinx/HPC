@@ -289,6 +289,7 @@ class nnz_store:
     
     def write_file(self, filenames):
         for i in range(self.channels):
+            assert self.totalBks[i] == (self.totalRowIdxBks[i]+self.totalColIdxBks[i]+self.totalNnzBks[i])
             int32Arr = np.zeros(self.memBytes//4, dtype=np.uint32)
             int32Arr[0:4] = [self.totalBks[i], self.totalRowIdxBks[i], self.totalColIdxBks[i], self.totalNnzBks[i]]
             self.buf[i][:self.memBytes] = int32Arr.tobytes()
@@ -303,6 +304,7 @@ class nnz_store:
             self.buf[i] = fi.read()
             int32Arr = np.frombuffer(self.buf[i], dtype=np.uint32, count=self.memBytes//4, offset=0)
             [self.totalBks[i], self.totalRowIdxBks[i], self.totalColIdxBks[i], self.totalNnzBks[i]] = int32Arr[0:4]
+            assert self.totalBks[i] == (self.totalRowIdxBks[i]+self.totalColIdxBks[i]+self.totalNnzBks[i])
             fi.close()
 
 class sparse_matrix:

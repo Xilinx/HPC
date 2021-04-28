@@ -76,7 +76,7 @@ class signature:
                         self.rbParam.add_dummyInfo()
                     self.rbParam.totalRbs += 1
                     if l_eId < p_spm.nnz:
-                        l_minRowId = l_row[l_eId]
+                        l_minRowId = p_spm.row[l_eId]
                 l_sId = l_eId
         else:
             print("ERROR: cannot sort matrix along rows")
@@ -109,7 +109,7 @@ class signature:
                         l_sId = l_eId
                         l_rbPars += 1
                         if l_eId < l_rbSpm.nnz:
-                            l_minColId = l_col[l_eId]
+                            l_minColId = l_rbSpm.col[l_eId]
                 self.rbParam.set_numPars(i, l_rbPars)
                 l_totalPars += l_rbPars
             else:
@@ -152,7 +152,6 @@ class signature:
                 l_modId = (l_modId+1) % self.parEntries
             l_sId += l_cRowNnzs
            
-            l_modId = 0     
             while (l_rRowNnzs % (self.parEntries * self.accLatency) !=0):
                 l_row.append(l_rowId)
                 l_col.append(l_colIdBase+l_modId)
@@ -269,9 +268,6 @@ class signature:
                     self.nnzStore.totalRowIdxBks[c] += math.ceil(l_chParSpm.nnz/l_rowIdxMod)
                     self.nnzStore.totalColIdxBks[c] += math.ceil(l_chParSpm.nnz/l_colIdxMod)
                     self.nnzStore.totalNnzBks[c] += l_chParSpm.nnz // self.parEntries
-                    self.nnzStore.totalBks[c] += self.nnzStore.totalRowIdxBks[c]
-                    self.nnzStore.totalBks[c] += self.nnzStore.totalColIdxBks[c]
-                    self.nnzStore.totalBks[c] += self.nnzStore.totalNnzBks[c]
                     l_sChRbRowId = self.rbParam.get_chInfo16(rbId, 0)[c] + l_sRbRowId
                     l_sChParColId = self.parParam.get_chInfo16(l_parId, 0)[c] + l_sParColId
                     l_rowIdx = [0]*l_memIdxWidth
@@ -292,6 +288,9 @@ class signature:
                             l_nnz[j] = l_chParSpm.data[i+j]
                         self.nnzStore.add_nnzArr(c,l_nnz)
             l_sParId += l_pars
+
+        for c in range(self.channels):
+            self.nnzStore.totalBks[c] = self.nnzStore.totalRowIdxBks[c] + self.nnzStore.totalColIdxBks[c] + self.nnzStore.totalNnzBks[c]
 
     def process(self, mtxFullName, mtxName):
         l_spm = sparse_matrix()
@@ -364,7 +363,7 @@ class signature:
                     l_chColOff = self.parParam.get_chInfo16(l_parId,0)[c]
                     l_sChColId = l_sParColId + l_chColOff
                     l_chNnzs = self.parParam.get_chInfo32(l_parId,1)[c]
-                    [l_row,l_col,l_data,l_offset] = self.nnzStore.get_chPar(c, l_chOffset[c], l_chIdx[c], l_chNnzs, l_sChRowId, l_sChColId)
+                    [l_row,l_col,l_data,l_offset] = self.nnzStore.get_chPar(c, l_chOffset[c], 0, l_chNnzs, l_sChRowId, l_sChColId)
                     l_chOffset[c] = l_offset
                     l_chIdx[c] += l_chNnzs
                     for i in range(l_chNnzs):
