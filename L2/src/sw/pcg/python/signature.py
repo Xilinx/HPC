@@ -151,11 +151,13 @@ class signature:
                 l_rRowNnzs += 1
                 l_modId = (l_modId+1) % self.parEntries
             l_sId += l_cRowNnzs
-                
+           
+            l_modId = 0     
             while (l_rRowNnzs % (self.parEntries * self.accLatency) !=0):
                 l_row.append(l_rowId)
-                l_col.append(l_colIdBase)
+                l_col.append(l_colIdBase+l_modId)
                 l_data.append(0)
+                l_modId = (l_modId+1) % self.parEntries
                 l_rRowNnzs += 1
 
         l_paddedParSpm = sparse_matrix()
@@ -188,6 +190,7 @@ class signature:
         l_chNnzs = np.zeros(self.channels, dtype=np.uint32)
         for i in range(l_totalPars):
             l_parSpm = p_paddedParSpms[i]
+            assert l_parSpm.minColId % self.parEntries == 0
             l_baseParAddr = l_parSpm.minColId // self.parEntries
             l_colBks = math.ceil(l_parSpm.n / self.parEntries)
             l_rows = l_parSpm.m
@@ -207,6 +210,9 @@ class signature:
                 l_data= l_parSpm.data[l_sId:l_eId]
                 l_sId = l_eId
                 [l_m,l_n,l_nnz,l_minRowId,l_minColId] = self.add_spm(l_row, l_col, l_data, l_chParSpms[c])
+                assert l_minColId % self.parEntries == 0
+                assert l_n % self.parEntries == 0
+                assert l_nnz % (self.parEntries * self.accLatency) == 0
                 l_chBaseAddr[c] = (l_minColId // self.parEntries)-l_baseParAddr
                 l_chCols[c] = l_n
                 l_chNnzs[c] = l_nnz
@@ -217,6 +223,7 @@ class signature:
             self.parParam.add_chInfo16(l_chBaseAddr)
             self.parParam.add_chInfo16(np.asarray(l_chCols) // self.parEntries)
             self.parParam.add_dummyInfo()
+        self.parParam.totalPars = l_totalPars
         return l_chParSpms
 
     def update_rbParams(self, p_chParSpms):
@@ -259,8 +266,8 @@ class signature:
                 l_sParColId = self.parParam.get_parInfo(l_parId)[0]
                 for c in range(self.channels):
                     l_chParSpm = p_chParSpms[c][l_parId]
-                    self.nnzStore.totalRowIdxBks[c] += math.ceil(l_chParSpm.m//l_rowIdxMod)
-                    self.nnzStore.totalColIdxBks[c] += math.ceil(l_chParSpm.n//l_colIdxMod)
+                    self.nnzStore.totalRowIdxBks[c] += math.ceil(l_chParSpm.nnz/l_rowIdxMod)
+                    self.nnzStore.totalColIdxBks[c] += math.ceil(l_chParSpm.nnz/l_colIdxMod)
                     self.nnzStore.totalNnzBks[c] += l_chParSpm.nnz // self.parEntries
                     self.nnzStore.totalBks[c] += self.nnzStore.totalRowIdxBks[c]
                     self.nnzStore.totalBks[c] += self.nnzStore.totalColIdxBks[c]
@@ -337,6 +344,7 @@ class signature:
 
     def create_spm(self):
         l_memBytes = self.memBits//8
+        l_totalPars = 0
         l_totalRbs = self.rbParam.totalRbs
         l_row,l_col,l_data=[],[],[]
         l_sParId = 0;
@@ -365,6 +373,8 @@ class signature:
                             l_spmCol.append(l_col[i])
                             l_spmData.append(l_data[i])
             l_sParId += l_pars
+            l_totalPars += l_pars
+        assert l_totalPars == self.parParam.totalPars
         l_spm = sparse_matrix()
         l_spm.create_matrix(l_spmRow,l_spmCol,l_spmData)
         return l_spm
