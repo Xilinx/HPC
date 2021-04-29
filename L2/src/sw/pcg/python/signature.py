@@ -69,6 +69,7 @@ class signature:
                     l_col.extend(p_spm.col[l_sId:l_eId])
                     l_data.extend(p_spm.data[l_sId:l_eId])
                     [l_m,l_n,l_nnz,l_spmMinRowId,l_spmMinColId] = self.add_spm(l_row,l_col,l_data,l_rbSpms)
+                    assert l_m <= self.maxRows
                     l_sId = l_eId
                     self.rbParam.add_rbIdxInfo(l_spmMinRowId, l_spmMinColId, l_n, l_numPars)
                     self.rbParam.add_rbSizeInfo(l_m, l_nnz)
@@ -93,7 +94,7 @@ class signature:
             assert l_rbSpm.m <= self.maxRows, "num of rows in rb > maxRows"
             l_rbPars = 0
             if l_rbSpm.sort_coo('c'):
-                l_minColId = l_rbSpm.minColId 
+                l_minColId = (l_rbSpm.minColId//self.parEntries) * self.parEntries
                 l_sId,l_eId = 0,0
                 while l_eId < l_rbSpm.nnz:
                     l_row,l_col,l_data=[],[],[]
@@ -106,10 +107,12 @@ class signature:
                         l_col.extend(l_rbSpm.col[l_sId:l_eId])
                         l_data.extend(l_rbSpm.data[l_sId:l_eId])
                         [l_m,l_n,l_nnz,l_spmMinRowId,l_spmMinColId] = self.add_spm(l_row,l_col,l_data,l_parSpms)
+                        assert l_m <= self.maxRows
+                        assert l_n <= self.maxCols
                         l_sId = l_eId
                         l_rbPars += 1
                         if l_eId < l_rbSpm.nnz:
-                            l_minColId = l_rbSpm.col[l_eId]
+                            l_minColId = (l_rbSpm.col[l_eId]//self.parEntries)*self.parEntries
                 self.rbParam.set_numPars(i, l_rbPars)
                 l_totalPars += l_rbPars
             else:
@@ -184,9 +187,6 @@ class signature:
         for c in range(self.channels):
             l_chParSpms.append([]) 
         l_totalPars = len(p_paddedParSpms) 
-        l_chBaseAddr = np.zeros(self.channels, dtype=np.uint32)
-        l_chCols = np.zeros(self.channels, dtype=np.uint32)
-        l_chNnzs = np.zeros(self.channels, dtype=np.uint32)
         for i in range(l_totalPars):
             l_parSpm = p_paddedParSpms[i]
             assert l_parSpm.minColId % self.parEntries == 0
@@ -197,6 +197,9 @@ class signature:
             l_nnzsPerCh = l_nnzs // self.channels
             self.nnzPad += l_nnzs
             l_sId,l_eId = 0,0
+            l_chBaseAddr = np.zeros(self.channels, dtype=np.uint32)
+            l_chCols = np.zeros(self.channels, dtype=np.uint32)
+            l_chNnzs = np.zeros(self.channels, dtype=np.uint32)
             for c in range(self.channels):
                 if (c == self.channels-1) or (l_sId+l_nnzsPerCh >= l_parSpm.nnz):
                     l_eId = l_parSpm.nnz
@@ -209,6 +212,8 @@ class signature:
                 l_data= l_parSpm.data[l_sId:l_eId]
                 l_sId = l_eId
                 [l_m,l_n,l_nnz,l_minRowId,l_minColId] = self.add_spm(l_row, l_col, l_data, l_chParSpms[c])
+                assert l_m <= self.maxRows
+                assert l_n <= self.maxCols
                 assert l_minColId % self.parEntries == 0
                 assert l_n % self.parEntries == 0
                 assert l_nnz % (self.parEntries * self.accLatency) == 0
@@ -235,14 +240,18 @@ class signature:
             l_chRbNnzs = [0] * self.channels
             for c in range(self.channels):
                 l_minRowId = p_chParSpms[c][l_sRbParId].minRowId
+                l_endRowId = l_minRowId + p_chParSpms[c][l_sRbParId].m
                 for parId in range(l_rbNumPars):
                     l_parId = l_sRbParId+parId
                     l_chParSpm = p_chParSpms[c][l_parId]
                     if l_minRowId > l_chParSpm.minRowId:
                         l_minRowId = l_chParSpm.minRowId
-                    l_chRbRows[c] = l_chRbRows[c] + l_chParSpm.m
+                    if l_endRowId < l_chParSpm.minRowId + l_chParSpm.m:
+                        l_endRowId = l_chParSpm.minRowId + l_chParSpm.m
                     l_chRbNnzs[c] = l_chRbNnzs[c] + l_chParSpm.nnz
                 l_chRbMinRowId.append(l_minRowId-l_sRbRowId)
+                l_chRbRows[c] = l_endRowId - l_minRowId
+                assert l_chRbRows[c] <= self.maxRows
             self.rbParam.set_numNnzs(rbId, sum(l_chRbNnzs))
             self.rbParam.set_chInfo16(rbId, 0, l_chRbMinRowId)
             self.rbParam.set_chInfo16(rbId, 1, l_chRbRows)
@@ -340,6 +349,9 @@ class signature:
         self.m,self.n,self.nnz = int32Arr[0],int32Arr[1],int32Arr[2]
         self.mPad,self.nPad,self.nnzPad = int32Arr[3],int32Arr[4],int32Arr[5]
         fi.close()
+
+    def print_rbParam(self, fileName):
+        self.rbParam.print_file(fileName)
 
     def create_spm(self):
         l_memBytes = self.memBits//8
