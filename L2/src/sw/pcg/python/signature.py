@@ -174,6 +174,7 @@ class signature:
             l_parSpm = l_parSpms[i]
             if l_parSpm.sort('r'):
                 l_paddedSpm = self.pad_par(l_parSpm)
+                assert l_paddedSpm.m <= self.maxRows
                 assert l_paddedSpm.n <= self.maxCols,"num of cols > maxCols in partition"
                 l_paddedParSpms.append(l_paddedSpm)
             else:
@@ -239,18 +240,21 @@ class signature:
             l_chRbRows = [0] * self.channels
             l_chRbNnzs = [0] * self.channels
             for c in range(self.channels):
-                l_minRowId = p_chParSpms[c][l_sRbParId].minRowId
-                l_endRowId = l_minRowId + p_chParSpms[c][l_sRbParId].m
+                l_minRowId = l_sRbRowId 
+                l_endRowId = l_sRbRowId
                 for parId in range(l_rbNumPars):
                     l_parId = l_sRbParId+parId
                     l_chParSpm = p_chParSpms[c][l_parId]
-                    if l_minRowId > l_chParSpm.minRowId:
+                    if (l_minRowId > l_chParSpm.minRowId) and (l_chParSpm.nnz != 0):
                         l_minRowId = l_chParSpm.minRowId
                     if l_endRowId < l_chParSpm.minRowId + l_chParSpm.m:
                         l_endRowId = l_chParSpm.minRowId + l_chParSpm.m
                     l_chRbNnzs[c] = l_chRbNnzs[c] + l_chParSpm.nnz
                 l_chRbMinRowId.append(l_minRowId-l_sRbRowId)
                 l_chRbRows[c] = l_endRowId - l_minRowId
+                if (l_chRbRows[c] > self.maxRows):
+                    print("rbId={}, channel={}, rbNumPars={}, l_sRbParId={}, l_parId={}\n".format(rbId,c,l_rbNumPars,l_sRbParId,l_parId))
+                    print("l_endRowId = {}, l_minRowId = {}\n".format(l_endRowId, l_minRowId))
                 assert l_chRbRows[c] <= self.maxRows
             self.rbParam.set_numNnzs(rbId, sum(l_chRbNnzs))
             self.rbParam.set_chInfo16(rbId, 0, l_chRbMinRowId)
