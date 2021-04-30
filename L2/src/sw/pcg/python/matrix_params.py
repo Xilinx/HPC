@@ -141,6 +141,24 @@ class row_block_param:
         self.totalRbs = int32Arr[1]
         fi.close()
 
+    def print_file(self, fileName):
+        fo = open(fileName, "w")
+        fo.write("Total rows and rbs are: {}, {}\n".format(self.totalRows, self.totalRbs))
+        for i in range(self.totalRbs):
+            fo.write("Rb {} info:\n".format(i))
+            l_offset = self.memBytes + i*8*self.memBytes
+            int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes//4, offset=l_offset)
+            fo.write("  startRowId={}\n".format(int32Arr[0]))
+            int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes//4, offset=l_offset+self.memBytes)
+            fo.write("  rows={}\n".format(int32Arr[0]))
+            chInt16Arr=np.frombuffer(self.buf, dtype=np.uint16, count=self.channels, offset=l_offset+2*self.memBytes)
+            fo.write("  startRowId for channel 0-15: {}\n".format(chInt16Arr))
+            chInt16Arr=np.frombuffer(self.buf, dtype=np.uint16, count=self.channels, offset=l_offset+3*self.memBytes)
+            fo.write("  rows in channel 0-15: {}\n".format(chInt16Arr))
+            chInt32Arr=np.frombuffer(self.buf, dtype=np.uint32, count=self.channels, offset=l_offset+4*self.memBytes)
+            fo.write("  nnzs in channel 0-15: {}\n".format(chInt32Arr))
+        fo.close()
+
 class par_param:
     def __init__(self, memBits, channels):
         self.memBytes = memBits//8
@@ -333,13 +351,15 @@ class sparse_matrix:
         self.row = np.asarray(p_row).astype(np.uint32)
         self.col = np.asarray(p_col).astype(np.uint32)
         self.data = np.asarray(p_data).astype(np.float64)
-        self.minRowId = np.amin(self.row)
-        self.minColId = np.amin(self.col)
         self.nnz = self.row.shape[0]
         if self.nnz != 0:
+            self.minRowId = np.amin(self.row)
+            self.minColId = np.amin(self.col)
             self.m = np.amax(self.row)+1-self.minRowId
             self.n = np.amax(self.col)+1-self.minColId
         else:
+            self.minRowId = 0 
+            self.minColId = 0
             self.m,self.n=0,0
 
     def sort_coo(self, p_order):
