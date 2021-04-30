@@ -15,7 +15,6 @@
             "v++": {
                 "compiler": {
                     "cflags": [
-                        "--config hls.cfg"
                     ]
                 }
             },
@@ -59,9 +58,10 @@
                 "HW_CLK=3e-9",
                 "HPC_instrBytes=64",
                 "HPC_dataType=float", 
-                "HPC_numChannels=10",
+                "HPC_numChannels=4",
                 "HPC_vecChannels=2",
-                "HPC_maxInstrs=50",
+                "HPC_maxInstrs=5",
+                "HPC_numActFuncs=4",
                 "HPC_parEntries=8"
             ], 
             "options": "-O3"
@@ -72,10 +72,11 @@
             "symbols": [
                 "HPC_instrBytes=64",
                 "HPC_dataType=float", 
-                "HPC_maxInstrs=50",
+                "HPC_maxInstrs=5",
+                "HPC_maxVecSize=1024",
+                "HPC_bufferSize=16384",
+                "HPC_numChannels=4",
                 "HPC_numActFuncs=1",
-                "HPC_maxVecSize=4096",
-                "HPC_numChannels=10",
                 "HPC_vecChannels=2",
                 "HPC_parEntries=8"
             ], 

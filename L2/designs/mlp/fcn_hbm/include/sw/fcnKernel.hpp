@@ -38,7 +38,7 @@ double fcn(FPGA* fpga,
 
     fcnInstr.setOutVecSize(p_m);
     fcnInstr.setInVecSize(p_n);
-    fcnInstr.setBatch(p_batch);
+    fcnInstr.setBatch(p_batch / HPC_vecChannels);
     fcnInstr.setActivation(xf::hpc::mlp::ActFunc_t::SIGMOID);
     fcnInstr.template store<uint8_t>(h_instr.data());
     FcnKernel<T, t_NumChannels, t_VecChannels> fcn(p_batch, p_m, p_n, fpga);
@@ -61,7 +61,7 @@ double fcn(FPGA* fpga,
             // cout << "HW measured cc: " << l_clock << endl;
             cout << "HW efficiency: "
                  << 100.0 * fcnInstr.getOutVecSize() * fcnInstr.getInVecSize() * fcnInstr.getBatch() / HPC_parEntries /
-                        t_NumChannels / t_VecChannels / l_clock
+                        t_NumChannels / l_clock
                  << "%." << endl;
         }
     }
