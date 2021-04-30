@@ -122,16 +122,19 @@ def decode_mtx_sig(mtxSigPath, maxRows, maxCols, channels, parEntries, accLatenc
     l_sig = signature(parEntries, accLatency, channels, maxRows, maxCols, memBits)
     l_sig.load_rbParam(l_rbParamFileName)
     l_sig.print_rbParam(l_rbParamTxtFileName)
-    #l_sig.load_parParam(l_parParamFileName)
-    #l_sig.load_nnz(l_nnzFileNames)
-    #l_sig.load_info(l_infoFileName)
+    l_sig.load_parParam(l_parParamFileName)
+    l_sig.print_parParam(l_parParamTxtFileName)
+    l_sig.load_nnz(l_nnzFileNames)
+    l_sig.print_nnz(l_nnzTxtFileNames)
+    l_sig.load_info(l_infoFileName)
+    l_sig.print_info(l_infoTxtFileName)
 
 def main(args):
     if (args.usage):
         print('Usage example:')
         print('python gen_signature.py --partition [--clean] --mtx_list ./test_matrices.txt --sig_path ./sig_dat')
         print('python gen_signature.py --check  --mtx_list ./test_matrices.txt --sig_path ./sig_dat')
-        print('python gen_signature.py --decode --mtx_path ./sig_dat/mtx_name  --txt_path ./txt_out')
+        print('python gen_signature.py --decode --mtx_path ./sig_dat/mtx_name  --txt_path ./txt_out/mtx_name')
     elif (args.decode):
         decode_mtx_sig(args.mtx_path, args.max_rows, args.max_cols, args.channels, args.par_entries,args.acc_latency, args.mem_bits, args.txt_path)
     else:
