@@ -357,6 +357,18 @@ class signature:
     def print_rbParam(self, fileName):
         self.rbParam.print_file(fileName)
 
+    def print_parParam(self, fileName):
+        self.parParam.print_file(fileName)
+
+    def print_nnz(self, fileNames):
+        self.nnzStore.print_file(fileNames)
+
+    def print_info(self, fileName):
+        fo = open(fileName, 'w')
+        fo.write("Original m, n, nnzs: {}, {}, {}\n".format(self.m, self.n, self.nnz))
+        fo.write("Padded m, n, nnzs: {}, {}, {}\n".format(self.mPad, self.nPad, self.nnzPad))
+        fo.close()
+
     def create_spm(self):
         l_memBytes = self.memBits//8
         l_totalPars = 0

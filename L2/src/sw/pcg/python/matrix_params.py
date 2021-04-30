@@ -249,6 +249,24 @@ class par_param:
         self.totalPars = int32Arr[0]
         fi.close()
 
+    def print_file(self, filename):
+        fo = open(filename, "w")
+        fo.write("Total num of partitions: {}\n".format(self.totalPars))
+        for i in range(self.totalPars):
+            fo.write("Partition {}:\n".format(i))
+            l_offset = self.memBytes + i*8*self.memBytes
+            chInt32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.channels, offset=l_offset)
+            fo.write("  num of cols in {} channels: {}\n".format(self.channels, chInt32Arr))
+            chInt32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.channels, offset=l_offset+2*self.memBytes)
+            fo.write("  num of nnzs in {} channels: {}\n".format(self.channels, chInt32Arr))
+            int32Arr = np.frombuffer(self.buf, dtype=np.uint32, count=self.memBytes//4, offset=l_offset+4*self.memBytes)
+            fo.write("  min colBkId: {}\n".format(int32Arr[0]))
+            chInt16Arr = np.frombuffer(self.buf, dtype=np.uint16, count=self.channels, offset=l_offset+5*self.memBytes)
+            fo.write("  min colBkId offset for {} channels: {}\n".format(self.channels, chInt16Arr))
+            chInt16Arr = np.frombuffer(self.buf, dtype=np.uint16, count=self.channels, offset=l_offset+6*self.memBytes)
+            fo.write("  number of colBks for {} channels: {}\n".format(self.channels, chInt16Arr))
+        fo.close()
+ 
 class nnz_store:
     def __init__(self, memBits, parEntries, accLatency, channels):
         self.memBytes = memBits // 8
@@ -324,6 +342,29 @@ class nnz_store:
             [self.totalBks[i], self.totalRowIdxBks[i], self.totalColIdxBks[i], self.totalNnzBks[i]] = int32Arr[0:4]
             assert self.totalBks[i] == (self.totalRowIdxBks[i]+self.totalColIdxBks[i]+self.totalNnzBks[i])
             fi.close()
+
+    def print_file(self, filenames):
+        l_rowIdxMod = self.accLatency * (self.memBytes//2)
+        l_colIdxMod = self.memBytes//2
+        for i in range(self.channels):
+            fo = open(filenames[i], "w")
+            fo.write("Total Bks, RowIdxBks, ColIdxBks, NNzBks: {}, {}, {}, {}\n".format(self.totalBks[i], self.totalRowIdxBks[i], self.totalColIdxBks[i], self.totalNnzBks[i]))
+            bk = 0
+            l_offset = self.memBytes
+            while bk < self.totalNnzBks[i]:
+                if bk % l_rowIdxMod == 0:
+                    chInt16Arr = np.frombuffer(self.buf[i], dtype=np.uint16, count=self.memBytes//2, offset=l_offset)
+                    fo.write("Row Idx for {} channels: {}\n".format(self.channels, chInt16Arr))
+                    l_offset += self.memBytes
+                if bk % l_rowIdxMod == 0:
+                    chInt16Arr = np.frombuffer(self.buf[i], dtype=np.uint16, count=self.memBytes//2, offset=l_offset)
+                    fo.write("Col Idx for {} channels: {}\n".format(self.channels, chInt16Arr))
+                    l_offset += self.memBytes
+                float64Arr = np.frombuffer(self.buf[i], dtype=np.float64, count=self.parEntries, offset=l_offset)
+                fo.write("NNZ val for BK {}: {}\n".format(bk, float64Arr))
+                l_offset += self.memBytes
+                bk += 1
+            fo.close()
 
 class sparse_matrix:
     def __init__(self):
