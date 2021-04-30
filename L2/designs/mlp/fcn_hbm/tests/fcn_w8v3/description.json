@@ -41,12 +41,12 @@
         "host_exe": "host.exe", 
         "compiler": {
             "sources": [
-                "LIB_DIR/L2/mlp/src/sw/fcnTest.cpp", 
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/src/sw/fcnTest.cpp", 
                 "LIB_DIR/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp"
             ], 
             "includepaths": [
-                "LIB_DIR/L2/mlp/include/", 
-                "LIB_DIR/L2/mlp/include/sw/", 
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/", 
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/sw/", 
                 "LIB_DIR/../Vitis_Libraries/blas/../hpc/L2/include/", 
                 "LIB_DIR/../Vitis_Libraries/blas/../hpc/L2/include/common", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/", 
@@ -80,8 +80,8 @@
                 "HPC_parEntries=8"
             ], 
             "includepaths": [
-                "LIB_DIR/L2/mlp/include/", 
-                "LIB_DIR/L2/mlp/include/hw/", 
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/", 
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/hw/", 
                 "LIB_DIR/../Vitis_Libraries/blas/../hpc/L2/include/common", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/hw/", 
@@ -99,7 +99,7 @@
             "accelerators": [
                 {
                     "name": "krnl_fcn", 
-                    "location": "LIB_DIR/L2/mlp/src/hw/fcnKernel.cpp", 
+                    "location": "LIB_DIR/L2/designs/mlp/fcn_hbm/src/hw/fcnKernel.cpp", 
                     "frequency": 300
                 }
             ]
