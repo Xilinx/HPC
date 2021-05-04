@@ -9,13 +9,15 @@
 #### File Structure
 
 ```
-.
-+-- HPC
-|   +-- L2
-|       +-- designs
-+-- Vitis_Libraries
-|   +-- blas
-|   +-- hpc
+root
+  ├── HPC
+  |   └── L2
+  |       └── designs
+  |
+  └── Vitis_Libraries
+      ├── blas
+      └── hpc
+
 ```
 
 ### Tests
