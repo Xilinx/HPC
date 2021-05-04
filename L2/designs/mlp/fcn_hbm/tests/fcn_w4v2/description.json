@@ -88,6 +88,7 @@
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/hw/", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/hw/xf_blas", 
+                "LIB_DIR/../Vitis_Libraries/hpc/L1/include/",
                 "LIB_DIR/../Vitis_Libraries/hpc/L1/include/hw",
                 "LIB_DIR/../Vitis_Libraries/hpc/L2/include/hw"
             ]

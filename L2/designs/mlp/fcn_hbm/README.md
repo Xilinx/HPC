@@ -1,14 +1,28 @@
 # MLP Implementation
 
-## How to Run
+## Usage
 
-### Emulation
+### Dependency
+
+[**Vitis_Libraries**](https://gitenterprise.xilinx.com/FaaSApps/Vitis_Libraries)
+
+
+### Tests
+
+
+#### Emulation
 
 ```
 make run TARGET=sw_emu/hw_emu p_in=32 p_out=32 p_batch=200
 ```
 
-### Hardware
+#### Build Hardware
+
+```
+make build TARGET=hw
+```
+
+#### Run on Hardware
 
 ```
 make run TARGET=hw p_in=32 p_out=32 p_batch=200

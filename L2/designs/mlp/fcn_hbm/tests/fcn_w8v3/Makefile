@@ -125,6 +125,7 @@ VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/../hpc/L2/include/common
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/hw/
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/hw/xf_blas
+VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L1/include/
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L1/include/hw
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/hw
 
