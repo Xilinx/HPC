@@ -15,9 +15,9 @@
 #
 
 pyGenMat=${XFLIB_DIR}/L2/designs/mlp/fcn_hbm/src/sw/python/genFcn.py
-inSize = 352
-outSize = 32
-batch = 21
+inSize = 64
+outSize = 64
+batch = 200
 HPC_deviceId = 0
 HPC_dataType = float
 HPC_activation = sigmoid
