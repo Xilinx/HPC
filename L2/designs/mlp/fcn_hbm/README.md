@@ -1,4 +1,4 @@
-# MLP Implementation
+# MLP Design on HBM Devices
 
 ## Usage
 
@@ -6,6 +6,14 @@
 
 [**Vitis_Libraries**](https://gitenterprise.xilinx.com/FaaSApps/Vitis_Libraries)
 
+#### File Structure
+.
++-- HPC
+|   +-- L2
+|       +-- designs
++-- Vitis_Libraries
+|   +-- blas
+|   +-- hpc
 
 ### Tests
 
