@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-pyGenMat=${XFLIB_DIR}/L2/mlp/src/sw/python/genFcn.py
+pyGenMat=${XFLIB_DIR}/L2/designs/mlp/fcn_hbm/src/sw/python/genFcn.py
 inSize = 352
 outSize = 32
 batch = 21
