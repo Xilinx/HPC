@@ -15,16 +15,16 @@
 #
 
 pyGenMat=${XFLIB_DIR}/L2/mlp/src/sw/python/genFcn.py
-p_n = 32
-p_m = 8
-p_b = 200
+inSize = 32
+outSize = 8
+batch = 200
 HPC_deviceId = 0
 HPC_dataType = float
 HPC_activation = sigmoid
 
-dataDir = ./$(BUILD_DIR)/data_${p_b}_${p_m}_${p_n}/
-HOST_ARGS += $(p_b) $(p_m) $(p_n) $(dataDir) ${HPC_deviceId}
+dataDir = ./$(BUILD_DIR)/data_${batch}_${outSize}_${inSize}/
+HOST_ARGS += $(batch) $(outSize) $(inSize) $(dataDir) ${HPC_deviceId}
 
 data_gen:
 	mkdir -p ${dataDir} 
-	python3 ${pyGenMat} --p_b $(p_b) --p_m $(p_m) --p_n $(p_n) --path ${dataDir} --datatype ${HPC_dataType} --act ${HPC_activation}
+	python3 ${pyGenMat} --batch $(batch) --outSize $(outSize) --inSize $(inSize) --path ${dataDir} --datatype ${HPC_dataType} --act ${HPC_activation}

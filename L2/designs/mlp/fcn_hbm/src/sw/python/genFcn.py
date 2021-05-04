@@ -42,9 +42,10 @@ def main(args):
     else:
         sys.exit("Wrong data type received.")
 
-    W = 2 * np.random.random((args.p_m, args.p_n)).astype(dtype=dtype) - 1
-    x = np.random.random((args.p_b, args.p_n)).astype(dtype=dtype) * 2 - 1
-    b = np.random.random(args.p_m).astype(dtype=dtype) * 2 - 1
+    W = 2 * np.random.random((args.outSize, args.inSize)
+                             ).astype(dtype=dtype) - 1
+    x = np.random.random((args.batch, args.inSize)).astype(dtype=dtype) * 2 - 1
+    b = np.random.random(args.outSize).astype(dtype=dtype) * 2 - 1
     start = time.time_ns()
 
     y = x @ W.transpose() + b
@@ -73,17 +74,17 @@ if __name__ == "__main__":
         default='sigmoid',
         help='Activation function')
     parser.add_argument(
-        '--p_b',
+        '--batch',
         type=int,
         default=2,
         help='Input batch')
     parser.add_argument(
-        '--p_m',
+        '--outSize',
         type=int,
         default=32,
         help='Output vector dim')
     parser.add_argument(
-        '--p_n',
+        '--inSize',
         type=int,
         default=32,
         help='Input vector dim')

@@ -120,6 +120,7 @@ VPP_FLAGS += --hls.jobs 8
 VPP_LDFLAGS += --vivado.synth.jobs 8 --vivado.impl.jobs 8
 VPP_FLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/
 VPP_FLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/hw/
+VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/../hpc/L1/include/hw/mlp/
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/../hpc/L2/include/common
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/hw/

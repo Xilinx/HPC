@@ -17,12 +17,62 @@
 #include "xf_blas.hpp"
 #include "streamOps.hpp"
 #include "activations.hpp"
+#include "fcnInstr.hpp"
 #ifndef XF_HPC_KERNEL_GEMV_HPP
 #define XF_HPC_KERNEL_GEMV_HPP
 
 namespace xf {
 namespace hpc {
 namespace mlp {
+
+template <typename t_DataType,
+          unsigned int t_ParEntries,
+          typename T0 = typename xf::blas::WideType<t_DataType, t_ParEntries>::t_TypeInt>
+void streamActivation(const unsigned int p_n, hls::stream<T0>& p_in, hls::stream<T0>& p_out, const ActFunc_t p_act) {
+    switch (p_act) {
+        case ActFunc_t::RELU:
+            for (int i = 0; i < p_n; i++) {
+#pragma HLS PIPELINE
+                xf::blas::WideType<t_DataType, t_ParEntries> r = p_in.read();
+                xf::blas::WideType<t_DataType, t_ParEntries> o;
+                for (int j = 0; j < t_ParEntries; j++) {
+                    o[j] = relu(r[j]);
+                }
+                p_out.write(o);
+            }
+            break;
+        case ActFunc_t::SIGMOID:
+            for (int i = 0; i < p_n; i++) {
+#pragma HLS PIPELINE
+                xf::blas::WideType<t_DataType, t_ParEntries> r = p_in.read();
+                xf::blas::WideType<t_DataType, t_ParEntries> o;
+                for (int j = 0; j < t_ParEntries; j++) {
+                    o[j] = sigmoid(r[j]);
+                }
+                p_out.write(o);
+            }
+            break;
+        /*
+    case ActFunc_t::TANSIG:
+        for (int i = 0; i < p_n; i++) {
+#pragma HLS PIPELINE
+            xf::blas::WideType<t_DataType, t_ParEntries> r = p_in.read();
+            xf::blas::WideType<t_DataType, t_ParEntries> o;
+            for (int j = 0; j < t_ParEntries; j++) {
+                o[j] = tansig(r[j]);
+            }
+            p_out.write(o);
+        }
+        break;
+        */
+        default:
+            for (int i = 0; i < p_n; i++) {
+#pragma HLS PIPELINE
+                p_out.write(p_in.read());
+            }
+            break;
+    }
+}
 
 template <typename t_DataType,
           int t_ParEntries,

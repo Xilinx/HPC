@@ -82,6 +82,7 @@
             "includepaths": [
                 "LIB_DIR/L2/designs/mlp/fcn_hbm/include/", 
                 "LIB_DIR/L2/designs/mlp/fcn_hbm/include/hw/", 
+                "LIB_DIR/../Vitis_Libraries/blas/../hpc/L1/include/hw/mlp/", 
                 "LIB_DIR/../Vitis_Libraries/blas/../hpc/L2/include/common", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/hw/", 
