@@ -77,12 +77,12 @@ export XCL_BINDIR = $(XCLBIN_DIR)
 
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
-HOST_SRCS += $(XFLIB_DIR)/L2/mlp/src/sw/fcnTest.cpp
+HOST_SRCS += $(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/src/sw/fcnTest.cpp
 HOST_SRCS += $(XFLIB_DIR)/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp
 
-CXXFLAGS += -DHW_CLK=3e-9 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=24 -DHPC_vecChannels=1 -DHPC_maxInstrs=50 -DHPC_parEntries=8
-CXXFLAGS += -I$(XFLIB_DIR)/L2/mlp/include/
-CXXFLAGS += -I$(XFLIB_DIR)/L2/mlp/include/sw/
+CXXFLAGS += -DHW_CLK=3e-9 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=4 -DHPC_vecChannels=2 -DHPC_maxInstrs=5 -DHPC_numActFuncs=4 -DHPC_parEntries=8
+CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/
+CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/sw/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/../hpc/L2/include/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/../hpc/L2/include/common
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/
@@ -118,12 +118,8 @@ HOST_ARGS := $(BUILD_DIR)/mlp.xclbin
 VPP_FLAGS += -t $(TARGET) --platform $(XPLATFORM) --save-temps --optimize 2
 VPP_FLAGS += --hls.jobs 8
 VPP_LDFLAGS += --vivado.synth.jobs 8 --vivado.impl.jobs 8
-ifneq (,$(shell echo $(XPLATFORM) | awk '/u50/'))
-VPP_FLAGS += --config hls.cfg
-endif
-
-VPP_FLAGS += -I$(XFLIB_DIR)/L2/mlp/include/
-VPP_FLAGS += -I$(XFLIB_DIR)/L2/mlp/include/hw/
+VPP_FLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/
+VPP_FLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/hw/
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/../hpc/L2/include/common
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/hw/
@@ -134,7 +130,7 @@ VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/hw
 krnl_fcn_VPP_FLAGS += --hls.clock 333000000:krnl_fcn
 VPP_LDFLAGS_mlp += --kernel_frequency 333
 
-VPP_FLAGS += -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_maxInstrs=50 -DHPC_numActFuncs=1 -DHPC_maxVecSize=4096 -DHPC_numChannels=24 -DHPC_vecChannels=1 -DHPC_parEntries=8 
+VPP_FLAGS += -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_maxInstrs=5 -DHPC_maxVecSize=1024 -DHPC_bufferSize=16384 -DHPC_numChannels=4 -DHPC_numActFuncs=1 -DHPC_vecChannels=2 -DHPC_parEntries=8 
 
 # Kernel linker flags
 VPP_LDFLAGS_mlp_temp := --config $(CUR_DIR)/opts.cfg
@@ -165,7 +161,7 @@ xclbin: check_vpp check_sysroot $(BINARY_CONTAINERS)
 build: xclbin
 
 # ################ Setting Rules for Binary Containers (Building Kernels) ################
-$(TEMP_DIR)/krnl_fcn.xo: $(XFLIB_DIR)/L2/mlp/src/hw/fcnKernel.cpp
+$(TEMP_DIR)/krnl_fcn.xo: $(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/src/hw/fcnKernel.cpp
 	$(ECHO) "Compiling Kernel: krnl_fcn"
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(krnl_fcn_VPP_FLAGS) $(VPP_FLAGS) -k krnl_fcn -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'

@@ -26,41 +26,38 @@ class DoubleBuffer : public Buffer<t_DataType, t_BufferSize> {
     typedef hls::stream<t_DataType> DdrStream;
     typedef Buffer<t_DataType, t_BufferSize> t_BufferType;
 
-    static void writeMem(unsigned int p_n,
-                         hls::stream<t_DataType>& p_str,
-                         t_DataType* p_mem,
-                         unsigned int p_batch = 1) {
+    void writeMem(unsigned int p_n, hls::stream<t_DataType>& p_str, t_DataType* p_mem, unsigned int p_batch = 1) {
 #pragma HLS DATAFLOW
         hls::stream<t_DataType> l_str;
         process(p_str, l_str, p_n, 1, p_batch);
         xf::blas::stream2mem(p_n, l_str, p_mem, p_batch);
     }
 
-    static void readMem(unsigned int p_n,
-                        t_DataType* p_mem,
-                        hls::stream<t_DataType>& p_str,
-                        unsigned int p_reuse = 1,
-                        unsigned int p_batch = 1) {
+    void readMem(unsigned int p_n,
+                 t_DataType* p_mem,
+                 hls::stream<t_DataType>& p_str,
+                 unsigned int p_reuse = 1,
+                 unsigned int p_batch = 1) {
 #pragma HLS DATAFLOW
         hls::stream<t_DataType> l_str;
         xf::blas::mem2stream(p_n, p_mem, l_str, p_n > t_BufferSize ? p_reuse : 1, p_batch);
         process(l_str, p_str, p_n, p_reuse, p_batch);
     }
 
-    static void process(DdrStream& p_streamIn,
-                        DdrStream& p_streamOut,
-                        unsigned int p_n,
-                        unsigned int p_reuseNum = 1,
-                        unsigned int p_batch = 1) {
+    void process(DdrStream& p_streamIn,
+                 DdrStream& p_streamOut,
+                 unsigned int p_n,
+                 unsigned int p_reuseNum = 1,
+                 unsigned int p_batch = 1) {
         DdrStream p_s0_0, p_s0_1, p_s1_0, p_s1_1;
 #pragma HLS DATAFLOW
         split(p_n, p_batch, p_streamIn, p_s0_0, p_s0_1);
-        t_BufferType::buffer(p_n, (p_batch / 2) + (p_batch % 2), p_s0_0, p_s1_0, p_reuseNum);
-        t_BufferType::buffer(p_n, (p_batch / 2), p_s0_1, p_s1_1, p_reuseNum);
+        buffer_0.buffer(p_n, (p_batch / 2) + (p_batch % 2), p_s0_0, p_s1_0, p_reuseNum);
+        buffer_1.buffer(p_n, (p_batch / 2), p_s0_1, p_s1_1, p_reuseNum);
         merge(p_n, p_batch, p_s1_0, p_s1_1, p_streamOut, p_reuseNum);
     }
 
-    static void split(unsigned int p_n, unsigned int p_batch, DdrStream& p_in, DdrStream& p_out1, DdrStream& p_out2) {
+    void split(unsigned int p_n, unsigned int p_batch, DdrStream& p_in, DdrStream& p_out1, DdrStream& p_out2) {
         for (int i = 0; i < p_batch; ++i) {
             for (int j = 0; j < p_n; ++j) {
 #pragma HLS PIPELINE
@@ -74,12 +71,12 @@ class DoubleBuffer : public Buffer<t_DataType, t_BufferSize> {
         }
     }
 
-    static void merge(unsigned int p_n,
-                      unsigned int p_batch,
-                      DdrStream& p_in1,
-                      DdrStream& p_in2,
-                      DdrStream& p_out,
-                      unsigned int p_reuseNum) {
+    void merge(unsigned int p_n,
+               unsigned int p_batch,
+               DdrStream& p_in1,
+               DdrStream& p_in2,
+               DdrStream& p_out,
+               unsigned int p_reuseNum) {
         for (int i = 0; i < p_batch; ++i) {
             for (int r = 0; r < p_reuseNum; ++r) {
                 for (int j = 0; j < p_n; ++j) {
@@ -95,6 +92,9 @@ class DoubleBuffer : public Buffer<t_DataType, t_BufferSize> {
             }
         }
     }
+
+   private:
+    t_BufferType buffer_0, buffer_1;
 };
 }
 }

@@ -15,7 +15,6 @@
             "v++": {
                 "compiler": {
                     "cflags": [
-                        "--config hls.cfg"
                     ]
                 }
             },
@@ -42,12 +41,12 @@
         "host_exe": "host.exe", 
         "compiler": {
             "sources": [
-                "LIB_DIR/L2/mlp/src/sw/fcnTest.cpp", 
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/src/sw/fcnTest.cpp", 
                 "LIB_DIR/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp"
             ], 
             "includepaths": [
-                "LIB_DIR/L2/mlp/include/", 
-                "LIB_DIR/L2/mlp/include/sw/", 
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/", 
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/sw/", 
                 "LIB_DIR/../Vitis_Libraries/blas/../hpc/L2/include/", 
                 "LIB_DIR/../Vitis_Libraries/blas/../hpc/L2/include/common", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/", 
@@ -56,12 +55,12 @@
                 "LIB_DIR/../Vitis_Libraries/blas/L2/include/xcl2"
             ], 
             "symbols": [
-                "HW_CLK=3e-9",
+                "HW_CLK=3.57e-9",
                 "HPC_instrBytes=64",
                 "HPC_dataType=float", 
-                "HPC_numChannels=10",
-                "HPC_vecChannels=2",
-                "HPC_maxInstrs=50",
+                "HPC_numChannels=8",
+                "HPC_vecChannels=3",
+                "HPC_maxInstrs=1000",
                 "HPC_parEntries=8"
             ], 
             "options": "-O3"
@@ -72,16 +71,17 @@
             "symbols": [
                 "HPC_instrBytes=64",
                 "HPC_dataType=float", 
-                "HPC_maxInstrs=50",
-                "HPC_numActFuncs=1",
+                "HPC_maxInstrs=1000",
+                "HPC_numActFuncs=2",
                 "HPC_maxVecSize=4096",
-                "HPC_numChannels=10",
-                "HPC_vecChannels=2",
+                "HPC_bufferSize=16384",
+                "HPC_numChannels=8",
+                "HPC_vecChannels=3",
                 "HPC_parEntries=8"
             ], 
             "includepaths": [
-                "LIB_DIR/L2/mlp/include/", 
-                "LIB_DIR/L2/mlp/include/hw/", 
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/", 
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/hw/", 
                 "LIB_DIR/../Vitis_Libraries/blas/../hpc/L2/include/common", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/hw/", 
@@ -95,12 +95,12 @@
         {
             "name": "mlp", 
             "ldclflags": "--config PROJECT/opts.cfg", 
-            "frequency": 333, 
+            "frequency": 300, 
             "accelerators": [
                 {
                     "name": "krnl_fcn", 
-                    "location": "LIB_DIR/L2/mlp/src/hw/fcnKernel.cpp", 
-                    "frequency": 333
+                    "location": "LIB_DIR/L2/designs/mlp/fcn_hbm/src/hw/fcnKernel.cpp", 
+                    "frequency": 300
                 }
             ]
         }

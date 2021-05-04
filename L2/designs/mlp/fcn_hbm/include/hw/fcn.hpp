@@ -45,15 +45,20 @@ void fcn(uint32_t p_m,
     constexpr int t_LogParEntries = xf::blas::mylog2(t_ParEntries);
 
     hls::stream<T0> l_pk[t_VecChannels][t_WeightChannels];
+#pragma HLS ARRAY_PARTITION variable = l_pk complete dim = 0
 #pragma HLS stream variable = l_pk depth = 64
 
     hls::stream<T0> l_W[t_WeightChannels][t_VecChannels];
+#pragma HLS ARRAY_PARTITION variable = l_W complete dim = 0
 
     hls::stream<T1> l_strR[t_VecChannels][t_WeightChannels];
+#pragma HLS ARRAY_PARTITION variable = l_strR complete dim = 0
 #pragma HLS stream variable = l_strR depth = 64
 
-    hls::stream<T2> l_strC[t_VecChannels], l_strF[t_VecChannels], l_bias[t_VecChannels], l_strb;
-    hls::stream<T2> l_strMerge, l_strAdd, l_biasMerge, l_strAct;
+    hls::stream<T2> l_strC[t_VecChannels], l_strAdd[t_VecChannels], l_strAct[t_VecChannels], l_bias[t_VecChannels],
+        l_strb;
+#pragma HLS ARRAY_PARTITION variable = l_bias complete dim = 1
+#pragma HLS ARRAY_PARTITION variable = l_strC complete dim = 1
 
 #pragma HLS DATAFLOW
     wide2stream<sizeof(t_DataType) * 8 * t_NumActFuncs, t_ParEntries / t_NumActFuncs>(
@@ -76,17 +81,11 @@ void fcn(uint32_t p_m,
     for (int i = 0; i < t_VecChannels; i++) {
 #pragma HLS UNROLL
         collectStream<t_DataType, t_WeightChannels, t_NumActFuncs>(p_m, l_strR[i], l_strC[i]);
-    }
-    mergeStream<t_VecChannels>(p_m * t_WeightChannels / t_NumActFuncs, l_strC, l_strMerge);
-    mergeStream<t_VecChannels>(p_m * t_WeightChannels / t_NumActFuncs, l_bias, l_biasMerge);
-    blas::axpy<t_DataType, t_NumActFuncs>(t_VecChannels * p_m * t_WeightChannels, 1, l_strMerge, l_biasMerge, l_strAdd);
-    streamActivation<t_DataType, t_NumActFuncs>(p_m * t_WeightChannels * t_VecChannels / t_NumActFuncs, l_strAdd,
-                                                l_strAct, p_act);
-    splitStream<t_VecChannels>(p_m * t_WeightChannels / t_NumActFuncs, l_strAct, l_strF);
-    for (int i = 0; i < t_VecChannels; i++) {
-#pragma HLS UNROLL
+        blas::axpy<t_DataType, t_NumActFuncs>(p_m * t_WeightChannels, 1, l_strC[i], l_bias[i], l_strAdd[i]);
+        streamActivation<t_DataType, t_NumActFuncs>(p_m * t_WeightChannels / t_NumActFuncs, l_strAdd[i], l_strAct[i],
+                                                    p_act);
         stream2wide<sizeof(t_DataType) * 8 * t_NumActFuncs, t_ParEntries / t_NumActFuncs>(
-            p_m * t_WeightChannels / t_ParEntries, l_strF[i], p_vecOut[i]);
+            p_m * t_WeightChannels / t_ParEntries, l_strAct[i], p_vecOut[i]);
     }
 }
 }

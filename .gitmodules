@@ -1,3 +1,0 @@
-[submodule "L2/mlp"]
-	path = L2/mlp
-	url = git@gitenterprise.xilinx.com:liangm/hpc_mlp.git
