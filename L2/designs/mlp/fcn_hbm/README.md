@@ -7,6 +7,8 @@
 [**Vitis_Libraries**](https://gitenterprise.xilinx.com/FaaSApps/Vitis_Libraries)
 
 #### File Structure
+
+```
 .
 +-- HPC
 |   +-- L2
@@ -14,6 +16,7 @@
 +-- Vitis_Libraries
 |   +-- blas
 |   +-- hpc
+```
 
 ### Tests
 
