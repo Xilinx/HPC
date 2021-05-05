@@ -4,6 +4,17 @@
 
 ### Dependency
 
+#### Python
+
+Use following command to create mlp environment with  propery python libraries
+
+```
+conda env create -f environment.yml
+
+```
+
+#### Library
+
 [**Vitis_Libraries**](https://gitenterprise.xilinx.com/FaaSApps/Vitis_Libraries)
 
 #### File Structure

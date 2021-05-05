@@ -1,0 +1,6 @@
+name: mlp 
+channels:
+  - anaconda
+dependencies:
+  - python=3.7
+  - keras
