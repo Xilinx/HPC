@@ -83,11 +83,12 @@ HOST_SRCS += $(XFLIB_DIR)/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp
 CXXFLAGS += -DHW_CLK=3.33e-9 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=8 -DHPC_vecChannels=3 -DHPC_maxInstrs=1000 -DHPC_parEntries=8
 CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/
 CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/sw/
-CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/../hpc/L2/include/
-CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/../hpc/L2/include/common
+CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L1/include/
+CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/
+CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/common
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/
-CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L2/include/memKernel/sw/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/tests/sw/include/
+CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L2/include/memKernel/sw/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L2/include/xcl2
 
 ifeq ($(TARGET),sw_emu)
@@ -120,8 +121,8 @@ VPP_FLAGS += --hls.jobs 8
 VPP_LDFLAGS += --vivado.synth.jobs 8 --vivado.impl.jobs 8
 VPP_FLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/
 VPP_FLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/hw/
-VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/../hpc/L1/include/hw/mlp/
-VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/../hpc/L2/include/common
+VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L1/include/hw/mlp/
+VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/common
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/hw/
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/hw/xf_blas

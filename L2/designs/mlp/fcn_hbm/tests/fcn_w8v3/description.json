@@ -47,11 +47,12 @@
             "includepaths": [
                 "LIB_DIR/L2/designs/mlp/fcn_hbm/include/", 
                 "LIB_DIR/L2/designs/mlp/fcn_hbm/include/sw/", 
-                "LIB_DIR/../Vitis_Libraries/blas/../hpc/L2/include/", 
-                "LIB_DIR/../Vitis_Libraries/blas/../hpc/L2/include/common", 
+                "LIB_DIR/../Vitis_Libraries/hpc/L1/include/",
+                "LIB_DIR/../Vitis_Libraries/hpc/L2/include/", 
+                "LIB_DIR/../Vitis_Libraries/hpc/L2/include/common", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/", 
-                "LIB_DIR/../Vitis_Libraries/blas/L2/include/memKernel/sw/", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/tests/sw/include/", 
+                "LIB_DIR/../Vitis_Libraries/blas/L2/include/memKernel/sw/", 
                 "LIB_DIR/../Vitis_Libraries/blas/L2/include/xcl2"
             ], 
             "symbols": [
@@ -82,8 +83,8 @@
             "includepaths": [
                 "LIB_DIR/L2/designs/mlp/fcn_hbm/include/", 
                 "LIB_DIR/L2/designs/mlp/fcn_hbm/include/hw/", 
-                "LIB_DIR/../Vitis_Libraries/blas/../hpc/L1/include/hw/mlp/", 
-                "LIB_DIR/../Vitis_Libraries/blas/../hpc/L2/include/common", 
+                "LIB_DIR/../Vitis_Libraries/hpc/L1/include/hw/mlp/", 
+                "LIB_DIR/../Vitis_Libraries/hpc/L2/include/common", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/hw/", 
                 "LIB_DIR/../Vitis_Libraries/blas/L1/include/hw/xf_blas", 
