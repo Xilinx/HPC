@@ -37,7 +37,7 @@ root
 #### Emulation
 
 ```
-make run TARGET=sw_emu/hw_emu p_in=32 p_out=32 p_batch=200
+make run TARGET=sw_emu/hw_emu inSize=32 outSize=32 batch=200
 ```
 
 #### Build Hardware
@@ -49,5 +49,5 @@ make build TARGET=hw
 #### Run on FPGA
 
 ```
-make run TARGET=hw p_in=32 p_out=32 p_batch=200
+make run TARGET=hw inSize=32 outSize=32 batch=200
 ```
