@@ -16,10 +16,11 @@ from os import path
 import subprocess
 import argparse
 import numpy as np
+import h5py
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-
+import keras
 
 def get_uncompiled_model():
     inputs = keras.Input(shape=(784,), name="digits")
@@ -74,7 +75,12 @@ def evaluate(p_modelFileName, p_inFileName, p_outFileName, p_refFileName, p_mode
         test_scores = model.evaluate(x_test, y_test, verbose=2)
         print("INFO: scores are {}".format(test_scores))
 
-def process_model(p_needTrain, p_inf, p_evaluate, p_modelPath, p_modelName):
+def fcn_inf(p_modelFileName, p_inFileName, p_fcnOutFileName, p_goldenFileName):
+    l_model = load_model(p_modelFileName)
+    l_model.summary()
+    
+
+def process_model(p_needTrain, p_inf, p_evaluate, p_fcn, p_modelPath, p_modelName):
     l_path = p_modelPath +'/'+p_modelName
     if not path.exists(l_path):
         subprocess.run(["mkdir","-p",l_path])
@@ -87,13 +93,21 @@ def process_model(p_needTrain, p_inf, p_evaluate, p_modelPath, p_modelName):
         train(l_modelFileName, l_inFileName, l_refFileName, p_modelName)
     if p_inf:
         evaluate(l_modelFileName, l_inFileName, l_outFileName, l_refFileName, p_modelName, p_evaluate)
+    if p_fcn:
+        l_fcnOutFileName = l_path+'/outputs_fcn.bin'
+        fcn_inf(l_modelFileName, l_inFileName, l_fcnOutFileName, l_outFileName)
 
 def main(args):
     if (args.usage):
         print('Usage example:')
-        print('python keras.py [--train] [--inf] [--evaluate] [--model_path ./models]  [--model_name mnist]')
+        print('python keras.py [--train] [--inf] [--evaluate] [--fcn] [--model_path ./models]  [--model_name mnist]')
+        print('python keras.py --train --model_path ./models  --model_name mnist')
+        print('python keras.py --inf  --model_path ./models  --model_name mnist')
+        print('python keras.py --inf --evaluate  --model_path ./models  --model_name mnist')
+        print('python keras.py --fcn  --model_path ./models  --model_name mnist')
+        
     else:
-        process_model(args.train, args.inf, args.evaluate, args.model_path, args.model_name)
+        process_model(args.train, args.inf, args.evaluate, args.fcn, args.model_path, args.model_name)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='An example usage of Keras MLP APIs')
@@ -101,6 +115,7 @@ if __name__ == "__main__":
     parser.add_argument('--train',action='store_true',help='train the model')
     parser.add_argument('--inf',action='store_true',help='inference from the model')
     parser.add_argument('--evaluate',action='store_true',help='run keras evaluation for input data and golden reference data')
+    parser.add_argument('--fcn',action='store_true',help='use fcn to do inference from .h5 file')
     parser.add_argument('--model_path',type=str,default='./models',help='path for .h5 files that contain models and weights')
     parser.add_argument('--model_name',type=str,default='mnist',help='model name')
     args = parser.parse_args()
