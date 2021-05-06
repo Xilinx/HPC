@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from os import path
+import subprocess
+import argparse
+import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -36,10 +40,12 @@ def get_compiled_model():
     return model
 
 
-def train(filepath, x_train, y_train):
-
+def train(p_modelFileName, p_inFileName, p_refFileName, p_modelName):
+    print("INFO: Trainning the model {}".format(p_modelName))
+    l_kerasFunc = 'keras.datasets.'+ p_modelName + '.load_data()'
+    (x_train, y_train), (x_test, y_test) = eval(l_kerasFunc)
     model = get_compiled_model()
-    x_train = x_train.reshape(60000, 784).astype("float32") / 255
+    x_train = x_train.reshape(60000, 784).astype(np.float32) / 255
     history = model.fit(
         x_train,
         y_train,
@@ -47,18 +53,54 @@ def train(filepath, x_train, y_train):
         epochs=5,
         validation_split=0.2)
 
-    model.save(filepath)
+    model.save(p_modelFileName)
+    x_test.astype(np.float32).tofile(p_inFileName)
+    y_test.astype(np.float32).tofile(p_refFileName)
+    print("INFO: Training done.")
 
 
-def evaluate(filepath, x_test, y_test):
-    model = keras.models.load_model(filepath)
+def evaluate(p_modelFileName, p_inFileName, p_outFileName, p_refFileName, p_modelName, p_evaluate):
+    print("INFO: Inference from the model {}".format(p_modelName))
+    model = keras.models.load_model(p_modelFileName)
+    x_test = np.fromfile(p_inFileName, dtype=np.float32)
+    if p_evaluate:
+        y_test = np.fromfile(p_refFileName, dtype=np.float32)
     model.summary()
-    x_test = x_test.reshape(10000, 784).astype("float32") / 255
-    test_scores = model.evaluate(x_test, y_test, verbose=2)
+    x_test = x_test.reshape(10000, 784).astype(np.float32) / 255
+    y_out = model.predict(x_test)
+    y_out.astype(np.float32).tofile(p_outFileName)
+    if (p_evaluate):
+        test_scores = model.evaluate(x_test, y_test, verbose=2)
+        print("INFO: scores are {}".format(test_scores))
 
+def process_model(p_needTrain, p_inf, p_evaluate, p_modelPath, p_modelName):
+    l_path = p_modelPath +'/'+p_modelName
+    if not path.exists(l_path):
+        subprocess.run(["mkdir","-p",l_path])
+    l_modelFileName = l_path+'/' + p_modelName +'.h5'
+    l_inFileName = l_path+'/inputs.bin'
+    l_outFileName = l_path+'/outputs.bin'
+    l_refFileName = l_path+'/golden.bin'
+    if p_needTrain:
+        (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+        train(l_modelFileName, l_inFileName, l_refFileName, p_modelName)
+    if p_inf:
+        evaluate(l_modelFileName, l_inFileName, l_outFileName, l_refFileName, p_modelName, p_evaluate)
+
+def main(args):
+    if (args.usage):
+        print('Usage example:')
+        print('python keras.py [--train] [--inf] [--evaluate] [--model_path ./models]  [--model_name mnist]')
+    else:
+        process_model(args.train, args.inf, args.evaluate, args.model_path, args.model_name)
 
 if __name__ == "__main__":
-    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
-    filepath = "./models.h5"
-    train(filepath, x_train, y_train)
-    evaluate(filepath, x_test, y_test)
+    parser = argparse.ArgumentParser(description='An example usage of Keras MLP APIs')
+    parser.add_argument('--usage',action='store_true',help='print usage example')
+    parser.add_argument('--train',action='store_true',help='train the model')
+    parser.add_argument('--inf',action='store_true',help='inference from the model')
+    parser.add_argument('--evaluate',action='store_true',help='run keras evaluation for input data and golden reference data')
+    parser.add_argument('--model_path',type=str,default='./models',help='path for .h5 files that contain models and weights')
+    parser.add_argument('--model_name',type=str,default='mnist',help='model name')
+    args = parser.parse_args()
+    main(args)
