@@ -20,7 +20,7 @@ import h5py
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-import keras
+from tensorflow.keras.models import load_model
 
 def get_uncompiled_model():
     inputs = keras.Input(shape=(784,), name="digits")
@@ -63,7 +63,7 @@ def train(p_modelFileName, p_inFileName, p_refFileName, p_modelName):
 
 def evaluate(p_modelFileName, p_inFileName, p_outFileName, p_refFileName, p_modelName, p_evaluate):
     print("INFO: Inference from the model {}".format(p_modelName))
-    model = keras.models.load_model(p_modelFileName)
+    model = load_model(p_modelFileName)
     x_test = np.fromfile(p_inFileName, dtype=np.float32)
     if p_evaluate:
         y_test = np.fromfile(p_refFileName, dtype=np.float32)
@@ -77,8 +77,18 @@ def evaluate(p_modelFileName, p_inFileName, p_outFileName, p_refFileName, p_mode
 
 def fcn_inf(p_modelFileName, p_inFileName, p_fcnOutFileName, p_goldenFileName):
     l_model = load_model(p_modelFileName)
-    l_model.summary()
-    
+    for layer in l_model.layers:
+        l_conf = layer.get_config()
+        if 'batch_input_shape' in l_conf.keys():
+            print("INFO: Input layer")
+        elif isinstance(layer, keras.layers.Dense):
+            print("INFO: Dense layer")
+            print(layer.name, layer.weights[0].shape, layer.weights[1].shape)
+            print(l_conf['activation'])
+        else:
+            print("ERROR: not a MLP model")
+            return False
+    return True
 
 def process_model(p_needTrain, p_inf, p_evaluate, p_fcn, p_modelPath, p_modelName):
     l_path = p_modelPath +'/'+p_modelName
@@ -100,11 +110,11 @@ def process_model(p_needTrain, p_inf, p_evaluate, p_fcn, p_modelPath, p_modelNam
 def main(args):
     if (args.usage):
         print('Usage example:')
-        print('python keras.py [--train] [--inf] [--evaluate] [--fcn] [--model_path ./models]  [--model_name mnist]')
-        print('python keras.py --train --model_path ./models  --model_name mnist')
-        print('python keras.py --inf  --model_path ./models  --model_name mnist')
-        print('python keras.py --inf --evaluate  --model_path ./models  --model_name mnist')
-        print('python keras.py --fcn  --model_path ./models  --model_name mnist')
+        print('python keras_example.py [--train] [--inf] [--evaluate] [--fcn] [--model_path ./models]  [--model_name mnist]')
+        print('python keras_example.py --train --model_path ./models  --model_name mnist')
+        print('python keras_example.py --inf  --model_path ./models  --model_name mnist')
+        print('python keras_example.py --inf --evaluate  --model_path ./models  --model_name mnist')
+        print('python keras_example.py --fcn  --model_path ./models  --model_name mnist')
         
     else:
         process_model(args.train, args.inf, args.evaluate, args.fcn, args.model_path, args.model_name)
