@@ -44,6 +44,7 @@ def train(p_modelFileName, p_inFileName, p_refFileName, p_modelName):
     print("INFO: Trainning the model {}".format(p_modelName))
     l_kerasFunc = 'keras.datasets.'+ p_modelName + '.load_data()'
     (x_train, y_train), (x_test, y_test) = eval(l_kerasFunc)
+    x_test = x_test / 255
     model = get_compiled_model()
     x_train = x_train.reshape(60000, 784).astype(np.float32) / 255
     history = model.fit(
@@ -66,7 +67,7 @@ def evaluate(p_modelFileName, p_inFileName, p_outFileName, p_refFileName, p_mode
     if p_evaluate:
         y_test = np.fromfile(p_refFileName, dtype=np.float32)
     model.summary()
-    x_test = x_test.reshape(10000, 784).astype(np.float32) / 255
+    x_test = x_test.reshape(10000, 784).astype(np.float32)
     y_out = model.predict(x_test)
     y_out.astype(np.float32).tofile(p_outFileName)
     if (p_evaluate):
