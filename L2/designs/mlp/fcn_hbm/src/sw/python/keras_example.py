@@ -15,8 +15,8 @@
 from os import path
 import subprocess
 import argparse
+import time
 import numpy as np
-import h5py
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -68,12 +68,16 @@ def evaluate(p_modelFileName, p_inFileName, p_outFileName, p_refFileName, p_mode
     if p_evaluate:
         y_test = np.fromfile(p_refFileName, dtype=np.float32)
     model.summary()
+    l_sTime = time.time_ns()
     x_test = x_test.reshape(10000, 784).astype(np.float32)
-    y_out = model.predict(x_test)
+    y_out = model.predict(x_test, batch_size=x_test.shape[0])
+    l_eTime = time.time_ns()
     y_out.astype(np.float32).tofile(p_outFileName)
     if (p_evaluate):
         test_scores = model.evaluate(x_test, y_test, verbose=2)
         print("INFO: scores are {}".format(test_scores))
+    l_ms = (l_eTime - l_sTime)/(10**6)
+    return l_ms
 
 def verify_mlp(p_model):
     l_isMLP = True
@@ -140,6 +144,7 @@ def fcn_inf(p_modelFileName, p_inFileName, p_fcnOutFileName, p_batchSize):
     if l_isMLP:
         l_mat = np.fromfile(p_inFileName, dtype=np.float32)
         l_mat = np.reshape(l_mat, (-1, l_inputSize))
+        l_sTime = time.time_ns()
         for i in range(1, len(l_model.layers)):
             l_layer = l_model.layers[i]
             l_conf = l_layer.get_config()
@@ -148,7 +153,10 @@ def fcn_inf(p_modelFileName, p_inFileName, p_fcnOutFileName, p_batchSize):
             l_act = l_conf['activation']
             l_weights = np.transpose(l_weights)
             l_mat = fcn_run(l_weights, l_mat, l_bias, l_act, p_batchSize)
+    l_eTime = time.time_ns()
     l_mat.astype(np.float32).tofile(p_fcnOutFileName)
+    l_ms = (l_eTime - l_sTime)/(10**6)
+    return l_ms
             
 def verify_inf(p_fileName, p_goldenFileName):
     l_arr = np.fromfile(p_fileName, dtype=np.float32)
@@ -169,10 +177,12 @@ def process_model(p_needTrain, p_inf, p_evaluate, p_fcn, p_batchSize, p_modelPat
         (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
         train(l_modelFileName, l_inFileName, l_refFileName, p_modelName)
     if p_inf:
-        evaluate(l_modelFileName, l_inFileName, l_outFileName, l_refFileName, p_modelName, p_evaluate)
+        l_ms = evaluate(l_modelFileName, l_inFileName, l_outFileName, l_refFileName, p_modelName, p_evaluate)
+        print("INFO: Keras inference takes {}ms".format(l_ms))
     if p_fcn:
         l_fcnOutFileName = l_path+'/outputs_fcn.bin'
-        fcn_inf(l_modelFileName, l_inFileName, l_fcnOutFileName, p_batchSize)
+        l_ms = fcn_inf(l_modelFileName, l_inFileName, l_fcnOutFileName, p_batchSize)
+        print("INFO: FCN inference takes {}ms".format(l_ms))
         l_pass = verify_inf(l_fcnOutFileName, l_outFileName)
         if l_pass:
             print("INFO: fcn inference passes verification!")
