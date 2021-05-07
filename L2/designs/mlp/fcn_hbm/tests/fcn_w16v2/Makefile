@@ -192,7 +192,7 @@ $(EMCONFIG_DIR)/emconfig.json:
 
 
 # ###############Setting Essential Checks And Running Rules For Vitis Flow #############
-run: all
+run: host
 ifeq ($(TARGET),$(filter $(TARGET),sw_emu hw_emu))
 	XCL_EMULATION_MODE=$(TARGET) make data_gen
 	$(CP) $(EMCONFIG_DIR)/emconfig.json .

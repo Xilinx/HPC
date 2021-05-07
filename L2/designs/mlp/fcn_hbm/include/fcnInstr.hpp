@@ -31,7 +31,7 @@ namespace mlp {
 
 /** enum class ActFunc_t defines a set of activation function types
  */
-enum class ActFunc_t : uint8_t { LINEAR = 1, RELU = 2, SIGMOID = 3, TANSIG = 4 };
+enum class ActFunc_t : uint8_t { NONE = 0, LINEAR = 1, RELU = 2, SIGMOID = 3, TANSIG = 4 };
 
 /** Class FcnInstr defines a set of parameters used in between host and the kernel
  */
@@ -86,6 +86,10 @@ class FcnInstr : public MemInstr<t_InstrBytes> {
         os << "m_InVecSize: " << cgInstr.m_InVecSize << ", ";
         os << "m_OutVecSize: " << cgInstr.m_OutVecSize << ", ";
         os << "m_Batch: " << cgInstr.m_Batch << ", ";
+        os << "m_InputOffset: " << cgInstr.m_InputOffset << ", ";
+        os << "m_OutputOffset: " << cgInstr.m_OutputOffset << ", ";
+        os << "m_WeightsOffset: " << cgInstr.m_WeightsOffset << ", ";
+        os << "m_BiasOffset: " << cgInstr.m_BiasOffset << ", ";
         os << "m_Activation: " << static_cast<uint16_t>(cgInstr.m_Activation) << ", ";
         os << "m_Clock: " << cgInstr.m_Clock << ", ";
         return os;

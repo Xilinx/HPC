@@ -69,9 +69,11 @@ double fcn(FPGA* fpga,
     return sw_time;
 }
 
-template <typename t_DataType, unsigned int t_NumChannels, unsigned int t_VecChannels = 1>
+template <typename t_DataType, unsigned int t_NumChannels, unsigned int t_VecChannels>
 class FcnKernel : public Kernel {
    public:
+    FcnKernel(FPGA* fpga) : Kernel(fpga) {}
+
     FcnKernel(uint32_t p_b, uint32_t p_m, uint32_t p_n, FPGA* fpga) : Kernel(fpga) {
         m_b = p_b;
         m_m = p_m;
@@ -177,7 +179,7 @@ class FcnKernel : public Kernel {
             }
         }
     }
-    uint32_t m_b, m_m, m_n;
+    uint32_t m_b = 0, m_m = 0, m_n = 0;
     vector<cl::Buffer> m_buffer_A;
     vector<cl::Buffer> m_buffer_x;
     vector<cl::Buffer> m_buffer_r;
