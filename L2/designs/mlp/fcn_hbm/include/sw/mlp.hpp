@@ -45,6 +45,12 @@ class FCN {
         readBin(path_to_wi, m_InputSize * m_OutputSize * sizeof(T), m_Weight);
         readBin(path_to_bi, m_OutputSize * sizeof(T), m_Bias);
     }
+    void setData(host_buffer_t<T>& weight, host_buffer_t<T>& bias) {
+        assert(m_InputSize * m_OutputSize == weight.size());
+        assert(m_OutputSize == bias.size());
+        m_Weight = weight;
+        m_Bias = bias;
+    }
 };
 
 template <typename T>
@@ -81,6 +87,12 @@ class MLP {
             string m_BiasPath = filePath + "b_" + to_string(id) + ".mat";
             m_Layers[id].loadData(m_WeightPath, m_BiasPath);
         }
+    }
+
+    void setLayer(vector<host_buffer_t<T> >& weights, vector<host_buffer_t<T> >& bias) {
+        assert(m_NumLayers == weights.size());
+        assert(m_NumLayers == bias.size());
+        for (int i = 0; i < m_NumLayers; i++) m_Layers.setData(weights[i], bias[i]);
     }
 };
 }

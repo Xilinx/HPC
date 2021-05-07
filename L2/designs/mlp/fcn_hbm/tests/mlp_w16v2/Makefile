@@ -77,14 +77,15 @@ export XCL_BINDIR = $(XCLBIN_DIR)
 
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
-HOST_SRCS += $(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/src/sw/fcnTest.cpp
+HOST_SRCS += $(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/src/sw/mlpTest.cpp
 HOST_SRCS += $(XFLIB_DIR)/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp
 
-CXXFLAGS += -DHW_CLK=3.33e-9 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=16 -DHPC_vecChannels=2 -DHPC_maxInstrs=100 -DHPC_parEntries=8
+CXXFLAGS += -DHW_CLK=3.75e-9 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=16 -DHPC_vecChannels=2 -DHPC_maxInstrs=100 -DHPC_parEntries=8
 CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/
 CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/sw/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L1/include/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/
+CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/common
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/tests/sw/include/
