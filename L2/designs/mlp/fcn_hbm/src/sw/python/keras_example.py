@@ -75,9 +75,11 @@ def evaluate(p_modelFileName, p_inFileName, p_outFileName, p_refFileName, p_mode
         test_scores = model.evaluate(x_test, y_test, verbose=2)
         print("INFO: scores are {}".format(test_scores))
 
-def fcn_inf(p_modelFileName, p_inFileName, p_fcnOutFileName, p_goldenFileName):
-    l_model = load_model(p_modelFileName)
-    for layer in l_model.layers:
+def verify_mlp(p_model):
+    l_isMLP = True
+    i=0
+    l_inputSize = 1
+    for layer in p_model.layers:
         l_conf = layer.get_config()
         if 'batch_input_shape' in l_conf.keys():
             print("INFO: Input layer")
@@ -85,12 +87,77 @@ def fcn_inf(p_modelFileName, p_inFileName, p_fcnOutFileName, p_goldenFileName):
             print("INFO: Dense layer")
             print(layer.name, layer.weights[0].shape, layer.weights[1].shape)
             print(l_conf['activation'])
+            if i==0:
+                l_inputSize = layer.weights[0].shape[0]
+                i +=1
         else:
             print("ERROR: not a MLP model")
-            return False
-    return True
+            l_isMLP = False
+    return [l_isMLP, l_inputSize]
 
-def process_model(p_needTrain, p_inf, p_evaluate, p_fcn, p_modelPath, p_modelName):
+def matrix_run(p_weights, p_mat, p_bias, p_act, p_batchSize):
+    l_resMat = np.matmul(p_mat, p_weights)
+    l_resMat += p_bias
+
+    if p_act == 'relu':
+        l_resMat = np.maximum(l_resMat,0)
+    elif p_act == 'sigmoid':
+        l_resMat = 1/(1+np.exp(-l_resMat))
+    elif p_act == 'softmax':
+        l_exp = np.exp(l_resMat)
+        for i in range(l_resMat.shape[0]):
+            l_sum = np.sum(l_exp[i])
+            l_resMat[i] = l_exp[i]/l_sum
+    return l_resMat
+
+def fcn_run(p_weights, p_mat, p_bias, p_act, p_batchSize):
+    l_totalBatches = p_mat.shape[0]
+    l_runSize = l_totalBatches // p_batchSize
+    l_resMat = np.zeros((p_mat.shape[0], p_weights.shape[0]))
+    for i in range(p_batchSize):
+        l_mat = p_mat[i*l_runSize: (i+1)*l_runSize][:]
+        for j in range(l_mat.shape[0]):
+            l_resMat[i*l_runSize+j][:] = p_weights.dot(l_mat[j][:])
+    assert(p_bias.shape[0] == l_resMat.shape[1])
+    for i in range(l_resMat.shape[0]):
+        l_resMat[i][:] += p_bias
+
+    if p_act == 'relu':
+        l_resMat = np.maximum(l_resMat,0)
+    elif p_act == 'sigmoid':
+        l_resMat = 1/(1+np.exp(-l_resMat))
+    elif p_act == 'softmax':
+        l_exp = np.exp(l_resMat)
+        for i in range(l_resMat.shape[0]):
+            l_sum = np.sum(l_exp[i])
+            l_resMat[i] = l_exp[i]/l_sum
+    return l_resMat 
+        
+
+def fcn_inf(p_modelFileName, p_inFileName, p_fcnOutFileName, p_batchSize):
+    l_model = load_model(p_modelFileName)
+    [l_isMLP, l_inputSize] = verify_mlp(l_model)
+    if l_isMLP:
+        l_mat = np.fromfile(p_inFileName, dtype=np.float32)
+        l_mat = np.reshape(l_mat, (-1, l_inputSize))
+        for i in range(1, len(l_model.layers)):
+            l_layer = l_model.layers[i]
+            l_conf = l_layer.get_config()
+            l_weights = l_layer.weights[0][:].numpy()
+            l_bias = l_layer.weights[1][:].numpy()
+            l_act = l_conf['activation']
+            l_weights = np.transpose(l_weights)
+            l_mat = fcn_run(l_weights, l_mat, l_bias, l_act, p_batchSize)
+    l_mat.astype(np.float32).tofile(p_fcnOutFileName)
+            
+def verify_inf(p_fileName, p_goldenFileName):
+    l_arr = np.fromfile(p_fileName, dtype=np.float32)
+    l_refArr = np.fromfile(p_goldenFileName, dtype=np.float32)
+    l_equal = np.allclose(l_arr, l_refArr)
+    return l_equal
+
+
+def process_model(p_needTrain, p_inf, p_evaluate, p_fcn, p_batchSize, p_modelPath, p_modelName):
     l_path = p_modelPath +'/'+p_modelName
     if not path.exists(l_path):
         subprocess.run(["mkdir","-p",l_path])
@@ -105,19 +172,24 @@ def process_model(p_needTrain, p_inf, p_evaluate, p_fcn, p_modelPath, p_modelNam
         evaluate(l_modelFileName, l_inFileName, l_outFileName, l_refFileName, p_modelName, p_evaluate)
     if p_fcn:
         l_fcnOutFileName = l_path+'/outputs_fcn.bin'
-        fcn_inf(l_modelFileName, l_inFileName, l_fcnOutFileName, l_outFileName)
+        fcn_inf(l_modelFileName, l_inFileName, l_fcnOutFileName, p_batchSize)
+        l_pass = verify_inf(l_fcnOutFileName, l_outFileName)
+        if l_pass:
+            print("INFO: fcn inference passes verification!")
+        else:
+            print("ERROR: there are mismathes between fcn inference results and keras ones.")
 
 def main(args):
     if (args.usage):
         print('Usage example:')
-        print('python keras_example.py [--train] [--inf] [--evaluate] [--fcn] [--model_path ./models]  [--model_name mnist]')
+        print('python keras_example.py [--train] [--inf --batch_size 2] [--evaluate] [--fcn] [--model_path ./models]  [--model_name mnist]')
         print('python keras_example.py --train --model_path ./models  --model_name mnist')
         print('python keras_example.py --inf  --model_path ./models  --model_name mnist')
         print('python keras_example.py --inf --evaluate  --model_path ./models  --model_name mnist')
-        print('python keras_example.py --fcn  --model_path ./models  --model_name mnist')
+        print('python keras_example.py --fcn --batch_size 2 --model_path ./models  --model_name mnist')
         
     else:
-        process_model(args.train, args.inf, args.evaluate, args.fcn, args.model_path, args.model_name)
+        process_model(args.train, args.inf, args.evaluate, args.fcn, args.batch_size, args.model_path, args.model_name)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='An example usage of Keras MLP APIs')
@@ -126,6 +198,7 @@ if __name__ == "__main__":
     parser.add_argument('--inf',action='store_true',help='inference from the model')
     parser.add_argument('--evaluate',action='store_true',help='run keras evaluation for input data and golden reference data')
     parser.add_argument('--fcn',action='store_true',help='use fcn to do inference from .h5 file')
+    parser.add_argument('--batch_size',type=int,default=2,help='batch size for input vectors')
     parser.add_argument('--model_path',type=str,default='./models',help='path for .h5 files that contain models and weights')
     parser.add_argument('--model_name',type=str,default='mnist',help='model name')
     args = parser.parse_args()
