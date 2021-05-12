@@ -26,7 +26,7 @@
 using namespace std;
 using namespace xf::hpc::mlp;
 
-template <typename t_DataType, unsigned int t_InstrBytes, unsigned int t_NumChannels, unsigned int t_VecChannels>
+template <typename t_DataType, int t_InstrBytes>
 class MLPKernel : public Kernel {
     vector<host_buffer_t<t_DataType> > h_weights;
     vector<host_buffer_t<t_DataType> > h_x;
@@ -44,10 +44,15 @@ class MLPKernel : public Kernel {
     int m_MaxVecDim;
     MLP<t_DataType>* mlp;
 
+    const int m_VecChannels;
+    const int m_NumChannels;
+    const int m_ParEntries;
+
    public:
-    MLPKernel(FPGA* fpga) : Kernel(fpga) {
-        h_weights.resize(t_NumChannels);
-        h_x.resize(t_VecChannels);
+    MLPKernel(FPGA* fpga, int weightChannels, int vecChannels, int parEntries)
+        : Kernel(fpga), m_VecChannels(vecChannels), m_NumChannels(weightChannels), m_ParEntries(parEntries) {
+        h_weights.resize(m_NumChannels);
+        h_x.resize(m_VecChannels);
         h_instr.resize(t_InstrBytes * HPC_maxInstrs);
     }
 
@@ -58,16 +63,16 @@ class MLPKernel : public Kernel {
         m_MaxVecDim = *max_element(mlp->m_Dims.begin() + 1, mlp->m_Dims.end());
         for (int i = 0; i < m_NumLayers; i++) {
             FCN<t_DataType>& fcn = mlp->m_Layers[i];
-            h_bias.insert(h_bias.end(), fcn.m_Bias.begin(), fcn.m_Bias.end());
-            assert(fcn.m_OutputSize % t_NumChannels == 0);
-            assert(fcn.m_InputSize % HPC_parEntries == 0);
+            h_bias.insert(h_bias.end(), fcn.m_Bias, fcn.m_Bias + fcn.m_OutputSize);
+            assert(fcn.m_OutputSize % m_NumChannels == 0);
+            assert(fcn.m_InputSize % m_ParEntries == 0);
             for (int row = 0; row < fcn.m_OutputSize; row++)
-                h_weights[row % t_NumChannels].insert(h_weights[row % t_NumChannels].end(),
-                                                      fcn.m_Weight.begin() + row * fcn.m_InputSize,
-                                                      fcn.m_Weight.begin() + (row + 1) * fcn.m_InputSize);
+                h_weights[row % m_NumChannels].insert(h_weights[row % m_NumChannels].end(),
+                                                      fcn.m_Weight + row * fcn.m_InputSize,
+                                                      fcn.m_Weight + (row + 1) * fcn.m_InputSize);
         }
 
-        for (unsigned int i = 0; i < t_NumChannels; i++) {
+        for (unsigned int i = 0; i < m_NumChannels; i++) {
             m_buffer_W.push_back(createDeviceBuffer(CL_MEM_READ_ONLY, h_weights[i]));
         }
         m_buffer_bias = createDeviceBuffer(CL_MEM_READ_ONLY, h_bias);
@@ -81,7 +86,7 @@ class MLPKernel : public Kernel {
             h_fcnInstr[i].setBiasOffset(biasOffset);
             biasOffset += mlp->m_Dims[i + 1] * sizeof(t_DataType);
             h_fcnInstr[i].setWeightsOffset(weightOffset);
-            weightOffset += mlp->m_Dims[i + 1] * mlp->m_Dims[i] * sizeof(t_DataType) / t_NumChannels;
+            weightOffset += mlp->m_Dims[i + 1] * mlp->m_Dims[i] * sizeof(t_DataType) / m_NumChannels;
             h_fcnInstr[i].setActivation(mlp->m_Layers[i].m_ActFunc);
         }
     }
@@ -89,24 +94,24 @@ class MLPKernel : public Kernel {
     void setInput(host_buffer_t<t_DataType>& p_x) {
         assert(p_x.size() % mlp->m_Dims.front() == 0);
         m_Batch = p_x.size() / mlp->m_Dims.front();
-        assert(m_Batch % t_VecChannels == 0);
+        assert(m_Batch % m_VecChannels == 0);
 
-        int bufferSize = (mlp->m_Dims.front() + 2 * m_MaxVecDim) * m_Batch / t_VecChannels;
+        int bufferSize = (mlp->m_Dims.front() + 2 * m_MaxVecDim) * m_Batch / m_VecChannels;
         assert(bufferSize * sizeof(t_DataType) <= 256 * 1024 * 1024);
 
-        for (unsigned int i = 0; i < t_VecChannels; i++) {
+        for (unsigned int i = 0; i < m_VecChannels; i++) {
             h_x[i].resize(bufferSize);
-            copy(p_x.begin() + i * p_x.size() / t_VecChannels, p_x.begin() + (i + 1) * p_x.size() / t_VecChannels,
+            copy(p_x.begin() + i * p_x.size() / m_VecChannels, p_x.begin() + (i + 1) * p_x.size() / m_VecChannels,
                  h_x[i].begin());
             m_buffer_x.push_back(createDeviceBuffer(CL_MEM_READ_ONLY, h_x[i]));
         }
 
         int inputOffset = 0;
-        int outputOffset[2] = {mlp->m_Dims.front() * m_Batch / t_VecChannels * sizeof(t_DataType),
-                               (m_MaxVecDim + mlp->m_Dims.front()) * m_Batch * sizeof(t_DataType) / t_VecChannels};
+        int outputOffset[2] = {mlp->m_Dims.front() * m_Batch / m_VecChannels * sizeof(t_DataType),
+                               (m_MaxVecDim + mlp->m_Dims.front()) * m_Batch * sizeof(t_DataType) / m_VecChannels};
 
         for (int i = 0; i < mlp->m_NumLayers; i++) {
-            h_fcnInstr[i].setBatch(m_Batch / t_VecChannels);
+            h_fcnInstr[i].setBatch(m_Batch / m_VecChannels);
             if (i == 0) {
                 h_fcnInstr[i].setInputOffset(0);
             } else
@@ -130,10 +135,10 @@ class MLPKernel : public Kernel {
         uint32_t n_arg = 0;
         OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_instr));
 
-        for (unsigned int i = 0; i < t_NumChannels; i++) {
+        for (unsigned int i = 0; i < m_NumChannels; i++) {
             OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_W[i]));
         }
-        for (unsigned int i = 0; i < t_VecChannels; i++) {
+        for (unsigned int i = 0; i < m_VecChannels; i++) {
             OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_x[i]));
             OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_x[i]));
         }
@@ -156,10 +161,10 @@ class MLPKernel : public Kernel {
 
         int offset = mlp->m_Dims.front();
         if (mlp->m_NumLayers % 2 == 0) offset += m_MaxVecDim;
-        offset *= m_Batch / t_VecChannels;
-        for (unsigned int i = 0; i < t_VecChannels; i++) {
+        offset *= m_Batch / m_VecChannels;
+        for (unsigned int i = 0; i < m_VecChannels; i++) {
             h_v.insert(h_v.end(), h_x[i].begin() + offset,
-                       h_x[i].begin() + offset + mlp->m_Dims.back() * m_Batch / t_VecChannels);
+                       h_x[i].begin() + offset + mlp->m_Dims.back() * m_Batch / m_VecChannels);
         }
     }
 
@@ -183,8 +188,8 @@ class MLPKernel : public Kernel {
             cout << "Instruction " << i << ": ";
             cout << "HW measured time " << l_clock * HW_CLK << " seconds, ";
             cout << "HW efficiency: "
-                 << 100.0 * fcnInstr.getOutVecSize() * fcnInstr.getInVecSize() * fcnInstr.getBatch() / HPC_parEntries /
-                        t_NumChannels / l_clock
+                 << 100.0 * fcnInstr.getOutVecSize() * fcnInstr.getInVecSize() * fcnInstr.getBatch() / m_ParEntries /
+                        m_NumChannels / l_clock
                  << "%." << endl;
         }
         cout << "HW measured execution time " << l_last * HW_CLK << " seconds, ";

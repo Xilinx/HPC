@@ -17,6 +17,7 @@
 #define __XF_HPC_MLP_HPP__
 #include <cstdint>
 #include <vector>
+#include <cstdlib>
 #include "fcnInstr.hpp"
 #include "fpga.hpp"
 #include "binFiles.hpp"
@@ -30,24 +31,45 @@ class FCN {
    public:
     int m_InputSize;
     int m_OutputSize;
-    host_buffer_t<T> m_Weight;
-    host_buffer_t<T> m_Bias;
+    T* m_Weight = nullptr;
+    T* m_Bias = nullptr;
     ActFunc_t m_ActFunc;
+    bool m_Allocated = false;
 
    public:
     FCN() { m_ActFunc = ActFunc_t::LINEAR; }
+    ~FCN() {
+        if (m_Allocated) {
+            free(m_Weight);
+            free(m_Bias);
+        }
+    }
     void setDim(int m_InputSize, int m_OutputSize) {
         this->m_InputSize = m_InputSize;
         this->m_OutputSize = m_OutputSize;
     }
+    void allocMem() {
+        if (!m_Allocated) {
+            m_Weight = (T*)aligned_alloc(4096, m_InputSize * m_OutputSize * sizeof(T));
+            m_Bias = (T*)aligned_alloc(4096, m_OutputSize * sizeof(T));
+            m_Allocated = true;
+        }
+    }
+    void freeMem() {
+        if (m_Allocated) {
+            free(m_Weight);
+            free(m_Bias);
+            m_Allocated = false;
+        }
+    }
     void setActFunc(ActFunc_t ActFunc) { this->m_ActFunc = ActFunc; }
+
     void loadData(string path_to_wi, string path_to_bi) {
+        allocMem();
         readBin(path_to_wi, m_InputSize * m_OutputSize * sizeof(T), m_Weight);
         readBin(path_to_bi, m_OutputSize * sizeof(T), m_Bias);
     }
-    void setData(host_buffer_t<T>& weight, host_buffer_t<T>& bias) {
-        assert(m_InputSize * m_OutputSize == weight.size());
-        assert(m_OutputSize == bias.size());
+    void setData(const T* weight, const T* bias) {
         m_Weight = weight;
         m_Bias = bias;
     }
@@ -56,7 +78,7 @@ class FCN {
 template <typename T>
 class MLP {
    public:
-    uint32_t m_NumLayers = 0;
+    int32_t m_NumLayers = 0;
     vector<uint32_t> m_Dims;
     vector<FCN<T> > m_Layers;
 
@@ -75,6 +97,8 @@ class MLP {
         }
     }
 
+    void setActFunc(int layerID, ActFunc_t ActFunc) { m_Layers[layerID].setActFunc(ActFunc); }
+
     void setActFunc(ActFunc_t ActFunc) {
         for (int i = 0; i < m_NumLayers - 1; i++) {
             m_Layers[i].setActFunc(ActFunc);
@@ -89,9 +113,7 @@ class MLP {
         }
     }
 
-    void setLayer(vector<host_buffer_t<T> >& weights, vector<host_buffer_t<T> >& bias) {
-        assert(m_NumLayers == weights.size());
-        assert(m_NumLayers == bias.size());
+    void setLayer(T** weights, T** bias) {
         for (int i = 0; i < m_NumLayers; i++) m_Layers.setData(weights[i], bias[i]);
     }
 };
