@@ -151,11 +151,10 @@ def fcn_inf(p_modelFileName, p_inFileName, p_fcnOutFileName, p_batchSize, p_useG
             l_weights = l_layer.weights[0][:].numpy()
             l_bias = l_layer.weights[1][:].numpy()
             l_act = l_conf['activation']
-            if not p_useGemm:
-                l_weights = np.transpose(l_weights)
             if p_useGemm:
                 l_mat = matrix_run(l_weights, l_mat, l_bias, l_act, p_batchSize)
             else:
+                l_weights = np.transpose(l_weights)
                 l_mat = fcn_run(l_weights, l_mat, l_bias, l_act, p_batchSize)
     l_eTime = time.time_ns()
     l_mat.astype(np.float32).tofile(p_fcnOutFileName)
