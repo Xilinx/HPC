@@ -72,7 +72,7 @@ class MLPKernel : public Kernel {
                                                       fcn.m_Weight + (row + 1) * fcn.m_InputSize);
         }
 
-        for (unsigned int i = 0; i < m_NumChannels; i++) {
+        for (int i = 0; i < m_NumChannels; i++) {
             m_buffer_W.push_back(createDeviceBuffer(CL_MEM_READ_ONLY, h_weights[i]));
         }
         m_buffer_bias = createDeviceBuffer(CL_MEM_READ_ONLY, h_bias);
@@ -99,14 +99,13 @@ class MLPKernel : public Kernel {
         int bufferSize = (mlp->m_Dims.front() + 2 * m_MaxVecDim) * m_Batch / m_VecChannels;
         assert(bufferSize * sizeof(t_DataType) <= 256 * 1024 * 1024);
 
-        for (unsigned int i = 0; i < m_VecChannels; i++) {
+        for (int i = 0; i < m_VecChannels; i++) {
             h_x[i].resize(bufferSize);
             copy(p_x.begin() + i * p_x.size() / m_VecChannels, p_x.begin() + (i + 1) * p_x.size() / m_VecChannels,
                  h_x[i].begin());
             m_buffer_x.push_back(createDeviceBuffer(CL_MEM_READ_ONLY, h_x[i]));
         }
 
-        int inputOffset = 0;
         int outputOffset[2] = {mlp->m_Dims.front() * m_Batch / m_VecChannels * sizeof(t_DataType),
                                (m_MaxVecDim + mlp->m_Dims.front()) * m_Batch * sizeof(t_DataType) / m_VecChannels};
 
@@ -135,10 +134,10 @@ class MLPKernel : public Kernel {
         uint32_t n_arg = 0;
         OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_instr));
 
-        for (unsigned int i = 0; i < m_NumChannels; i++) {
+        for (int i = 0; i < m_NumChannels; i++) {
             OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_W[i]));
         }
-        for (unsigned int i = 0; i < m_VecChannels; i++) {
+        for (int i = 0; i < m_VecChannels; i++) {
             OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_x[i]));
             OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_x[i]));
         }
@@ -162,7 +161,7 @@ class MLPKernel : public Kernel {
         int offset = mlp->m_Dims.front();
         if (mlp->m_NumLayers % 2 == 0) offset += m_MaxVecDim;
         offset *= m_Batch / m_VecChannels;
-        for (unsigned int i = 0; i < m_VecChannels; i++) {
+        for (int i = 0; i < m_VecChannels; i++) {
             h_v.insert(h_v.end(), h_x[i].begin() + offset,
                        h_x[i].begin() + offset + mlp->m_Dims.back() * m_Batch / m_VecChannels);
         }

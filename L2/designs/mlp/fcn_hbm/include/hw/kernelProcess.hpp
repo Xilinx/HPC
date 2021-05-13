@@ -31,7 +31,7 @@ void kernelProcess(uint32_t p_batch,
                    uint32_t p_biasOffset,
                    uint32_t p_outputOffset,
                    xf::hpc::mlp::ActFunc_t p_act,
-                   t_Interface* p_bias,
+                   HPC_biasInterface* p_bias,
                    t_Interface* p_vecIn0,
                    t_Interface* p_vecOut0,
 #if HPC_vecChannels > 1
@@ -49,16 +49,15 @@ void kernelProcess(uint32_t p_batch,
                    Ts... p_As) {
     hls::stream<t_Interface> l_strA[t_WeightChannels];
 #pragma HLS ARRAY_PARTITION variable = l_strA dim = 1 complete
-    hls::stream<t_Interface> l_vecIn[t_VecChannels], l_bias;
+    hls::stream<HPC_biasInterface> l_bias;
+    hls::stream<t_Interface> l_vecIn[t_VecChannels];
 #pragma HLS ARRAY_PARTITION variable = l_vecIn complete dim = 0
     hls::stream<t_Interface> l_vecOut[t_VecChannels];
 #pragma HLS ARRAY_PARTITION variable = l_vecOut complete dim = 0
     static_assert(HPC_maxVecSize % t_ParEntries == 0, "");
-    xf::hpc::Buffer<t_Interface, HPC_maxVecSize / t_ParEntries> l_biasBuffer;
+    xf::hpc::Buffer<HPC_biasInterface, HPC_maxVecSize / HPC_numActFuncs> l_biasBuffer;
     xf::hpc::DoubleBuffer<t_Interface, HPC_maxVecSize / t_ParEntries> l_inVecBuffer[t_VecChannels];
 #pragma HLS ARRAY_PARTITION variable = l_inVecBuffer complete dim = 1
-    xf::hpc::DoubleBuffer<t_Interface, HPC_maxVecSize / t_ParEntries> l_outVecBuffer[t_VecChannels];
-#pragma HLS ARRAY_PARTITION variable = l_outVecBuffer complete dim = 1
 
 #pragma HLS DATAFLOW
     loadWeights<t_Interface, t_ParEntries, t_WeightChannels>(p_batch, p_outVecSize, p_inVecSize, p_weightOffset,
@@ -77,28 +76,27 @@ void kernelProcess(uint32_t p_batch,
     l_inVecBuffer[3].readMem(p_inVecSize / t_ParEntries, p_vecIn3 + p_inputOffset, l_vecIn[3],
                              p_outVecSize / t_WeightChannels, p_batch);
 #endif
-
-    l_biasBuffer.readMem(p_outVecSize / t_ParEntries, p_bias + p_biasOffset, l_bias, p_batch);
+    l_biasBuffer.readMem(p_outVecSize / HPC_numActFuncs, p_bias + p_biasOffset, l_bias, p_batch);
 
     xf::hpc::mlp::fcn<HPC_dataType, t_ParEntries, t_WeightChannels, t_VecChannels, HPC_numActFuncs>(
         p_batch * p_outVecSize / t_WeightChannels, p_inVecSize, p_act, l_strA, l_bias, l_vecIn, l_vecOut);
 
-    l_outVecBuffer[0].writeMem(p_outVecSize / t_ParEntries, l_vecOut[0], p_vecOut0 + p_outputOffset, p_batch);
+    stream2mem(p_outVecSize / t_ParEntries, l_vecOut[0], p_vecOut0 + p_outputOffset, p_batch);
 #if HPC_vecChannels > 1
-    l_outVecBuffer[1].writeMem(p_outVecSize / t_ParEntries, l_vecOut[1], p_vecOut1 + p_outputOffset, p_batch);
+    stream2mem(p_outVecSize / t_ParEntries, l_vecOut[1], p_vecOut1 + p_outputOffset, p_batch);
 #endif
 #if HPC_vecChannels > 2
-    l_outVecBuffer[2].writeMem(p_outVecSize / t_ParEntries, l_vecOut[2], p_vecOut2 + p_outputOffset, p_batch);
+    stream2mem(p_outVecSize / t_ParEntries, l_vecOut[2], p_vecOut2 + p_outputOffset, p_batch);
 #endif
 #if HPC_vecChannels > 3
-    l_outVecBuffer[3].writeMem(p_outVecSize / t_ParEntries, l_vecOut[3], p_vecOut3 + p_outputOffset, p_batch);
+    stream2mem(p_outVecSize / t_ParEntries, l_vecOut[3], p_vecOut3 + p_outputOffset, p_batch);
 #endif
 }
 
 template <typename... Ts>
 void parseInstr(hls::stream<xf::hpc::Signal_t>& p_signal,
                 hls::stream<xf::hpc::Clock_t>& p_clock,
-                HPC_interface* p_instr,
+                uint8_t* p_instr,
                 Ts... p_As) {
     static_assert(0 == (8 * HPC_instrBytes) % HPC_wideType::t_TypeWidth, "");
     xf::hpc::mlp::FcnInstr<HPC_instrBytes> fcnInstr;
@@ -106,13 +104,13 @@ void parseInstr(hls::stream<xf::hpc::Signal_t>& p_signal,
     p_signal.write(xf::hpc::START);
 #endif
     for (int i = 0; i < HPC_maxInstrs; i++) {
-        fcnInstr.template load<HPC_interface>(p_instr + i * HPC_instrBytes * 8 / HPC_wideType::t_TypeWidth);
+        fcnInstr.template load<uint8_t>(p_instr + i * HPC_instrBytes);
         int l_outVecSize = fcnInstr.getOutVecSize();
         int l_inVecSize = fcnInstr.getInVecSize();
         int p_batch = fcnInstr.getBatch();
         int p_matrixOffset = fcnInstr.getWeightsOffset() * 8 / HPC_wideType::t_TypeWidth;
         int p_inputOffset = fcnInstr.getInputOffset() * 8 / HPC_wideType::t_TypeWidth;
-        int p_biasOffset = fcnInstr.getBiasOffset() * 8 / HPC_wideType::t_TypeWidth;
+        int p_biasOffset = fcnInstr.getBiasOffset() * 8 / HPC_biasType::t_TypeWidth;
         int p_outputOffset = fcnInstr.getOutputOffset() * 8 / HPC_wideType::t_TypeWidth;
         xf::hpc::mlp::ActFunc_t p_act = fcnInstr.getActivation();
 
@@ -128,7 +126,7 @@ void parseInstr(hls::stream<xf::hpc::Signal_t>& p_signal,
         l_clock = p_clock.read();
 #endif
         fcnInstr.setClock(l_clock);
-        fcnInstr.template store<HPC_interface>(p_instr + i * HPC_instrBytes * 8 / HPC_wideType::t_TypeWidth);
+        fcnInstr.template store<uint8_t>(p_instr + i * HPC_instrBytes);
     }
 
 #ifdef __SYNTHESIS__

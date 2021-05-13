@@ -21,26 +21,26 @@
 #include "kernelProcess.hpp"
 #include "timer.hpp"
 
-extern "C" void krnl_fcn(HPC_interface* p_instr,
-                         HPC_interface* p_A0,
-                         HPC_interface* p_A1,
-                         HPC_interface* p_A2,
-                         HPC_interface* p_A3,
+extern "C" void krnl_fcn(uint8_t* p_instr,
+                         HPC_interface* p_W0,
+                         HPC_interface* p_W1,
+                         HPC_interface* p_W2,
+                         HPC_interface* p_W3,
 #if HPC_numChannels > 4
-                         HPC_interface* p_A4,
-                         HPC_interface* p_A5,
-                         HPC_interface* p_A6,
-                         HPC_interface* p_A7,
+                         HPC_interface* p_W4,
+                         HPC_interface* p_W5,
+                         HPC_interface* p_W6,
+                         HPC_interface* p_W7,
 #endif
 #if HPC_numChannels > 8
-                         HPC_interface* p_A8,
-                         HPC_interface* p_A9,
-                         HPC_interface* p_Aa,
-                         HPC_interface* p_Ab,
-                         HPC_interface* p_Ac,
-                         HPC_interface* p_Ad,
-                         HPC_interface* p_Ae,
-                         HPC_interface* p_Af,
+                         HPC_interface* p_W8,
+                         HPC_interface* p_W9,
+                         HPC_interface* p_Wa,
+                         HPC_interface* p_Wb,
+                         HPC_interface* p_Wc,
+                         HPC_interface* p_Wd,
+                         HPC_interface* p_We,
+                         HPC_interface* p_Wf,
 #endif
                          HPC_interface* p_vecIn0,
                          HPC_interface* p_vecOut0,
@@ -56,28 +56,28 @@ extern "C" void krnl_fcn(HPC_interface* p_instr,
                          HPC_interface* p_vecIn3,
                          HPC_interface* p_vecOut3,
 #endif
-                         HPC_interface* p_bias) {
+                         HPC_biasInterface* p_bias) {
 
     POINTER(p_instr, gmem_instr)
-    POINTER(p_A0, gmem_A0)
-    POINTER(p_A1, gmem_A1)
-    POINTER(p_A2, gmem_A2)
-    POINTER(p_A3, gmem_A3)
+    POINTER(p_W0, gmem_A0)
+    POINTER(p_W1, gmem_A1)
+    POINTER(p_W2, gmem_A2)
+    POINTER(p_W3, gmem_A3)
 #if HPC_numChannels > 4
-    POINTER(p_A4, gmem_A4)
-    POINTER(p_A5, gmem_A5)
-    POINTER(p_A6, gmem_A6)
-    POINTER(p_A7, gmem_A7)
+    POINTER(p_W4, gmem_A4)
+    POINTER(p_W5, gmem_A5)
+    POINTER(p_W6, gmem_A6)
+    POINTER(p_W7, gmem_A7)
 #endif
 #if HPC_numChannels > 8
-    POINTER(p_A8, gmem_A8)
-    POINTER(p_A9, gmem_A9)
-    POINTER(p_Aa, gmem_Aa)
-    POINTER(p_Ab, gmem_Ab)
-    POINTER(p_Ac, gmem_Ac)
-    POINTER(p_Ad, gmem_Ad)
-    POINTER(p_Ae, gmem_Ae)
-    POINTER(p_Af, gmem_Af)
+    POINTER(p_W8, gmem_A8)
+    POINTER(p_W9, gmem_A9)
+    POINTER(p_Wa, gmem_Aa)
+    POINTER(p_Wb, gmem_Ab)
+    POINTER(p_Wc, gmem_Ac)
+    POINTER(p_Wd, gmem_Ad)
+    POINTER(p_We, gmem_Ae)
+    POINTER(p_Wf, gmem_Af)
 #endif
     POINTER(p_vecIn0, gmem_vecIn0)
     POINTER(p_vecOut0, gmem_vecOut0)
@@ -114,14 +114,14 @@ extern "C" void krnl_fcn(HPC_interface* p_instr,
 #if HPC_vecChannels > 3
                p_vecIn3, p_vecOut3,
 #endif
-               p_A0, p_A1, p_A2, p_A3
+               p_W0, p_W1, p_W2, p_W3
 #if HPC_numChannels > 4
                ,
-               p_A4, p_A5, p_A6, p_A7
+               p_W4, p_W5, p_W6, p_W7
 #endif
 #if HPC_numChannels > 8
                ,
-               p_A8, p_A9, p_Aa, p_Ab, p_Ac, p_Ad, p_Ae, p_Af
+               p_W8, p_W9, p_Wa, p_Wb, p_Wc, p_Wd, p_We, p_Wf
 #endif
                );
 }

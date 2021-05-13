@@ -16,8 +16,7 @@
 
 #include "xf_blas.hpp"
 #include "streamOps.hpp"
-#include "activations.hpp"
-#include "fcnInstr.hpp"
+#include "streamAct.hpp"
 #ifndef XF_HPC_KERNEL_GEMV_HPP
 #define XF_HPC_KERNEL_GEMV_HPP
 
@@ -26,72 +25,23 @@ namespace hpc {
 namespace mlp {
 
 template <typename t_DataType,
-          unsigned int t_ParEntries,
-          typename T0 = typename xf::blas::WideType<t_DataType, t_ParEntries>::t_TypeInt>
-void streamActivation(const unsigned int p_n, hls::stream<T0>& p_in, hls::stream<T0>& p_out, const ActFunc_t p_act) {
-    switch (p_act) {
-        case ActFunc_t::RELU:
-            for (int i = 0; i < p_n; i++) {
-#pragma HLS PIPELINE
-                xf::blas::WideType<t_DataType, t_ParEntries> r = p_in.read();
-                xf::blas::WideType<t_DataType, t_ParEntries> o;
-                for (int j = 0; j < t_ParEntries; j++) {
-                    o[j] = relu(r[j]);
-                }
-                p_out.write(o);
-            }
-            break;
-        case ActFunc_t::SIGMOID:
-            for (int i = 0; i < p_n; i++) {
-#pragma HLS PIPELINE
-                xf::blas::WideType<t_DataType, t_ParEntries> r = p_in.read();
-                xf::blas::WideType<t_DataType, t_ParEntries> o;
-                for (int j = 0; j < t_ParEntries; j++) {
-                    o[j] = sigmoid(r[j]);
-                }
-                p_out.write(o);
-            }
-            break;
-        /*
-    case ActFunc_t::TANSIG:
-        for (int i = 0; i < p_n; i++) {
-#pragma HLS PIPELINE
-            xf::blas::WideType<t_DataType, t_ParEntries> r = p_in.read();
-            xf::blas::WideType<t_DataType, t_ParEntries> o;
-            for (int j = 0; j < t_ParEntries; j++) {
-                o[j] = tansig(r[j]);
-            }
-            p_out.write(o);
-        }
-        break;
-        */
-        default:
-            for (int i = 0; i < p_n; i++) {
-#pragma HLS PIPELINE
-                p_out.write(p_in.read());
-            }
-            break;
-    }
-}
-
-template <typename t_DataType,
           int t_ParEntries,
           int t_WeightChannels,
           int t_VecChannels,
           int t_NumActFuncs,
-          typename T0 = typename xf::blas::WideType<t_DataType, t_ParEntries>::t_TypeInt>
+          typename T0 = typename xf::blas::WideType<t_DataType, t_ParEntries>::t_TypeInt,
+          typename T1 = typename xf::blas::WideType<t_DataType, 1>::t_TypeInt,
+          typename T2 = typename xf::blas::WideType<t_DataType, t_NumActFuncs>::t_TypeInt>
 void fcn(uint32_t p_m,
          uint32_t p_n,
          const ActFunc_t p_act,
          hls::stream<T0> p_W[t_WeightChannels],
-         hls::stream<T0>& p_bias,
+         hls::stream<T2>& p_bias,
          hls::stream<T0> p_vecIn[t_VecChannels],
          hls::stream<T0> p_vecOut[t_VecChannels]) {
     static_assert(0 == t_ParEntries % t_NumActFuncs, "");
     static_assert(0 == t_WeightChannels % t_NumActFuncs, "");
 
-    typedef typename xf::blas::WideType<t_DataType, 1>::t_TypeInt T1;
-    typedef typename xf::blas::WideType<t_DataType, t_NumActFuncs>::t_TypeInt T2;
     constexpr int t_LogParEntries = xf::blas::mylog2(t_ParEntries);
 
     hls::stream<T0> l_pk[t_VecChannels][t_WeightChannels];
@@ -111,9 +61,7 @@ void fcn(uint32_t p_m,
 #pragma HLS ARRAY_PARTITION variable = l_strC complete dim = 1
 
 #pragma HLS DATAFLOW
-    wide2stream<sizeof(t_DataType) * 8 * t_NumActFuncs, t_ParEntries / t_NumActFuncs>(
-        p_m * t_WeightChannels / t_ParEntries, p_bias, l_strb);
-    streamFwd<t_VecChannels>(p_m * t_WeightChannels / t_NumActFuncs, l_strb, l_bias);
+    streamFwd<t_VecChannels>(p_m * t_WeightChannels / t_NumActFuncs, p_bias, l_bias);
     for (int i = 0; i < t_VecChannels; i++) {
 #pragma HLS UNROLL
         streamFwd<t_WeightChannels>(p_m * p_n / t_ParEntries, p_vecIn[i], l_pk[i]);

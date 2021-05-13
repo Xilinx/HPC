@@ -15,73 +15,45 @@
 */
 
 #include "xf_blas.hpp"
-#ifndef XF_HPC_KERNEL_GEMVMULT_HPP
-#define XF_HPC_KERNEL_GEMVMULT_HPP
+#ifndef XF_HPC_KERNEL_FCN_HPP
+#define XF_HPC_KERNEL_FCN_HPP
 
 typedef xf::blas::WideType<HPC_dataType, HPC_parEntries> HPC_wideType;
-typedef HPC_wideType::t_TypeInt HPC_interface;
+typedef typename HPC_wideType::t_TypeInt HPC_interface;
+
+typedef xf::blas::WideType<HPC_dataType, HPC_numActFuncs> HPC_biasType;
+typedef HPC_biasType::t_TypeInt HPC_biasInterface;
 
 /**
- * @brief krnl_fcn kernel function to compute A * p
+ * @brief krnl_fcn kernel function to compute y = f(W * x + b)
  *
- * @param p_m the row size of matrix A
- * @param p_n the col size of matrix A
- * @param p_A[0..f] the memory ports to vector A
+ * @param p_m the row size of matrix W
+ * @param p_n the col size of matrix W
+ * @param p_W[0..f] the memory ports to vector W
  * @param p_vecIn the input memory address to vector pk
  * @param p_vecOut the output memory address to vector Apk
  *
  */
-
-extern "C" void krnl_fcn(HPC_interface* p_instr,
-                         HPC_interface* p_A0,
-                         HPC_interface* p_A1,
-                         HPC_interface* p_A2,
-                         HPC_interface* p_A3,
+extern "C" void krnl_fcn(uint8_t* p_instr,
+                         HPC_interface* p_W0,
+                         HPC_interface* p_W1,
+                         HPC_interface* p_W2,
+                         HPC_interface* p_W3,
 #if HPC_numChannels > 4
-                         HPC_interface* p_A4,
-                         HPC_interface* p_A5,
-                         HPC_interface* p_A6,
-                         HPC_interface* p_A7,
+                         HPC_interface* p_W4,
+                         HPC_interface* p_W5,
+                         HPC_interface* p_W6,
+                         HPC_interface* p_W7,
 #endif
 #if HPC_numChannels > 8
-                         HPC_interface* p_A8,
-                         HPC_interface* p_A9,
-#endif
-#if HPC_numChannels > 10
-                         HPC_interface* p_Aa,
-                         HPC_interface* p_Ab,
-#endif
-#if HPC_numChannels > 12
-                         HPC_interface* p_Ac,
-                         HPC_interface* p_Ad,
-                         HPC_interface* p_Ae,
-                         HPC_interface* p_Af,
-#endif
-#if HPC_numChannels > 16
-                         HPC_interface* p_A10,
-                         HPC_interface* p_A11,
-                         HPC_interface* p_A12,
-                         HPC_interface* p_A13,
-#endif
-#if HPC_numChannels > 20
-                         HPC_interface* p_A14,
-                         HPC_interface* p_A15,
-                         HPC_interface* p_A16,
-                         HPC_interface* p_A17,
-#endif
-#if HPC_numChannels > 24
-                         HPC_interface* p_A18,
-#endif
-#if HPC_numChannels > 25
-                         HPC_interface* p_A19,
-                         HPC_interface* p_A1a,
-                         HPC_interface* p_A1b,
-#endif
-#if HPC_numChannels > 28
-                         HPC_interface* p_A1c,
-                         HPC_interface* p_A1d,
-                         HPC_interface* p_A1e,
-                         HPC_interface* p_A1f,
+                         HPC_interface* p_W8,
+                         HPC_interface* p_W9,
+                         HPC_interface* p_Wa,
+                         HPC_interface* p_Wb,
+                         HPC_interface* p_Wc,
+                         HPC_interface* p_Wd,
+                         HPC_interface* p_We,
+                         HPC_interface* p_Wf,
 #endif
                          HPC_interface* p_vecIn0,
                          HPC_interface* p_vecOut0,
@@ -97,5 +69,5 @@ extern "C" void krnl_fcn(HPC_interface* p_instr,
                          HPC_interface* p_vecIn3,
                          HPC_interface* p_vecOut3,
 #endif
-                         HPC_interface* p_bias);
+                         HPC_biasInterface* p_bias);
 #endif

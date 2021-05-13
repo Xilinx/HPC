@@ -69,7 +69,7 @@ class FCN {
         readBin(path_to_wi, m_InputSize * m_OutputSize * sizeof(T), m_Weight);
         readBin(path_to_bi, m_OutputSize * sizeof(T), m_Bias);
     }
-    void setData(const T* weight, const T* bias) {
+    void setData(T* weight, T* bias) {
         m_Weight = weight;
         m_Bias = bias;
     }
@@ -89,9 +89,8 @@ class MLP {
         m_Layers.resize(num);
     }
 
-    void setDim(vector<uint32_t>& m_Dims) {
-        assert(m_Dims.size() == m_NumLayers + 1);
-        copy(m_Dims.begin(), m_Dims.end(), this->m_Dims.begin());
+    void setDim(const uint32_t* m_Dims) {
+        copy(m_Dims, m_Dims + m_NumLayers + 1, this->m_Dims.begin());
         for (int i = 0; i < m_NumLayers; i++) {
             m_Layers[i].setDim(m_Dims[i], m_Dims[i + 1]);
         }
@@ -114,9 +113,34 @@ class MLP {
     }
 
     void setLayer(T** weights, T** bias) {
-        for (int i = 0; i < m_NumLayers; i++) m_Layers.setData(weights[i], bias[i]);
+        for (int i = 0; i < m_NumLayers; i++) m_Layers[i].setData(weights[i], bias[i]);
     }
 };
+
+extern "C" {
+
+void* createModel(int num) {
+    return (void*)new MLP<HPC_dataType>(num);
+}
+void destroyModel(void* model) {
+    delete (MLP<HPC_dataType>*)model;
+}
+void setDim(void* model, const uint32_t* p_dims) {
+    ((MLP<HPC_dataType>*)model)->setDim(p_dims);
+}
+void setActFunc(void* model, uint8_t p_act) {
+    ((MLP<HPC_dataType>*)model)->setActFunc(static_cast<ActFunc_t>(p_act));
+}
+void setActFuncByID(void* model, uint32_t p_id, uint8_t p_act) {
+    ((MLP<HPC_dataType>*)model)->setActFunc(p_id, static_cast<ActFunc_t>(p_act));
+}
+void loadLayer(void* model, const char* path) {
+    ((MLP<HPC_dataType>*)model)->loadLayer(path);
+}
+void setLayer(void* model, HPC_dataType** weights, HPC_dataType** bias) {
+    ((MLP<HPC_dataType>*)model)->setLayer(weights, bias);
+}
+}
 }
 }
 }

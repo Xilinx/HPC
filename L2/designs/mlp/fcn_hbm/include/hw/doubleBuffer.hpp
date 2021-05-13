@@ -26,13 +26,6 @@ class DoubleBuffer : public Buffer<t_DataType, t_BufferSize> {
     typedef hls::stream<t_DataType> DdrStream;
     typedef Buffer<t_DataType, t_BufferSize> t_BufferType;
 
-    void writeMem(unsigned int p_n, hls::stream<t_DataType>& p_str, t_DataType* p_mem, unsigned int p_batch = 1) {
-#pragma HLS DATAFLOW
-        hls::stream<t_DataType> l_str;
-        process(p_str, l_str, p_n, 1, p_batch);
-        xf::blas::stream2mem(p_n, l_str, p_mem, p_batch);
-    }
-
     void readMem(unsigned int p_n,
                  t_DataType* p_mem,
                  hls::stream<t_DataType>& p_str,

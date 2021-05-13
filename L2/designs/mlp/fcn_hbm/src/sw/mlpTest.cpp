@@ -49,21 +49,29 @@ int main(int argc, char** argv) {
     readBin(filePath + "in.mat", h_x.size() * sizeof(HPC_dataType), h_x);
     readBin(filePath + "out.mat", h_ref.size() * sizeof(HPC_dataType), h_ref);
 
+    /*
     xf::hpc::mlp::MLP<HPC_dataType> mlp(numLayers);
-    mlp.setDim(layers);
+    mlp.setDim(layers.data());
     mlp.setActFunc(xf::hpc::mlp::ActFunc_t::SIGMOID);
     mlp.loadLayer(filePath);
+    */
+
+    void* mlp = createModel(numLayers);
+    setDim(mlp, layers.data());
+    setActFunc(mlp, static_cast<uint8_t>(xf::hpc::mlp::ActFunc_t::SIGMOID));
+    loadLayer(mlp, filePath.c_str());
 
     FPGA fpga(l_deviceId);
     fpga.xclbin(binaryFile);
-    MLPKernel<HPC_dataType, HPC_instrBytes, HPC_numChannels, HPC_vecChannels> mlpKernel(&fpga);
+    MLPKernel<HPC_dataType, HPC_instrBytes> mlpKernel(&fpga, HPC_numChannels, HPC_vecChannels, HPC_parEntries);
     mlpKernel.getCU("krnl_fcn");
-    mlpKernel.loadModel(&mlp);
+    mlpKernel.loadModel((MLP<HPC_dataType>*)mlp);
     double sec = mlpKernel.inference(h_x, h_v);
     cout << "SW measured execution time is: " << sec << " s." << endl;
 
     int err = 0;
     compare(layers.back() * p_batch, h_v.data(), h_ref.data(), err, false);
+    destroyModel(mlp);
     if (err == 0) {
         cout << "Results verified." << endl;
         return EXIT_SUCCESS;

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * **********/
+
 /**
  *  @file instr.hpp
  *  @brief HPC_CG Level 1 template function implementation.
@@ -128,7 +129,7 @@ class FcnInstr : public MemInstr<t_InstrBytes> {
         super::template decode<uint64_t>(l_loc, m_Clock);
     }
 
-   public:
+   private:
     uint32_t m_InVecSize = 0;
     uint32_t m_OutVecSize = 0;
     uint32_t m_Batch = 0;
