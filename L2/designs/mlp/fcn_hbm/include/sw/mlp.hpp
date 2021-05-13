@@ -125,6 +125,10 @@ class MLP {
     void setLayer(T** weights, T** bias) {
         for (int i = 0; i < m_NumLayers; i++) m_Layers[i].setData(weights[i], bias[i]);
     }
+    
+    void setLayter(int layerId, T* weights, T* bias) {
+        m_layer[layerId].setData(weights, bias);
+    }
 };
 }
 }
