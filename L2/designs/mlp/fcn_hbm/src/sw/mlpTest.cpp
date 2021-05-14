@@ -24,10 +24,11 @@
 #include <cassert>
 
 // This file is required for OpenCL C++ wrapper APIs
-#include "mlpKernel.hpp"
+#include "mlpBase.hpp"
 #include "utils.hpp"
 
 using namespace std;
+using namespace xilinx_apps::mlp;
 
 int main(int argc, char** argv) {
     int32_t l_index = 0;
@@ -56,7 +57,21 @@ int main(int argc, char** argv) {
     mlp.loadLayer(filePath);
     */
 
-    void* mlp = createModel(numLayers);
+    Options l_options;
+    l_options.numDevices = 1;
+    l_options.deviceIds[0] = l_deviceId;
+    l_options.xclbinNames[0] = binaryFile;
+    l_options.numCUsOnDevice[0] = 1;
+    l_options.cuNames[0][0] = "krnl_fcn";
+
+    MLPBase l_mlp(l_options);
+    l_mlp.addEmptyModel(numLayers);
+    l_mlp.setDim(0, layers.data());
+    l_mlp.setAllActFunc(0, static_cast<uint8_t>(xf::hpc::mlp::ActFunc_t::SIGMOID));
+    l_mlp.loadLayersFromFile(0, filePath.c_str());
+    double sec = l_mlp.inference(h_x, h_v, 0, 0);
+
+    /*void* mlp = createModel(numLayers);
     setDim(mlp, layers.data());
     setActFunc(mlp, static_cast<uint8_t>(xf::hpc::mlp::ActFunc_t::SIGMOID));
     loadLayer(mlp, filePath.c_str());
@@ -66,12 +81,12 @@ int main(int argc, char** argv) {
     MLPKernel<HPC_dataType, HPC_instrBytes> mlpKernel(&fpga, HPC_numChannels, HPC_vecChannels, HPC_parEntries);
     mlpKernel.getCU("krnl_fcn");
     mlpKernel.loadModel((MLP<HPC_dataType>*)mlp);
-    double sec = mlpKernel.inference(h_x, h_v);
+    double sec = mlpKernel.inference(h_x, h_v);*/
     cout << "SW measured execution time is: " << sec << " s." << endl;
 
     int err = 0;
     compare(layers.back() * p_batch, h_v.data(), h_ref.data(), err, false);
-    destroyModel(mlp);
+    //destroyModel(mlp);
     if (err == 0) {
         cout << "Results verified." << endl;
         return EXIT_SUCCESS;

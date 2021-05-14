@@ -27,30 +27,28 @@
 
 using namespace std;
 using namespace xf::hpc::mlp;
-using MaxNumDevs=8;
-using MaxNumCUs = 8;
 
 namespace xilinx_apps {
 namespace mlp {
 
     struct Options {
-        int32_t numDevices;
-        int8_t deviceIds[MaxNumDevs]
-        string xclbinNames[MaxNumDevs];
-        string numCUsOnDevice[MaxNumDevs];
-        string cuNames[MaxNumDevs][MaxNumCUs];
+        uint32_t numDevices;
+        uint8_t deviceIds[HPC_maxNumDevs];
+        string xclbinNames[HPC_maxNumDevs];
+        uint8_t numCUsOnDevice[HPC_maxNumDevs];
+        string cuNames[HPC_maxNumDevs][HPC_maxNumCUsPerDev];
     };
 
     class MLPBase {
         public:
             MLPBase(const Options& options) {
-                for (int i=0; i<options.numDevices; ++i) {
+                for (unsigned int i=0; i<options.numDevices; ++i) {
                     m_devices.push_back(new FPGA(options.deviceIds[i]));
-                    m_devices.back().xclbin(options.xclbinNames[i]);
+                    m_devices.back()->xclbin(options.xclbinNames[i]);
 
-                    for (int j=0; j<options.numCUsOnDevice[i]; ++j) {
-                        m_cus.push_back(new MLPKernel<HPC_dataType, HPC_instrBytes>(&(m_devices[i]), HPC_numChannels, HPC_vecChannels, HPC_parEntries));
-                        m_cus.back().getCU(options.cuNames[i][j]);
+                    for (unsigned int j=0; j<options.numCUsOnDevice[i]; ++j) {
+                        m_cus.push_back(new MLPKernel<HPC_dataType, HPC_instrBytes>(m_devices[i], HPC_numChannels, HPC_vecChannels, HPC_parEntries));
+                        m_cus.back()->getCU(options.cuNames[i][j]);
                     }   
                 }   
             }
@@ -66,30 +64,44 @@ namespace mlp {
                 }
             }
 
-            void addEmptyModel(int numLayers) {
-                m_models.push_back(new MLP<HPC_dataType>(numLayers));
+            void addEmptyModel(const uint32_t p_numLayers) {
+                m_models.push_back(new MLP<HPC_dataType>(p_numLayers));
             }
 
-            void setDim(int modelId, const uint32_t* dims) {
-                m_models[i]->setDim(dims);
+            void setDim(const uint32_t p_modelId, const uint32_t* dims) {
+                m_models[p_modelId]->setDim(dims);
             }
             
-            void setActFunc(int modelId, int layerId, uint8_t act) {
-                m_models[i]->setActFunc(layerId, static_cast<ActFunc_t>(act));
+            void setActFunc(const uint32_t p_modelId, const uint32_t p_layerId, uint8_t p_act) {
+                m_models[p_modelId]->setActFunc(p_layerId, static_cast<ActFunc_t>(p_act));
             }
 
-            void setLayer(int modelId, int layerId, HPC_dataType* weights, HPC_dataType* bias) {
-                m_models[i]->setLayer(layerId, weights, bias);
+            void setAllActFunc(const uint32_t p_modelId, uint8_t p_act) {
+                m_models[p_modelId]->setActFunc(static_cast<ActFunc_t>(p_act));
+            }
+
+            void setLayer(const uint32_t p_modelId, const uint32_t p_layerId, HPC_dataType* p_weights, HPC_dataType* p_bias) {
+                m_models[p_modelId]->setLayer(p_layerId, p_weights, p_bias);
             } 
 
-            void inference(host_buffer_t<HPC_dataType>& p_x, host_buffer_t<HPC_dataType>& p_y, int p_modelId=0, p_cuId=0) {
-                m_cus[p_cuId].inference(*(m_models[p_modelId]))
+            void setAllLayers(const uint32_t p_modelId, HPC_dataType** p_weights, HPC_dataType** p_bias) {
+                m_models[p_modelId]->setLayer(p_weights, p_bias);
+            }
+            
+            void loadLayersFromFile(const uint32_t p_modelId, const char* p_path) {
+                m_models[p_modelId]->loadLayer(p_path);
+            } 
+
+            double inference(host_buffer_t<HPC_dataType>& p_x, host_buffer_t<HPC_dataType>& p_y, const uint32_t p_modelId=0, const uint32_t p_cuId=0) {
+                m_cus[p_cuId]->loadModel(m_models[p_modelId]);
+                double sec = m_cus[p_cuId]->inference(p_x, p_y);
+                return sec;
             }
         private:
             vector<FPGA* > m_devices;
             vector<MLPKernel<HPC_dataType, HPC_instrBytes>* > m_cus;
             vector<MLP<HPC_dataType>* > m_models;
-    }
+    };
 
 }
 };
