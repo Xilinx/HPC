@@ -75,23 +75,18 @@ class Signature {
         p_spm.sort_by_row();
         int l_minRowId = p_spm.getMinRowId();
         while (l_eId < p_spm.getNnz()) {
-            vector<int> l_row;
-            vector<int> l_col;
-            vector<double> l_data;
             if (p_spm.getRow(p_spm.getNnz() - 1) < (l_minRowId + m_maxRows)) {
                 l_eId = p_spm.getNnz();
             } else {
-                auto l_up = upper_bound(p_spm.getRows(), p_spm.getRows() + m_nnz, l_minRowId + m_maxRows, compare);
-                l_eId = distance(p_spm.getRows(), l_up);
+                auto l_up =
+                    upper_bound(p_spm.getRows().begin(), p_spm.getRows().end(), l_minRowId + m_maxRows, compare);
+                l_eId = distance(p_spm.getRows().begin(), l_up);
             }
             if (l_eId > l_sId) {
-                int old_size = l_row.size();
-                l_row.resize(old_size + l_eId - l_sId);
-                copy(p_spm.getRows() + l_sId, p_spm.getRows() + l_eId, &l_row[old_size]);
-                l_col.resize(old_size + l_eId - l_sId);
-                copy(p_spm.getCols() + l_sId, p_spm.getCols() + l_eId, &l_col[old_size]);
-                l_data.resize(old_size + l_eId - l_sId);
-                copy(p_spm.getDatas() + l_sId, p_spm.getDatas() + l_eId, &l_data[old_size]);
+                vector<int> l_row = p_spm.getSubRows(l_sId, l_eId);
+                vector<int> l_col = p_spm.getSubCols(l_sId, l_eId);
+                vector<double> l_data = p_spm.getSubDatas(l_sId, l_eId);
+
                 int l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId = 0;
                 SparseMatrix l_rbSpm = add_spm(l_row, l_col, l_data, l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId);
                 p_rbSpms.push_back(l_rbSpm);
@@ -125,25 +120,17 @@ class Signature {
             int l_minColId = (l_rbSpm.getMinColId() / m_parEntries) * m_parEntries;
             int l_sId = 0, l_eId = 0;
             while (l_eId < l_rbSpm.getNnz()) {
-                vector<int> l_row;
-                vector<int> l_col;
-                vector<double> l_data;
                 if (l_rbSpm.getCol(l_rbSpm.getNnz() - 1) < l_minColId + m_maxCols) {
                     l_eId = l_rbSpm.getNnz();
                 } else {
-                    auto l_up =
-                        upper_bound(l_rbSpm.getCols(), l_rbSpm.getCols() + m_nnz, l_minColId + m_maxCols, compare);
-                    l_eId = distance(l_rbSpm.getCols(), l_up);
+                    auto l_up = upper_bound(l_rbSpm.getCols().begin(), l_rbSpm.getCols().end(), l_minColId + m_maxCols,
+                                            compare);
+                    l_eId = distance(l_rbSpm.getCols().begin(), l_up);
                 }
                 if (l_eId > l_sId) {
-                    int old_size = l_row.size();
-                    l_row.resize(old_size + l_eId - l_sId);
-                    l_col.resize(old_size + l_eId - l_sId);
-                    l_data.resize(old_size + l_eId - l_sId);
-                    copy(l_rbSpm.getRows() + l_sId, l_rbSpm.getRows() + l_eId, &l_row[old_size]);
-                    copy(l_rbSpm.getCols() + l_sId, l_rbSpm.getCols() + l_eId, &l_col[old_size]);
-                    copy(l_rbSpm.getDatas() + l_sId, l_rbSpm.getDatas() + l_eId, &l_data[old_size]);
-
+                    vector<int> l_row = l_rbSpm.getSubRows(l_sId, l_eId);
+                    vector<int> l_col = l_rbSpm.getSubCols(l_sId, l_eId);
+                    vector<double> l_data = l_rbSpm.getSubDatas(l_sId, l_eId);
                     int l_m = 0, l_n = 0, l_nnz = 0, l_spmMinRowId = 0, l_spmMinColId = 0;
                     SparseMatrix l_parSpm =
                         add_spm(l_row, l_col, l_data, l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId);
@@ -263,15 +250,11 @@ class Signature {
                        (l_parSpm.getRow(l_eId) == l_parSpm.getRow(l_eId - 1))) {
                     l_eId += 1;
                 }
-                vector<int> l_row;
-                vector<int> l_col;
-                vector<double> l_data;
-                l_row.resize(l_eId - l_sId);
-                copy(l_parSpm.getRows() + l_sId, l_parSpm.getRows() + l_eId, &l_row[0]);
-                l_col.resize(l_eId - l_sId);
-                copy(l_parSpm.getCols() + l_sId, l_parSpm.getCols() + l_eId, &l_col[0]);
-                l_data.resize(l_eId - l_sId);
-                copy(l_parSpm.getDatas() + l_sId, l_parSpm.getDatas() + l_eId, &l_data[0]);
+
+                vector<int> l_row = l_parSpm.getSubRows(l_sId, l_eId);
+                vector<int> l_col = l_parSpm.getSubCols(l_sId, l_eId);
+                vector<double> l_data = l_parSpm.getSubDatas(l_sId, l_eId);
+
                 l_sId = l_eId;
                 int l_m = 0, l_n = 0, l_nnz = 0, l_minRowId = 0, l_minColId = 0;
                 SparseMatrix l_chParSpm = add_spm(l_row, l_col, l_data, l_m, l_n, l_nnz, l_minRowId, l_minColId);

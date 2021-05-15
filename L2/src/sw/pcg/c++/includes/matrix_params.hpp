@@ -48,66 +48,55 @@ void saveBin(string name, char* mat, unsigned int totalSize) {
 
 class SparseMatrix {
    public:
-    SparseMatrix() {
-        m_row_list = nullptr;
-        m_col_list = nullptr;
-        m_data_list = nullptr;
-    }
+    SparseMatrix() = default;
     SparseMatrix(int m, int n, int nnz) {
         m_m = m;
         m_n = n;
         m_nnz = nnz;
-        m_row_list = nullptr;
-        m_col_list = nullptr;
-        m_data_list = nullptr;
     }
 
     void load_row(string path) {
-        m_row_list = (int*)malloc(m_nnz * sizeof(int));
-        readBin(path, (char*)m_row_list, m_nnz * sizeof(int));
-        m_minRowId = *(min_element(m_row_list, m_row_list + m_nnz));
+        m_row_list.resize(m_nnz);
+        readBin(path, (char*)&m_row_list[0], m_nnz * sizeof(int));
+        m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
     }
 
     void load_col(string path) {
-        m_col_list = (int*)malloc(m_nnz * sizeof(int));
-        readBin(path, (char*)m_col_list, m_nnz * sizeof(int));
-        m_minColId = *(min_element(m_col_list, m_col_list + m_nnz));
+        m_col_list.resize(m_nnz);
+        readBin(path, (char*)&m_col_list[0], m_nnz * sizeof(int));
+        m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
     void load_data(string path) {
-        m_data_list = (double*)malloc(m_nnz * sizeof(double));
-        readBin(path, (char*)m_data_list, m_nnz * sizeof(double));
+        m_data_list.resize(m_nnz);
+        readBin(path, (char*)&m_data_list[0], m_nnz * sizeof(double));
     }
 
     void create_matrix(vector<int> p_row, vector<int> p_col, vector<double> p_data) {
         m_nnz = p_row.size();
-        m_row_list = (int*)malloc(m_nnz * sizeof(int));
-        m_col_list = (int*)malloc(m_nnz * sizeof(int));
-        m_data_list = (double*)malloc(m_nnz * sizeof(double));
+        m_row_list = p_row;
+        m_col_list = p_col;
+        m_data_list = p_data;
 
-        memcpy(m_row_list, &p_row[0], m_nnz * sizeof(int));
-        memcpy(m_col_list, &p_col[0], m_nnz * sizeof(int));
-        memcpy(m_data_list, &p_data[0], m_nnz * sizeof(double));
-
-        m_minRowId = *(min_element(m_row_list, m_row_list + m_nnz));
-        m_minColId = *(min_element(m_col_list, m_col_list + m_nnz));
-        int l_maxRowId = *(max_element(m_row_list, m_row_list + m_nnz));
-        int l_maxColId = *(max_element(m_col_list, m_col_list + m_nnz));
+        m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
+        m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
+        int l_maxRowId = *(max_element(m_row_list.begin(), m_row_list.end()));
+        int l_maxColId = *(max_element(m_col_list.begin(), m_col_list.end()));
         m_m = l_maxRowId - m_minRowId + 1;
         m_n = l_maxColId - m_minColId + 1;
     }
 
     int getRow(int index) { return m_row_list[index]; }
 
-    int* getRows() { return m_row_list; }
+    vector<int> getRows() { return m_row_list; }
 
     int getCol(int index) { return m_col_list[index]; }
 
-    int* getCols() { return m_col_list; }
+    vector<int> getCols() { return m_col_list; }
 
     double getData(int index) { return m_data_list[index]; }
 
-    double* getDatas() { return m_data_list; }
+    vector<double> getDatas() { return m_data_list; }
 
     int getM() { return m_m; }
 
@@ -117,6 +106,19 @@ class SparseMatrix {
 
     int getMinRowId() { return m_minRowId; }
     int getMinColId() { return m_minColId; }
+
+    vector<int> getSubRows(int start, int end) {
+        vector<int> l_row(m_row_list.begin() + start, m_row_list.begin() + end);
+        return l_row;
+    }
+    vector<int> getSubCols(int start, int end) {
+        vector<int> l_col(m_col_list.begin() + start, m_col_list.begin() + end);
+        return l_col;
+    }
+    vector<double> getSubDatas(int start, int end) {
+        vector<double> l_data(m_data_list.begin() + start, m_data_list.begin() + end);
+        return l_data;
+    }
 
     bool sort_by_row() {
         vector<int> idx(m_nnz);
@@ -133,9 +135,9 @@ class SparseMatrix {
             l_col_list[i] = m_col_list[idx[i]];
             l_data_list[i] = m_data_list[idx[i]];
         }
-        memcpy(m_row_list, l_row_list, m_nnz * sizeof(int));
-        memcpy(m_col_list, l_col_list, m_nnz * sizeof(int));
-        memcpy(m_data_list, l_data_list, m_nnz * sizeof(double));
+        memcpy(&m_row_list[0], l_row_list, m_nnz * sizeof(int));
+        memcpy(&m_col_list[0], l_col_list, m_nnz * sizeof(int));
+        memcpy(&m_data_list[0], l_data_list, m_nnz * sizeof(double));
         free(l_row_list);
         free(l_col_list);
         free(l_data_list);
@@ -155,9 +157,9 @@ class SparseMatrix {
             l_col_list[i] = m_col_list[idx[i]];
             l_data_list[i] = m_data_list[idx[i]];
         }
-        memcpy(m_row_list, l_row_list, m_nnz * sizeof(int));
-        memcpy(m_col_list, l_col_list, m_nnz * sizeof(int));
-        memcpy(m_data_list, l_data_list, m_nnz * sizeof(double));
+        memcpy(&m_row_list[0], l_row_list, m_nnz * sizeof(int));
+        memcpy(&m_col_list[0], l_col_list, m_nnz * sizeof(int));
+        memcpy(&m_data_list[0], l_data_list, m_nnz * sizeof(double));
         free(l_row_list);
         free(l_col_list);
         free(l_data_list);
@@ -165,8 +167,9 @@ class SparseMatrix {
 
    private:
     int m_m, m_n, m_nnz;
-    int *m_row_list, *m_col_list;
-    double* m_data_list;
+    vector<int> m_row_list;
+    vector<int> m_col_list;
+    vector<double> m_data_list;
     int m_minRowId, m_minColId;
 };
 
@@ -407,20 +410,20 @@ class ParParam {
 
 class NnzStore {
    public:
-    int* m_totalBks;
-    int* m_totalRowIdxBks;
-    int* m_totalColIdxBks;
-    int* m_totalNnzBks;
+    vector<int> m_totalBks;
+    vector<int> m_totalRowIdxBks;
+    vector<int> m_totalColIdxBks;
+    vector<int> m_totalNnzBks;
     NnzStore() = default;
     NnzStore(int p_memBits, int p_parEntries, int p_accLatency, int p_channels) {
         m_memBytes = p_memBits / 8;
         p_parEntries = m_parEntries;
         m_accLatency = p_accLatency;
         m_channels = p_channels;
-        m_totalBks = (int*)malloc(m_channels * sizeof(int));
-        m_totalRowIdxBks = (int*)malloc(m_channels * sizeof(int));
-        m_totalColIdxBks = (int*)malloc(m_channels * sizeof(int));
-        m_totalNnzBks = (int*)malloc(m_channels * sizeof(int));
+        m_totalBks.resize(m_channels);
+        m_totalRowIdxBks.resize(m_channels);
+        m_totalColIdxBks.resize(m_channels);
+        m_totalNnzBks.resize(m_channels);
         m_buf.resize(m_channels);
     }
 
@@ -429,10 +432,10 @@ class NnzStore {
         p_parEntries = m_parEntries;
         m_accLatency = p_accLatency;
         m_channels = p_channels;
-        m_totalBks = (int*)malloc(m_channels * sizeof(int));
-        m_totalRowIdxBks = (int*)malloc(m_channels * sizeof(int));
-        m_totalColIdxBks = (int*)malloc(m_channels * sizeof(int));
-        m_totalNnzBks = (int*)malloc(m_channels * sizeof(int));
+        m_totalBks.resize(m_channels);
+        m_totalRowIdxBks.resize(m_channels);
+        m_totalColIdxBks.resize(m_channels);
+        m_totalNnzBks.resize(m_channels);
         m_buf.resize(m_channels);
     }
 
