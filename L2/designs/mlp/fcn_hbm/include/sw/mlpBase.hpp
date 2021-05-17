@@ -53,6 +53,71 @@ namespace mlp {
                 }   
             }
             ~MLPBase() {
+            }
+
+            void addEmptyModel(const uint32_t p_numLayers) {
+                m_models.push_back(new MLP<HPC_dataType>(p_numLayers));
+            }
+
+            void setDim(const uint32_t p_modelId, const void* dims) {
+                m_models[p_modelId]->setDim((uint32_t*)(dims));
+            }
+            
+            void setActFunc(const uint32_t p_modelId, const uint32_t p_layerId, const string &p_act) {
+                auto l_func = ActFunc_t::NONE;
+                if (p_act == "linear") {
+                    l_func = ActFunc_t::LINEAR;
+                }
+                else if (p_act == "relu") {
+                    l_func = ActFunc_t::RELU;
+                }
+                else if (p_act == "sigmoid") {
+                    l_func = ActFunc_t::SIGMOID;
+                }
+                else if (p_act == "tansig") {
+                    l_func = ActFunc_t::TANSIG;
+                }
+                m_models[p_modelId]->setActFunc(p_layerId, l_func);
+            }
+
+            void setAllActFunc(const uint32_t p_modelId, const string &p_act) {
+                auto l_func = ActFunc_t::NONE;
+                if (p_act == "linear") {
+                    l_func = ActFunc_t::LINEAR;
+                }
+                else if (p_act == "relu") {
+                    l_func = ActFunc_t::RELU;
+                }
+                else if (p_act == "sigmoid") {
+                    l_func = ActFunc_t::SIGMOID;
+                }
+                else if (p_act == "tansig") {
+                    l_func = ActFunc_t::TANSIG;
+                }
+                m_models[p_modelId]->setActFunc(l_func);
+            }
+
+            void setLayer(const uint32_t p_modelId, const uint32_t p_layerId, void* p_weights, void* p_bias) {
+                m_models[p_modelId]->setLayer(p_layerId, (HPC_dataType*)p_weights, (HPC_dataType*)p_bias);
+            } 
+
+            void setAllLayers(const uint32_t p_modelId, void** p_weights, void** p_bias) {
+                m_models[p_modelId]->setLayer((HPC_dataType**)(p_weights), (HPC_dataType**)(p_bias));
+            }
+            
+            void loadLayersFromFile(const uint32_t p_modelId, const void* p_path) {
+                m_models[p_modelId]->loadLayer((char*)(p_path));
+            } 
+
+            void loadModel(const uint32_t p_modelId=0, const uint32_t p_cuId=0) {
+                m_cus[p_cuId]->loadModel(m_models[p_modelId]);
+            }
+
+            double inference(host_buffer_t<HPC_dataType>& p_x, host_buffer_t<HPC_dataType>& p_y, const uint32_t p_modelId=0, const uint32_t p_cuId=0) {
+                double sec = m_cus[p_cuId]->inference(p_x, p_y);
+                return sec;
+            }
+            void clear() {
                 for (int i=0; i<m_devices.size(); ++i) {
                     delete m_devices[i];       
                 }
@@ -62,40 +127,6 @@ namespace mlp {
                 for (int i=0; i<m_models.size(); ++i) {
                     delete m_models[i];
                 }
-            }
-
-            void addEmptyModel(const uint32_t p_numLayers) {
-                m_models.push_back(new MLP<HPC_dataType>(p_numLayers));
-            }
-
-            void setDim(const uint32_t p_modelId, const uint32_t* dims) {
-                m_models[p_modelId]->setDim(dims);
-            }
-            
-            void setActFunc(const uint32_t p_modelId, const uint32_t p_layerId, uint8_t p_act) {
-                m_models[p_modelId]->setActFunc(p_layerId, static_cast<ActFunc_t>(p_act));
-            }
-
-            void setAllActFunc(const uint32_t p_modelId, uint8_t p_act) {
-                m_models[p_modelId]->setActFunc(static_cast<ActFunc_t>(p_act));
-            }
-
-            void setLayer(const uint32_t p_modelId, const uint32_t p_layerId, HPC_dataType* p_weights, HPC_dataType* p_bias) {
-                m_models[p_modelId]->setLayer(p_layerId, p_weights, p_bias);
-            } 
-
-            void setAllLayers(const uint32_t p_modelId, HPC_dataType** p_weights, HPC_dataType** p_bias) {
-                m_models[p_modelId]->setLayer(p_weights, p_bias);
-            }
-            
-            void loadLayersFromFile(const uint32_t p_modelId, const char* p_path) {
-                m_models[p_modelId]->loadLayer(p_path);
-            } 
-
-            double inference(host_buffer_t<HPC_dataType>& p_x, host_buffer_t<HPC_dataType>& p_y, const uint32_t p_modelId=0, const uint32_t p_cuId=0) {
-                m_cus[p_cuId]->loadModel(m_models[p_modelId]);
-                double sec = m_cus[p_cuId]->inference(p_x, p_y);
-                return sec;
             }
         private:
             vector<FPGA* > m_devices;

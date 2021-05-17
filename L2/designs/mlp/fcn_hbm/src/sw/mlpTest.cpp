@@ -67,9 +67,11 @@ int main(int argc, char** argv) {
     MLPBase l_mlp(l_options);
     l_mlp.addEmptyModel(numLayers);
     l_mlp.setDim(0, layers.data());
-    l_mlp.setAllActFunc(0, static_cast<uint8_t>(xf::hpc::mlp::ActFunc_t::SIGMOID));
+    l_mlp.setAllActFunc(0, "sigmoid");
     l_mlp.loadLayersFromFile(0, filePath.c_str());
+    l_mlp.loadModel(0,0);
     double sec = l_mlp.inference(h_x, h_v, 0, 0);
+    l_mlp.clear();
 
     /*void* mlp = createModel(numLayers);
     setDim(mlp, layers.data());
