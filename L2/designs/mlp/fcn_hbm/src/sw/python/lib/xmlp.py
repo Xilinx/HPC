@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import math
 import numpy as np
 from tensorflow import keras
 #import xMLPBase as xMLP
@@ -56,13 +56,13 @@ class AlveoModel:
         self.outDim = p_dims[-1]
         self.lastActFunc = p_actFuncs[-1]
         #pad dims
-        self.dims.append((p_dims[0]//self.parEntries)*self.parEntries)
+        self.dims.append(math.ceil(p_dims[0]/self.parEntries)*self.parEntries)
         for i in range(1,self.numLayers):
             l_dim = p_dims[i]
             while (l_dim %self.parEntries != 0) or (l_dim %self.weightChannels != 0):
                 l_dim += 1
             self.dims.append(l_dim)
-        self.dims.append((p_dim[self.numLayers]//self.weightChannels)*self.weightChannels)
+        self.dims.append(math.ceil(p_dims[self.numLayers]/self.weightChannels)*self.weightChannels)
         for i in range(self.numLayers):
             l_layer = p_model.layers[p_layerIds[i]]
             l_weights = l_layer.weights[0][:].numpy()
@@ -74,26 +74,32 @@ class AlveoModel:
             l_bias = np.pad(l_bias, (0,l_padRows), 'constant')
             self.weights.append(l_weights)
             self.bias.append(l_bias)
+            self.actFuncs.append(p_actFuncs[i])
 
     def predict(self, p_xMat):
         l_xMat = np.reshape(p_xMat, (-1, self.inDim)).astype(np.float32)
         l_padRows = (self.vecChannels-(l_xMat.shape[0]%self.vecChannels)) % self.vecChannels
         l_padCols = self.dims[0] - l_xMat.shape[1]
         l_xMat = np.pad(l_xMat, [(0, l_padRows), (0, l_padCols)], 'constant')
-        for i in range(self.layers):
-            l_xMat = np.transpose(self.weights[i] * np.transpose(l_xMat))
+        for i in range(len(self.weights)):
+            l_xMat = self.weights[i] @ np.transpose(l_xMat)
+            l_xMat = np.transpose(l_xMat)
             l_xMat += self.bias[i]
-        l_act = self.actFuncs[i]
-        if l_act == 'relu':
-            l_xMat = np.maximum(l_xMat,0)
-        elif l_act == 'sigmoid':
-            l_xMat = 1/(1+np.exp(-l_xMat))
-        elif l_act == 'softmax':
+            l_act = self.actFuncs[i]
+            if l_act == 'relu':
+                l_xMat = np.maximum(l_xMat,0)
+            elif l_act == 'sigmoid':
+                l_xMat = 1/(1+np.exp(-l_xMat))
+            else:
+                l_xMat = l_xMat[:, 0:self.outDim]
+
+        if self.lastActFunc == 'softmax':
             l_exp = np.exp(l_xMat)
-            for i in range(l_xMat.shape[0]):
-                l_sum = np.sum(l_exp[i])
-                l_xMat[i] = l_exp[i]/l_sum
-        return l_xMat[:][0:self.outDim]
+            for j in range(l_xMat.shape[0]):
+                l_sum = np.sum(l_exp[j])
+                l_xMat[j] = l_exp[j]/l_sum
+        l_resMat = l_xMat[:, 0:self.outDim]
+        return l_resMat
         
 
 class xMLPInf:
@@ -140,18 +146,17 @@ class xMLPInf:
                     l_eId = p_actFuncs.index(func)+1
                     break
 
-            if l_forCpu:
+            if l_forCpu and l_eId > l_sId:
                 l_cpuModel = CpuModel()
-                l_cpuModel.build(p_model, p_layerIds[l_sId:l_eId], p_dims[l_sId:l_eId], p_actFuncs[l_sId:l_eId])
+                l_cpuModel.build(p_model, p_layerIds[l_sId:l_eId], p_dims[l_sId:l_eId+1], p_actFuncs[l_sId:l_eId])
                 l_sId = l_eId
-                l_forCpu = False
                 l_resModels.append(l_cpuModel)
-            else:
-                l_alveoModel = AlveoModel(self.weightChannels, self.vecChannels, self.parEntries, self.actFuncs)
+            elif (not l_forCpu) and l_eId > l_sId:
+                l_alveoModel = AlveoModel(self.weightChannels, self.vecChannels, self.parEntries, self.devActFuncs)
                 l_alveoModel.build(p_model, p_layerIds[l_sId:l_eId], p_dims[l_sId:l_eId+1], p_actFuncs[l_sId:l_eId])
                 l_sId = l_eId
-                l_forCpu = True
                 l_resModels.append(l_alveoModel)
+            l_forCpu = not l_forCpu
         return l_resModels
  
     def buildModels(self, p_model):

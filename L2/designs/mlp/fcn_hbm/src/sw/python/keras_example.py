@@ -90,7 +90,8 @@ def evaluate(p_modelFileName, p_inFileName, p_outFileName, p_refFileName, p_mode
 
 def xmlp_inf(p_modelFileName, p_inFileName, p_xmlpOutFileName):
     l_model = load_model(p_modelFileName)
-    l_devConf = [16, 2, 8, []]
+    l_devConf = [16, 2, 8, ['relu', 'sigmoid', 'linear']]
+    #l_devConf = [16, 2, 8, []]
     l_mlpInf = xMLPInf(l_devConf)
     l_isMLP = l_mlpInf.buildModels(l_model)
     if l_isMLP:
@@ -111,7 +112,7 @@ def verify_inf(p_fileName, p_goldenFileName):
     return l_equal
 
 
-def process_model(p_needTrain, p_inf, p_evaluate, p_fcn, p_modelPath, p_modelName):
+def process_model(p_needTrain, p_inf, p_evaluate, p_xMLP, p_modelPath, p_modelName):
     l_path = p_modelPath +'/'+p_modelName
     if not path.exists(l_path):
         subprocess.run(["mkdir","-p",l_path])
@@ -125,15 +126,15 @@ def process_model(p_needTrain, p_inf, p_evaluate, p_fcn, p_modelPath, p_modelNam
     if p_inf:
         l_ms = evaluate(l_modelFileName, l_inFileName, l_outFileName, l_refFileName, p_modelName, p_evaluate)
         print("INFO: Keras inference takes {}ms".format(l_ms))
-    if p_fcn:
+    if p_xMLP:
         l_xmlpOutFileName = l_path+'/outputs_xmlp.bin'
         l_ms = xmlp_inf(l_modelFileName, l_inFileName, l_xmlpOutFileName)
-        print("INFO: FCN inference takes {}ms".format(l_ms))
+        print("INFO: xMLP inference takes {}ms".format(l_ms))
         l_pass = verify_inf(l_xmlpOutFileName, l_outFileName)
         if l_pass:
-            print("INFO: fcn inference passes verification!")
+            print("INFO: xMLP inference passes verification!")
         else:
-            print("ERROR: there are mismathes between fcn inference results and keras ones.")
+            print("ERROR: there are mismathes between xMLP inference results and keras ones.")
 
 def main(args):
     if (args.usage):
