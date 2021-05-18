@@ -41,7 +41,7 @@
         "host_exe": "host.exe", 
         "compiler": {
             "sources": [
-                "LIB_DIR/L2/designs/mlp/fcn_hbm/src/sw/fcnTest.cpp", 
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/src/sw/hosts/fcnTest.cpp", 
                 "LIB_DIR/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp"
             ], 
             "includepaths": [

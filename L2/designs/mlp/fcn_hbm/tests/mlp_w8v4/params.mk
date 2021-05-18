@@ -14,17 +14,20 @@
 # limitations under the License.
 #
 
-pyGenMat=${XFLIB_DIR}/L2/designs/mlp/fcn_hbm/src/sw/python/genFcn.py
-inSize = 352
-outSize = 32
-batch = 21
-HPC_deviceId = 0
+pyGenMat=${XFLIB_DIR}/L2/designs/mlp/fcn_hbm/src/sw/python/genMLP.py
+batch = 600000
+num = 3
+layers=360 32 16 8
+HPC_numDevice = 1
 HPC_dataType = float
 HPC_activation = sigmoid
 
-dataDir = ./$(BUILD_DIR)/data_${batch}_${outSize}_${inSize}/
-HOST_ARGS += $(batch) $(outSize) $(inSize) $(dataDir) ${HPC_deviceId}
+dataDir = ./$(BUILD_DIR)/data_${batch}_${num}/
+HOST_ARGS += $(batch) ${num} ${layers} $(dataDir) ${HPC_numDevice}
 
-data_gen:
+data_gen: $(dataDir)/sig
+
+$(dataDir)/sig:
 	mkdir -p ${dataDir} 
-	python3 ${pyGenMat} --batch $(batch) --outSize $(outSize) --inSize $(inSize) --path ${dataDir} --datatype ${HPC_dataType} --act ${HPC_activation}
+	python3 ${pyGenMat} --batch $(batch) --layers ${layers} --path ${dataDir} --datatype ${HPC_dataType} --act ${HPC_activation}
+	touch $(dataDir)/sig

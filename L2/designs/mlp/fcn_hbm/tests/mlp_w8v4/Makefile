@@ -77,19 +77,21 @@ export XCL_BINDIR = $(XCLBIN_DIR)
 
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
-HOST_SRCS += $(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/src/sw/fcnTest.cpp
+HOST_SRCS += $(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/src/sw/hosts/mlpTest.cpp
 HOST_SRCS += $(XFLIB_DIR)/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp
 
-CXXFLAGS += -DHW_CLK=3.33e-9 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=8 -DHPC_vecChannels=3 -DHPC_maxInstrs=1000 -DHPC_parEntries=8
+CXXFLAGS += -DHW_CLK=3.6e-9 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=8 -DHPC_vecChannels=4 -DHPC_maxInstrs=1000 -DHPC_parEntries=8
 CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/
 CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/sw/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L1/include/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/
+CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/common
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/tests/sw/include/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L2/include/memKernel/sw/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L2/include/xcl2
+LDFLAGS += -fopenmp
 
 ifeq ($(TARGET),sw_emu)
 CXXFLAGS += -D SW_EMU_TEST
@@ -102,7 +104,7 @@ endif
 # ######################### Host compiler global settings ############################
 CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
-CXXFLAGS += -fmessage-length=0 -O3
+CXXFLAGS += -fmessage-length=0 
 CXXFLAGS += -I$(CUR_DIR)/src/ 
 
 ifeq ($(HOST_ARCH), x86)
@@ -133,7 +135,7 @@ VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/hw
 krnl_fcn_VPP_FLAGS += --hls.clock 300000000:krnl_fcn
 VPP_LDFLAGS_mlp += --kernel_frequency 300
 
-VPP_FLAGS += -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_maxInstrs=1000 -DHPC_numActFuncs=2 -DHPC_maxVecSize=4096 -DHPC_bufferSize=16384 -DHPC_numChannels=8 -DHPC_vecChannels=3 -DHPC_parEntries=8 
+VPP_FLAGS += -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_maxInstrs=1000 -DHPC_numActFuncs=1 -DHPC_maxVecSize=4096 -DHPC_bufferSize=16384 -DHPC_numChannels=8 -DHPC_vecChannels=4 -DHPC_parEntries=8 
 
 # Kernel linker flags
 VPP_LDFLAGS_mlp_temp := --config $(CUR_DIR)/opts.cfg

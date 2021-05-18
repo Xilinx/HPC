@@ -77,7 +77,7 @@ export XCL_BINDIR = $(XCLBIN_DIR)
 
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
-HOST_SRCS += $(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/src/sw/fcnTest.cpp
+HOST_SRCS += $(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/src/sw/hosts/fcnTest.cpp
 HOST_SRCS += $(XFLIB_DIR)/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp
 
 CXXFLAGS += -DHW_CLK=3e-9 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=4 -DHPC_vecChannels=2 -DHPC_maxInstrs=5 -DHPC_numActFuncs=4 -DHPC_parEntries=8
