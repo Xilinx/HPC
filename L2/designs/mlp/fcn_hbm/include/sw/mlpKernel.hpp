@@ -28,32 +28,44 @@ using namespace xf::hpc::mlp;
 
 template <typename t_DataType, int t_InstrBytes>
 class MLPKernel : public Kernel {
+   private:
     vector<host_buffer_t<t_DataType> > h_weights;
-    vector<host_buffer_t<t_DataType> > h_x;
+    vector<host_buffer_t<t_DataType> > h_vector;
     host_buffer_t<t_DataType> h_bias;
     host_buffer_t<uint8_t> h_instr;
     vector<FcnInstr<t_InstrBytes> > h_fcnInstr;
 
     vector<cl::Buffer> m_buffer_W;
+    vector<cl::Buffer> m_buffer_v;
     vector<cl::Buffer> m_buffer_x;
     vector<cl::Buffer> m_buffer_y;
     cl::Buffer m_buffer_bias;
     cl::Buffer m_buffer_instr;
 
-    int m_Batch;
-    int m_MaxVecDim;
-    MLP<t_DataType>* mlp;
+    int m_Batch = 0;
+    int m_MaxVecDim = 0;
+    int outputOffset = 0;
+    MLP<t_DataType>* mlp = nullptr;
 
-    const int m_VecChannels;
-    const int m_NumChannels;
-    const int m_ParEntries;
+    const int m_VecChannels = 0;
+    const int m_NumChannels = 0;
+    const int m_ParEntries = 0;
 
    public:
-    MLPKernel(FPGA* fpga, int weightChannels, int vecChannels, int parEntries)
-        : Kernel(fpga), m_VecChannels(vecChannels), m_NumChannels(weightChannels), m_ParEntries(parEntries) {
+    MLPKernel() {}
+    MLPKernel(int weightChannels, int vecChannels, int parEntries)
+        : m_VecChannels(vecChannels), m_NumChannels(weightChannels), m_ParEntries(parEntries) {
         h_weights.resize(m_NumChannels);
-        h_x.resize(m_VecChannels);
-        h_instr.resize(t_InstrBytes * HPC_maxInstrs);
+        h_vector.resize(m_VecChannels);
+    }
+
+    MLPKernel(MLPKernel&& mlpK)
+        : Kernel(mlpK),
+          m_VecChannels(mlpK.m_VecChannels),
+          m_NumChannels(mlpK.m_NumChannels),
+          m_ParEntries(mlpK.m_ParEntries) {
+        h_weights = move(mlpK.h_weights);
+        h_vector = move(mlpK.h_vector);
     }
 
     void loadModel(MLP<t_DataType>* mlp) {
@@ -61,21 +73,10 @@ class MLPKernel : public Kernel {
         int m_NumLayers = mlp->m_NumLayers;
         h_fcnInstr.resize(m_NumLayers);
         m_MaxVecDim = *max_element(mlp->m_Dims.begin() + 1, mlp->m_Dims.end());
-        for (int i = 0; i < m_NumLayers; i++) {
-            FCN<t_DataType>& fcn = mlp->m_Layers[i];
-            h_bias.insert(h_bias.end(), fcn.m_Bias, fcn.m_Bias + fcn.m_OutputSize);
-            assert(fcn.m_OutputSize % m_NumChannels == 0);
-            assert(fcn.m_InputSize % m_ParEntries == 0);
-            for (int row = 0; row < fcn.m_OutputSize; row++)
-                h_weights[row % m_NumChannels].insert(h_weights[row % m_NumChannels].end(),
-                                                      fcn.m_Weight + row * fcn.m_InputSize,
-                                                      fcn.m_Weight + (row + 1) * fcn.m_InputSize);
-        }
 
-        for (int i = 0; i < m_NumChannels; i++) {
-            m_buffer_W.push_back(createDeviceBuffer(CL_MEM_READ_ONLY, h_weights[i]));
-        }
-        m_buffer_bias = createDeviceBuffer(CL_MEM_READ_ONLY, h_bias);
+        createWeightsBuffer();
+        createVecBuffer();
+        setModelArgs();
 
         int weightOffset = 0;
         int biasOffset = 0;
@@ -91,91 +92,10 @@ class MLPKernel : public Kernel {
         }
     }
 
-    void setInput(host_buffer_t<t_DataType>& p_x) {
-        assert(p_x.size() % mlp->m_Dims.front() == 0);
-        m_Batch = p_x.size() / mlp->m_Dims.front();
-        assert(m_Batch % m_VecChannels == 0);
-
-        int bufferSize = (mlp->m_Dims.front() + 2 * m_MaxVecDim) * m_Batch / m_VecChannels;
-        assert(bufferSize * sizeof(t_DataType) <= 256 * 1024 * 1024);
-
-        for (int i = 0; i < m_VecChannels; i++) {
-            h_x[i].resize(bufferSize);
-            copy(p_x.begin() + i * p_x.size() / m_VecChannels, p_x.begin() + (i + 1) * p_x.size() / m_VecChannels,
-                 h_x[i].begin());
-            m_buffer_x.push_back(createDeviceBuffer(CL_MEM_READ_ONLY, h_x[i]));
-        }
-
-        int outputOffset[2] = {mlp->m_Dims.front() * m_Batch / m_VecChannels * sizeof(t_DataType),
-                               (m_MaxVecDim + mlp->m_Dims.front()) * m_Batch * sizeof(t_DataType) / m_VecChannels};
-
-        for (int i = 0; i < mlp->m_NumLayers; i++) {
-            h_fcnInstr[i].setBatch(m_Batch / m_VecChannels);
-            if (i == 0) {
-                h_fcnInstr[i].setInputOffset(0);
-            } else
-                h_fcnInstr[i].setInputOffset(outputOffset[(i + 1) % 2]);
-            h_fcnInstr[i].setOutputOffset(outputOffset[i % 2]);
-            h_fcnInstr[i].template store<uint8_t>(h_instr.data() + i * t_InstrBytes);
-        }
-    }
-
-    void setArgs() {
-        cl_int err;
-        vector<cl::Memory> l_buffers;
-
-        m_buffer_instr = createDeviceBuffer(CL_MEM_READ_WRITE, h_instr);
-        l_buffers.push_back(m_buffer_instr);
-        l_buffers.push_back(m_buffer_bias);
-        for (auto x : m_buffer_W) l_buffers.push_back(x);
-        for (auto x : m_buffer_x) l_buffers.push_back(x);
-
-        // Setting Kernel Arguments
-        uint32_t n_arg = 0;
-        OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_instr));
-
-        for (int i = 0; i < m_NumChannels; i++) {
-            OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_W[i]));
-        }
-        for (int i = 0; i < m_VecChannels; i++) {
-            OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_x[i]));
-            OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_x[i]));
-        }
-        OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_bias));
-
-        // Copy input data to device global memory
-        OCL_CHECK(err, err = m_fpga->getCommandQueue().enqueueMigrateMemObjects(l_buffers, 0)); /* 0 means from host*/
-        finish();
-    }
-
-    void run(host_buffer_t<t_DataType>& h_v) {
-        enqueueTask();
-        vector<cl::Memory> h_m;
-        h_m.push_back(m_buffer_instr);
-        for (auto& r : m_buffer_x) h_m.push_back(r);
-        finish();
-        cl_int err;
-        OCL_CHECK(err, err = m_fpga->getCommandQueue().enqueueMigrateMemObjects(h_m, CL_MIGRATE_MEM_OBJECT_HOST));
-        finish();
-
-        int offset = mlp->m_Dims.front();
-        if (mlp->m_NumLayers % 2 == 0) offset += m_MaxVecDim;
-        offset *= m_Batch / m_VecChannels;
-        for (int i = 0; i < m_VecChannels; i++) {
-            h_v.insert(h_v.end(), h_x[i].begin() + offset,
-                       h_x[i].begin() + offset + mlp->m_Dims.back() * m_Batch / m_VecChannels);
-        }
-    }
-
     double inference(host_buffer_t<t_DataType>& h_x, host_buffer_t<t_DataType>& h_v) {
-        auto startTime = chrono::high_resolution_clock::now();
         setInput(h_x);
-        setArgs();
-        run(h_v);
-        auto finishTime = chrono::high_resolution_clock::now();
-        chrono::duration<double> elapsed = finishTime - startTime;
-        double t_sec = elapsed.count();
-
+        double t_sec = run();
+        getOutput(h_v.data());
         uint64_t l_last = 0;
         for (int i = 0; i < HPC_maxInstrs; i++) {
             xf::hpc::mlp::FcnInstr<t_InstrBytes> fcnInstr;
@@ -192,6 +112,165 @@ class MLPKernel : public Kernel {
                  << "%." << endl;
         }
         cout << "HW measured execution time " << l_last * HW_CLK << " seconds, ";
+        return t_sec;
+    }
+
+    static double inference(vector<MLPKernel>& kernels,
+                            host_buffer_t<t_DataType>& h_x,
+                            host_buffer_t<t_DataType>& h_v) {
+        auto startTime = chrono::high_resolution_clock::now();
+        uint32_t l_numK = kernels.size();
+#pragma omp prallel for
+        for (int i = 0; i < l_numK; i++) {
+            kernels[i].setInput(h_x.data() + i * h_x.size() / l_numK, h_x.size() / l_numK);
+        }
+
+        for (auto& kernel : kernels) kernel.enqueueTask();
+        for (auto& kernel : kernels) kernel.finish();
+        for (int i = 0; i < l_numK; i++)
+            kernels[i].getOutput(h_v.data() + i * kernels[i].m_Batch * kernels[i].mlp->m_Dims.back());
+        auto finishTime = chrono::high_resolution_clock::now();
+        chrono::duration<double> elapsed = finishTime - startTime;
+        double t_sec = elapsed.count();
+
+        return t_sec;
+    }
+
+   private:
+    void createWeightsBuffer() {
+        int biasSize = 0, weightSize = 0;
+        for (auto& fcn : mlp->m_Layers) {
+            assert(fcn.m_OutputSize % m_NumChannels == 0);
+            assert(fcn.m_InputSize % m_ParEntries == 0);
+            biasSize += fcn.m_OutputSize;
+            weightSize += fcn.m_OutputSize * fcn.m_InputSize;
+        }
+
+        h_bias.reserve(biasSize);
+        for (int i = 0; i < m_NumChannels; i++) {
+            h_weights[i].reserve(weightSize / m_NumChannels);
+        }
+
+        for (auto& fcn : mlp->m_Layers) {
+            h_bias.insert(h_bias.end(), fcn.m_Bias, fcn.m_Bias + fcn.m_OutputSize);
+            for (int row = 0; row < fcn.m_OutputSize; row++)
+                h_weights[row % m_NumChannels].insert(h_weights[row % m_NumChannels].end(),
+                                                      fcn.m_Weight + row * fcn.m_InputSize,
+                                                      fcn.m_Weight + (row + 1) * fcn.m_InputSize);
+        }
+
+        for (int i = 0; i < m_NumChannels; i++) {
+            m_buffer_W.push_back(createDeviceBuffer(CL_MEM_READ_ONLY, h_weights[i]));
+        }
+        m_buffer_bias = createDeviceBuffer(CL_MEM_READ_ONLY, h_bias);
+    }
+    void createVecBuffer() {
+        for (int i = 0; i < m_VecChannels; i++) {
+            h_vector[i].resize(256 * 1024 * 1024 / sizeof(t_DataType));
+            m_buffer_v.push_back(createDeviceBuffer(CL_MEM_READ_WRITE, h_vector[i]));
+        }
+    }
+    void setInput(t_DataType* p_x, uint32_t p_size) {
+        assert(p_size % mlp->m_Dims.front() == 0);
+        m_Batch = p_size / mlp->m_Dims.front();
+        assert(m_Batch % m_VecChannels == 0);
+
+        outputOffset = (2 * m_MaxVecDim + mlp->m_Dims.front()) * m_Batch / m_VecChannels;
+        int outputSize = mlp->m_Dims.back() * m_Batch / m_VecChannels;
+        int bufferSize = outputOffset + outputSize;
+        assert(bufferSize * sizeof(t_DataType) <= 256 * 1024 * 1024);
+
+        for (int i = 0; i < m_VecChannels; i++) {
+            //    h_x[i].resize(bufferSize);
+            copy(p_x + i * p_size / m_VecChannels, p_x + (i + 1) * p_size / m_VecChannels, h_vector[i].begin());
+            cl_buffer_region buffer_info_x = {0, p_size / m_VecChannels * sizeof(t_DataType)};
+            m_buffer_x.push_back(
+                m_buffer_v[i].createSubBuffer(CL_MEM_WRITE_ONLY, CL_BUFFER_CREATE_TYPE_REGION, &buffer_info_x));
+            cl_buffer_region buffer_info = {outputOffset * sizeof(t_DataType), outputSize * sizeof(t_DataType)};
+            m_buffer_y.push_back(
+                m_buffer_v[i].createSubBuffer(CL_MEM_WRITE_ONLY, CL_BUFFER_CREATE_TYPE_REGION, &buffer_info));
+        }
+
+        int outputOffset[2] = {mlp->m_Dims.front() * m_Batch / m_VecChannels * sizeof(t_DataType),
+                               (m_MaxVecDim + mlp->m_Dims.front()) * m_Batch * sizeof(t_DataType) / m_VecChannels};
+
+        h_instr.resize(t_InstrBytes * mlp->m_NumLayers);
+        for (int i = 0; i < mlp->m_NumLayers; i++) {
+            h_fcnInstr[i].setBatch(m_Batch / m_VecChannels);
+            if (i == 0) {
+                h_fcnInstr[i].setInputOffset(0);
+            } else
+                h_fcnInstr[i].setInputOffset(outputOffset[(i + 1) % 2]);
+            if (i == mlp->m_NumLayers - 1)
+                h_fcnInstr[i].setOutputOffset(this->outputOffset * sizeof(t_DataType));
+            else
+                h_fcnInstr[i].setOutputOffset(outputOffset[i % 2]);
+            h_fcnInstr[i].template store<uint8_t>(h_instr.data() + i * t_InstrBytes);
+        }
+        setRunArgs();
+    }
+
+    void setInput(host_buffer_t<t_DataType>& p_x) { setInput(p_x.data(), p_x.size()); }
+
+    void setModelArgs() {
+        cl_int err;
+        vector<cl::Memory> l_buffers;
+
+        l_buffers.push_back(m_buffer_bias);
+        for (auto x : m_buffer_W) l_buffers.push_back(x);
+        for (auto x : m_buffer_v) l_buffers.push_back(x);
+
+        // Setting Kernel Arguments
+        uint32_t n_arg = 1;
+
+        for (int i = 0; i < m_NumChannels; i++) {
+            OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_W[i]));
+        }
+        for (int i = 0; i < m_VecChannels; i++) {
+            OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_v[i]));
+            OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_v[i]));
+        }
+        OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_bias));
+
+        // Copy input data to device global memory
+        sendBuffer(l_buffers); /* 0 means from host*/
+        finish();
+    }
+
+    void setRunArgs() {
+        cl_int err;
+        vector<cl::Memory> l_buffers;
+
+        m_buffer_instr = createDeviceBuffer(CL_MEM_READ_WRITE, h_instr);
+        for (auto x : m_buffer_x) l_buffers.push_back(x);
+        // Setting Kernel Arguments
+        uint32_t n_arg = 0;
+        OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_instr));
+
+        // Copy input data to device global memory
+        sendBuffer(l_buffers); /* 0 means from host*/
+        finish();
+    }
+
+    void getOutput(t_DataType* h_v) {
+        vector<cl::Memory> h_m;
+        h_m.push_back(m_buffer_instr);
+        for (auto& y : m_buffer_y) h_m.push_back(y);
+        getBuffer(h_m);
+        for (int i = 0; i < m_VecChannels; i++) {
+            copy(h_vector[i].begin() + outputOffset,
+                 h_vector[i].begin() + outputOffset + mlp->m_Dims.back() * m_Batch / m_VecChannels,
+                 h_v + i * mlp->m_Dims.back() * m_Batch / m_VecChannels);
+        }
+    }
+    double run() {
+        finish();
+        auto startTime = chrono::high_resolution_clock::now();
+        enqueueTask();
+        finish();
+        auto finishTime = chrono::high_resolution_clock::now();
+        chrono::duration<double> elapsed = finishTime - startTime;
+        double t_sec = elapsed.count();
         return t_sec;
     }
 };
