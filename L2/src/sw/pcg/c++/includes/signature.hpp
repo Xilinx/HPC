@@ -74,13 +74,14 @@ class Signature {
         int l_eId = 0;
         p_spm.sort_by_row();
         int l_minRowId = p_spm.getMinRowId();
+
         while (l_eId < p_spm.getNnz()) {
             if (p_spm.getRow(p_spm.getNnz() - 1) < (l_minRowId + m_maxRows)) {
                 l_eId = p_spm.getNnz();
             } else {
-                auto l_up =
-                    upper_bound(p_spm.getRows().begin(), p_spm.getRows().end(), l_minRowId + m_maxRows, compare);
-                l_eId = distance(p_spm.getRows().begin(), l_up);
+                vector<int> l_tmp = p_spm.getRows();
+                auto l_up = upper_bound(l_tmp.begin(), l_tmp.end(), l_minRowId + m_maxRows, compare);
+                l_eId = l_up - l_tmp.begin();
             }
             if (l_eId > l_sId) {
                 vector<int> l_row = p_spm.getSubRows(l_sId, l_eId);
@@ -123,9 +124,9 @@ class Signature {
                 if (l_rbSpm.getCol(l_rbSpm.getNnz() - 1) < l_minColId + m_maxCols) {
                     l_eId = l_rbSpm.getNnz();
                 } else {
-                    auto l_up = upper_bound(l_rbSpm.getCols().begin(), l_rbSpm.getCols().end(), l_minColId + m_maxCols,
-                                            compare);
-                    l_eId = distance(l_rbSpm.getCols().begin(), l_up);
+                    vector<int> l_tmp = l_rbSpm.getCols();
+                    auto l_up = upper_bound(l_tmp.begin(), l_tmp.end(), l_minColId + m_maxCols, compare);
+                    l_eId = l_up - l_tmp.begin();
                 }
                 if (l_eId > l_sId) {
                     vector<int> l_row = l_rbSpm.getSubRows(l_sId, l_eId);
@@ -216,7 +217,7 @@ class Signature {
             l_parSpm.sort_by_row();
             SparseMatrix l_paddedParSpm = pad_par(l_parSpm);
             assert(l_paddedParSpm.getM() <= m_maxRows);
-            assert(l_paddedParSpm.getN() < +m_maxCols);
+            assert(l_paddedParSpm.getN() <= m_maxCols);
             p_paddedParSpms.push_back(l_paddedParSpm);
         }
     }
@@ -422,7 +423,7 @@ class Signature {
         gen_nnzStore(l_chParSpms);
         printf("INFO: matrix %s partiton done.\n", matrix_name.c_str());
         printf("      Original m, n, nnzs = %d, %d, %d\n", m_m, m_n, m_nnz);
-        printf("      After padding m, n, nnzs = %d, %d, %d\n", m_mPad, m_nnzPad, m_nnzPad);
+        printf("      After padding m, n, nnzs = %d, %d, %d\n", m_mPad, m_nPad, m_nnzPad);
         printf("      Padding overhead is %f\n", (double)(m_nnzPad - m_nnz) / m_nnz);
     }
 
