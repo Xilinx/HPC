@@ -23,6 +23,7 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import load_model
 from lib.xmlp import xMLPInf
 
+
 def get_uncompiled_model():
     inputs = keras.Input(shape=(784,), name="digits")
     x = layers.Dense(64, activation="relu", name="dense_1")(inputs)
@@ -44,7 +45,7 @@ def get_compiled_model():
 
 def train(p_modelFileName, p_inFileName, p_refFileName, p_modelName):
     print("INFO: Trainning the model {}".format(p_modelName))
-    l_kerasFunc = 'keras.datasets.'+ p_modelName + '.load_data()'
+    l_kerasFunc = 'keras.datasets.' + p_modelName + '.load_data()'
     (x_train, y_train), (x_test, y_test) = eval(l_kerasFunc)
     x_test = x_test / 255
     model = get_compiled_model()
@@ -62,14 +63,20 @@ def train(p_modelFileName, p_inFileName, p_refFileName, p_modelName):
     print("INFO: Training done.")
 
 
-def evaluate(p_modelFileName, p_inFileName, p_outFileName, p_refFileName, p_modelName, p_evaluate):
+def evaluate(
+        p_modelFileName,
+        p_inFileName,
+        p_outFileName,
+        p_refFileName,
+        p_modelName,
+        p_evaluate):
     print("INFO: Inference from the model {}".format(p_modelName))
     model = load_model(p_modelFileName)
     l_inputSize = 0
     for layer in model.layers:
         if isinstance(layer, keras.layers.Dense):
             l_inputSize = layer.weights[0].shape[0]
-            break;
+            break
 
     x_test = np.fromfile(p_inFileName, dtype=np.float32)
     if p_evaluate:
@@ -84,7 +91,7 @@ def evaluate(p_modelFileName, p_inFileName, p_outFileName, p_refFileName, p_mode
     if (p_evaluate):
         test_scores = model.evaluate(x_test, y_test, verbose=2)
         print("INFO: scores are {}".format(test_scores))
-    l_ms = (l_eTime - l_sTime)/(10**6)
+    l_ms = (l_eTime - l_sTime) / (10**6)
     return l_ms
 
 
@@ -100,9 +107,10 @@ def xmlp_inf(p_modelFileName, p_inFileName, p_xmlpOutFileName):
         l_mat = l_mlpInf.predict(l_mat)
     l_eTime = time.time_ns()
     l_mat.astype(np.float32).tofile(p_xmlpOutFileName)
-    l_ms = (l_eTime - l_sTime)/(10**6)
+    l_ms = (l_eTime - l_sTime) / (10**6)
     return l_ms
-            
+
+
 def verify_inf(p_fileName, p_goldenFileName):
     l_arr = np.fromfile(p_fileName, dtype=np.float32)
     l_refArr = np.fromfile(p_goldenFileName, dtype=np.float32)
@@ -112,50 +120,96 @@ def verify_inf(p_fileName, p_goldenFileName):
     return l_equal
 
 
-def process_model(p_needTrain, p_inf, p_evaluate, p_xMLP, p_modelPath, p_modelName):
-    l_path = p_modelPath +'/'+p_modelName
+def process_model(
+        p_needTrain,
+        p_inf,
+        p_evaluate,
+        p_xMLP,
+        p_modelPath,
+        p_modelName):
+    l_path = p_modelPath + '/' + p_modelName
     if not path.exists(l_path):
-        subprocess.run(["mkdir","-p",l_path])
-    l_modelFileName = l_path+'/model.h5'
-    l_inFileName = l_path+'/inputs.bin'
-    l_outFileName = l_path+'/golden.bin'
-    l_refFileName = l_path+'/evOut.bin'
+        subprocess.run(["mkdir", "-p", l_path])
+    l_modelFileName = l_path + '/model.h5'
+    l_inFileName = l_path + '/inputs.bin'
+    l_outFileName = l_path + '/golden.bin'
+    l_refFileName = l_path + '/evOut.bin'
     if p_needTrain:
         (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
         train(l_modelFileName, l_inFileName, l_refFileName, p_modelName)
     if p_inf:
-        l_ms = evaluate(l_modelFileName, l_inFileName, l_outFileName, l_refFileName, p_modelName, p_evaluate)
+        l_ms = evaluate(
+            l_modelFileName,
+            l_inFileName,
+            l_outFileName,
+            l_refFileName,
+            p_modelName,
+            p_evaluate)
         print("INFO: Keras inference takes {}ms".format(l_ms))
     if p_xMLP:
-        l_xmlpOutFileName = l_path+'/outputs_xmlp.bin'
+        l_xmlpOutFileName = l_path + '/outputs_xmlp.bin'
         l_ms = xmlp_inf(l_modelFileName, l_inFileName, l_xmlpOutFileName)
         print("INFO: xMLP inference takes {}ms".format(l_ms))
         l_pass = verify_inf(l_xmlpOutFileName, l_outFileName)
         if l_pass:
             print("INFO: xMLP inference passes verification!")
         else:
-            print("ERROR: there are mismathes between xMLP inference results and keras ones.")
+            print(
+                "ERROR: there are mismathes between xMLP inference results and keras ones.")
+
 
 def main(args):
     if (args.usage):
         print('Usage example:')
-        print('python keras_example.py [--train] [--kinf] [--evaluate] [--xinf] [--model_path ./models]  [--model_name mnist]')
+        print(
+            'python keras_example.py [--train] [--kinf] [--evaluate] [--xinf] [--model_path ./models]  [--model_name mnist]')
         print('python keras_example.py --train --model_path ./models  --model_name mnist')
         print('python keras_example.py --kinf  --model_path ./models  --model_name mnist')
         print('python keras_example.py --kinf --evaluate  --model_path ./models  --model_name mnist')
         print('python keras_example.py --xinf --model_path ./models  --model_name mnist')
-        
+
     else:
-        process_model(args.train, args.kinf, args.evaluate, args.xinf, args.model_path, args.model_name)
+        process_model(
+            args.train,
+            args.kinf,
+            args.evaluate,
+            args.xinf,
+            args.model_path,
+            args.model_name)
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='An example usage of Keras MLP APIs')
-    parser.add_argument('--usage',action='store_true',help='print usage example')
-    parser.add_argument('--train',action='store_true',help='train the model with keras')
-    parser.add_argument('--kinf',action='store_true',help='keras inference from the model')
-    parser.add_argument('--evaluate',action='store_true',help='run keras evaluation for input data and golden reference data')
-    parser.add_argument('--xinf',action='store_true',help='use xMLP to do inference from .h5 file')
-    parser.add_argument('--model_path',type=str,default='./models',help='path for .h5 files that contain models and weights')
-    parser.add_argument('--model_name',type=str,default='mnist',help='model name')
+    parser = argparse.ArgumentParser(
+        description='An example usage of Keras MLP APIs')
+    parser.add_argument(
+        '--usage',
+        action='store_true',
+        help='print usage example')
+    parser.add_argument(
+        '--train',
+        action='store_true',
+        help='train the model with keras')
+    parser.add_argument(
+        '--kinf',
+        action='store_true',
+        help='keras inference from the model')
+    parser.add_argument(
+        '--evaluate',
+        action='store_true',
+        help='run keras evaluation for input data and golden reference data')
+    parser.add_argument(
+        '--xinf',
+        action='store_true',
+        help='use xMLP to do inference from .h5 file')
+    parser.add_argument(
+        '--model_path',
+        type=str,
+        default='./models',
+        help='path for .h5 files that contain models and weights')
+    parser.add_argument(
+        '--model_name',
+        type=str,
+        default='mnist',
+        help='model name')
     args = parser.parse_args()
     main(args)

@@ -54,21 +54,13 @@ class MLPKernel : public Kernel {
    public:
     MLPKernel() {}
     MLPKernel(int weightChannels, int vecChannels, int parEntries)
-        : m_VecChannels(vecChannels), m_NumChannels(weightChannels), m_ParEntries(parEntries) {
-        h_weights.resize(m_NumChannels);
-        h_vector.resize(m_VecChannels);
-    }
-
-    MLPKernel(MLPKernel&& mlpK)
-        : Kernel(mlpK),
-          m_VecChannels(mlpK.m_VecChannels),
-          m_NumChannels(mlpK.m_NumChannels),
-          m_ParEntries(mlpK.m_ParEntries) {
-        h_weights = move(mlpK.h_weights);
-        h_vector = move(mlpK.h_vector);
-    }
+        : m_VecChannels(vecChannels), m_NumChannels(weightChannels), m_ParEntries(parEntries) {}
+    MLPKernel(FPGA* fpga, int weightChannels, int vecChannels, int parEntries)
+        : Kernel(fpga), m_VecChannels(vecChannels), m_NumChannels(weightChannels), m_ParEntries(parEntries) {}
 
     void loadModel(MLP<t_DataType>* mlp) {
+        h_weights.resize(m_NumChannels);
+        h_vector.resize(m_VecChannels);
         this->mlp = mlp;
         int m_NumLayers = mlp->m_NumLayers;
         h_fcnInstr.resize(m_NumLayers);
@@ -94,10 +86,15 @@ class MLPKernel : public Kernel {
 
     double inference(host_buffer_t<t_DataType>& h_x, host_buffer_t<t_DataType>& h_v) {
         setInput(h_x);
-        double t_sec = run();
+        auto startTime = chrono::high_resolution_clock::now();
+        enqueueTask();
+        finish();
+        auto finishTime = chrono::high_resolution_clock::now();
+        chrono::duration<double> elapsed = finishTime - startTime;
+        double t_sec = elapsed.count();
         getOutput(h_v.data());
         uint64_t l_last = 0;
-        for (int i = 0; i < HPC_maxInstrs; i++) {
+        for (int i = 0; i < mlp->m_NumLayers + 1; i++) {
             xf::hpc::mlp::FcnInstr<t_InstrBytes> fcnInstr;
             fcnInstr.template load<uint8_t>(h_instr.data() + t_InstrBytes * i);
             uint64_t l_clock = fcnInstr.getClock();
@@ -115,21 +112,21 @@ class MLPKernel : public Kernel {
         return t_sec;
     }
 
-    static double inference(vector<MLPKernel>& kernels,
+    static double inference(vector<MLPKernel*> kernels,
                             host_buffer_t<t_DataType>& h_x,
                             host_buffer_t<t_DataType>& h_v) {
-        auto startTime = chrono::high_resolution_clock::now();
         uint32_t l_numK = kernels.size();
 #pragma omp prallel for
         for (int i = 0; i < l_numK; i++) {
-            kernels[i].setInput(h_x.data() + i * h_x.size() / l_numK, h_x.size() / l_numK);
+            kernels[i]->setInput(h_x.data() + i * h_x.size() / l_numK, h_x.size() / l_numK);
         }
 
-        for (auto& kernel : kernels) kernel.enqueueTask();
-        for (auto& kernel : kernels) kernel.finish();
-        for (int i = 0; i < l_numK; i++)
-            kernels[i].getOutput(h_v.data() + i * kernels[i].m_Batch * kernels[i].mlp->m_Dims.back());
+        auto startTime = chrono::high_resolution_clock::now();
+        for (auto kernel : kernels) kernel->enqueueTask();
+        for (auto kernel : kernels) kernel->finish();
         auto finishTime = chrono::high_resolution_clock::now();
+        for (int i = 0; i < l_numK; i++)
+            kernels[i]->getOutput(h_v.data() + i * kernels[i]->m_Batch * kernels[i]->mlp->m_Dims.back());
         chrono::duration<double> elapsed = finishTime - startTime;
         double t_sec = elapsed.count();
 
@@ -194,7 +191,7 @@ class MLPKernel : public Kernel {
         int outputOffset[2] = {mlp->m_Dims.front() * m_Batch / m_VecChannels * sizeof(t_DataType),
                                (m_MaxVecDim + mlp->m_Dims.front()) * m_Batch * sizeof(t_DataType) / m_VecChannels};
 
-        h_instr.resize(t_InstrBytes * mlp->m_NumLayers);
+        h_instr.resize(t_InstrBytes * (1 + mlp->m_NumLayers));
         for (int i = 0; i < mlp->m_NumLayers; i++) {
             h_fcnInstr[i].setBatch(m_Batch / m_VecChannels);
             if (i == 0) {
@@ -262,16 +259,6 @@ class MLPKernel : public Kernel {
                  h_vector[i].begin() + outputOffset + mlp->m_Dims.back() * m_Batch / m_VecChannels,
                  h_v + i * mlp->m_Dims.back() * m_Batch / m_VecChannels);
         }
-    }
-    double run() {
-        finish();
-        auto startTime = chrono::high_resolution_clock::now();
-        enqueueTask();
-        finish();
-        auto finishTime = chrono::high_resolution_clock::now();
-        chrono::duration<double> elapsed = finishTime - startTime;
-        double t_sec = elapsed.count();
-        return t_sec;
     }
 };
 #endif

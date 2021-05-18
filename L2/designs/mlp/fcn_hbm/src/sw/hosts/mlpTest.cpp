@@ -24,10 +24,11 @@
 #include <cassert>
 
 // This file is required for OpenCL C++ wrapper APIs
-#include "mlpKernel.hpp"
+#include "mlpBase.hpp"
 #include "utils.hpp"
 
 using namespace std;
+using namespace xilinx_apps::mlp;
 
 int main(int argc, char** argv) {
     int32_t l_index = 0;
@@ -41,46 +42,32 @@ int main(int argc, char** argv) {
     for (int i = 0; i < numLayers + 1; i++) layers.push_back(atoi(argv[++l_index]));
 
     string filePath = argv[++l_index];
-    int l_numDevices = atoi(argv[++l_index]);
+    int numDevice = atoi(argv[++l_index]);
     host_buffer_t<HPC_dataType> h_x(layers.front() * p_batch);
     host_buffer_t<HPC_dataType> h_ref(layers.back() * p_batch);
-    host_buffer_t<HPC_dataType> h_v;
+    host_buffer_t<HPC_dataType> h_v(h_ref.size());
     readBin(filePath + "in.mat", h_x.size() * sizeof(HPC_dataType), h_x);
     readBin(filePath + "out.mat", h_ref.size() * sizeof(HPC_dataType), h_ref);
-    h_v.resize(h_ref.size());
 
-    MLP<HPC_dataType> mlp(numLayers);
-    mlp.setDim(layers.data());
-    mlp.setActFunc(xf::hpc::mlp::ActFunc_t::SIGMOID);
-    mlp.loadLayer(filePath.c_str());
+    Options l_options(numDevice);
+    for (int i = 0; i < numDevice; i++) l_options.deviceIds.push_back(i);
+    l_options.xclbinNames = vector<string>(numDevice, binaryFile);
+    l_options.numCUsOnDevice = vector<uint8_t>(numDevice, 1);
+    l_options.cuNames = vector<vector<string> >(numDevice, {"krnl_fcn"});
 
-    vector<FPGA> fpgas;
-    fpgas.reserve(l_numDevices);
-    for (int i = 0; i < l_numDevices; i++) {
-        fpgas.emplace_back(FPGA(i));
-        fpgas.back().xclbin(binaryFile);
-    }
+    MLPBase l_mlp(l_options);
+    l_mlp.addEmptyModel(numLayers);
+    l_mlp.setDim(0, layers.data());
+    l_mlp.setAllActFunc(0, "sigmoid");
+    l_mlp.loadLayersFromFile(0, filePath.c_str());
+    for (int i = 0; i < numDevice; i++) l_mlp.loadModel(0, i);
+    double sec = l_mlp.inferenceOnAllDevices(h_x, h_v);
 
-    vector<MLPKernel<HPC_dataType, HPC_instrBytes> > mlpKernels;
-    mlpKernels.reserve(l_numDevices);
-    for (int i = 0; i < l_numDevices; i++) {
-        mlpKernels.emplace_back(
-            MLPKernel<HPC_dataType, HPC_instrBytes>(HPC_numChannels, HPC_vecChannels, HPC_parEntries));
-        mlpKernels.back().fpga(&fpgas[i]);
-        mlpKernels.back().getCU("krnl_fcn");
-        mlpKernels.back().loadModel(&mlp);
-    }
-
-    double sec = 0;
-    if (l_numDevices == 1) {
-        sec = mlpKernels[0].inference(h_x, h_v);
-    } else {
-        sec = MLPKernel<HPC_dataType, HPC_instrBytes>::inference(mlpKernels, h_x, h_v);
-    }
     cout << "SW measured execution time is: " << sec << " s." << endl;
 
     int err = 0;
-    compare(h_ref.size(), h_v.data(), h_ref.data(), err, false);
+    compare(layers.back() * p_batch, h_v.data(), h_ref.data(), err, false);
+    // destroyModel(mlp);
     if (err == 0) {
         cout << "Results verified." << endl;
         return EXIT_SUCCESS;
