@@ -423,7 +423,7 @@ class Signature {
         gen_nnzStore(l_chParSpms);
         printf("INFO: matrix %s partiton done.\n", matrix_name.c_str());
         printf("      Original m, n, nnzs = %d, %d, %d\n", m_m, m_n, m_nnz);
-        printf("      After padding m, n, nnzs = %d, %d, %d\n", m_mPad, m_nnzPad, m_nnzPad);
+        printf("      After padding m, n, nnzs = %d, %d, %d\n", m_mPad, m_nPad, m_nnzPad);
         printf("      Padding overhead is %f\n", (double)(m_nnzPad - m_nnz) / m_nnz);
     }
 

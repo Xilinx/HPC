@@ -343,7 +343,7 @@ class ParParam {
         memset(chInfo32Arr, 0, m_channels * sizeof(int));
 
         for (int i = 0; i < m_channels; i++) {
-            chInfo32Arr[i] = (uint16_t)p_info[i];
+            chInfo32Arr[i] = p_info[i];
         }
         int old_size = m_buf.size();
         m_buf.resize(old_size + m_channels * sizeof(uint32_t) / sizeof(uint8_t));
