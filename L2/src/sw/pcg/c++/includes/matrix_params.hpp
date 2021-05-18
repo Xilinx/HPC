@@ -73,17 +73,24 @@ class SparseMatrix {
     }
 
     void create_matrix(vector<int> p_row, vector<int> p_col, vector<double> p_data) {
-        m_nnz = p_row.size();
-        m_row_list = p_row;
-        m_col_list = p_col;
-        m_data_list = p_data;
-
-        m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
-        m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
-        int l_maxRowId = *(max_element(m_row_list.begin(), m_row_list.end()));
-        int l_maxColId = *(max_element(m_col_list.begin(), m_col_list.end()));
-        m_m = l_maxRowId - m_minRowId + 1;
-        m_n = l_maxColId - m_minColId + 1;
+        if (!p_row.empty()) {
+            m_nnz = p_row.size();
+            m_row_list = p_row;
+            m_col_list = p_col;
+            m_data_list = p_data;
+            m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
+            m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
+            int l_maxRowId = *(max_element(m_row_list.begin(), m_row_list.end()));
+            int l_maxColId = *(max_element(m_col_list.begin(), m_col_list.end()));
+            m_m = l_maxRowId - m_minRowId + 1;
+            m_n = l_maxColId - m_minColId + 1;
+        } else {
+            m_nnz = 0;
+            m_m = 0;
+            m_n = 0;
+            m_minRowId = 0;
+            m_minColId = 0;
+        }
     }
 
     int getRow(int index) { return m_row_list[index]; }
