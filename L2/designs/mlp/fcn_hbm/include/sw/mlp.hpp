@@ -22,17 +22,6 @@
 #include "binFiles.hpp"
 using namespace std;
 
-extern "C" {
-
-void* createModel(int num);
-void destroyModel(void* model);
-void setDim(void* model, const uint32_t* p_dims);
-void setActFunc(void* model, uint8_t p_act);
-void setActFuncByID(void* model, uint32_t p_id, uint8_t p_act);
-void loadLayer(void* model, const char* path);
-void setLayer(void* model, HPC_dataType** weights, HPC_dataType** bias);
-}
-
 namespace xf {
 namespace hpc {
 namespace mlp {
@@ -124,6 +113,10 @@ class MLP {
 
     void setLayer(T** weights, T** bias) {
         for (int i = 0; i < m_NumLayers; i++) m_Layers[i].setData(weights[i], bias[i]);
+    }
+    
+    void setLayer(int layerId, T* weights, T* bias) {
+        m_Layers[layerId].setData(weights, bias);
     }
 };
 }

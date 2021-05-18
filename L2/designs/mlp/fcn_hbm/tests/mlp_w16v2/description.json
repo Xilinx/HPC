@@ -42,7 +42,6 @@
         "compiler": {
             "sources": [
                 "LIB_DIR/L2/designs/mlp/fcn_hbm/src/sw/mlpTest.cpp", 
-                "LIB_DIR/L2/designs/mlp/fcn_hbm/src/sw/mlp.cpp", 
                 "LIB_DIR/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp"
             ], 
             "includepaths": [
@@ -59,6 +58,8 @@
             ], 
             "symbols": [
                 "HW_CLK=3.33e-9",
+                "HPC_maxNumDevs=8",
+                "HPC_maxNumCUsPerDev=8",
                 "HPC_instrBytes=64",
                 "HPC_dataType=float", 
                 "HPC_numChannels=16",
