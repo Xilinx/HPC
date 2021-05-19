@@ -52,15 +52,21 @@ class MLPKernel : public Kernel {
     const int m_ParEntries = 0;
 
    public:
-    MLPKernel() {}
-    MLPKernel(int weightChannels, int vecChannels, int parEntries)
-        : m_VecChannels(vecChannels), m_NumChannels(weightChannels), m_ParEntries(parEntries) {}
-    MLPKernel(FPGA* fpga, int weightChannels, int vecChannels, int parEntries)
-        : Kernel(fpga), m_VecChannels(vecChannels), m_NumChannels(weightChannels), m_ParEntries(parEntries) {}
-
-    void loadModel(MLP<t_DataType>* mlp) {
+    void init() {
         h_weights.resize(m_NumChannels);
         h_vector.resize(m_VecChannels);
+    }
+    MLPKernel() { init(); }
+    MLPKernel(int weightChannels, int vecChannels, int parEntries)
+        : m_VecChannels(vecChannels), m_NumChannels(weightChannels), m_ParEntries(parEntries) {
+        init();
+    }
+    MLPKernel(FPGA* fpga, int weightChannels, int vecChannels, int parEntries)
+        : Kernel(fpga), m_VecChannels(vecChannels), m_NumChannels(weightChannels), m_ParEntries(parEntries) {
+        init();
+    }
+
+    void loadModel(MLP<t_DataType>* mlp) {
         this->mlp = mlp;
         int m_NumLayers = mlp->m_NumLayers;
         h_fcnInstr.resize(m_NumLayers);

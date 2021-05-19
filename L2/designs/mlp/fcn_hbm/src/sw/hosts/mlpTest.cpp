@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
     Options l_options(numDevice);
     for (int i = 0; i < numDevice; i++) l_options.deviceIds.push_back(i);
     l_options.xclbinNames = vector<string>(numDevice, binaryFile);
+    l_options.deviceName = "xilinx_u50_gen3x16_xdma_201920_3";
     l_options.numCUsOnDevice = vector<uint8_t>(numDevice, 1);
     l_options.cuNames = vector<vector<string> >(numDevice, {"krnl_fcn"});
 

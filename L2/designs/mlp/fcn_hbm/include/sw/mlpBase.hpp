@@ -34,6 +34,7 @@ namespace mlp {
 class Options {
    public:
     uint32_t numDevices;
+    string deviceName;
     vector<uint8_t> deviceIds;
     vector<string> xclbinNames;
     vector<uint8_t> numCUsOnDevice;
@@ -45,7 +46,7 @@ class MLPBase {
    public:
     MLPBase(const Options& options) {
         for (unsigned int i = 0; i < options.numDevices; ++i) {
-            m_devices.push_back(new FPGA(options.deviceIds[i]));
+            m_devices.push_back(new FPGA(options.deviceIds[i], options.deviceName));
             m_devices.back()->xclbin(options.xclbinNames[i]);
 
             for (unsigned int j = 0; j < options.numCUsOnDevice[i]; ++j) {
