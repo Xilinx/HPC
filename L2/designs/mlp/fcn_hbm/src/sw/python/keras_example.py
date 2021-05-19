@@ -22,6 +22,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import load_model
 from lib.xmlp import xMLPInf
+from xilAlveoMLP import alveomlp
 
 
 def get_uncompiled_model():
@@ -95,12 +96,12 @@ def evaluate(
     return l_ms
 
 
-def xmlp_inf(p_modelFileName, p_inFileName, p_xmlpOutFileName):
+def xmlp_inf(p_modelFileName, p_inFileName, p_alveomlp, p_xmlpOutFileName):
     l_model = load_model(p_modelFileName)
     l_devConf = [16, 2, 8, ['relu', 'sigmoid', 'linear']]
     #l_devConf = [16, 2, 8, []]
     l_mlpInf = xMLPInf(l_devConf)
-    l_isMLP = l_mlpInf.buildModels(l_model)
+    l_isMLP = l_mlpInf.buildModels(l_model, p_alveomlp)
     if l_isMLP:
         l_mat = np.fromfile(p_inFileName, dtype=np.float32)
         l_sTime = time.time_ns()
@@ -148,8 +149,14 @@ def process_model(
         print("INFO: Keras inference takes {}ms".format(l_ms))
     if p_xMLP:
         l_xmlpOutFileName = l_path + '/outputs_xmlp.bin'
-        l_ms = xmlp_inf(l_modelFileName, l_inFileName, l_xmlpOutFileName)
+        l_alveomlp = alveomlp()
+        l_ms = xmlp_inf(
+            l_modelFileName,
+            l_inFileName,
+            l_alveomlp,
+            l_xmlpOutFileName)
         print("INFO: xMLP inference takes {}ms".format(l_ms))
+        l_alveomlp.clear()
         l_pass = verify_inf(l_xmlpOutFileName, l_outFileName)
         if l_pass:
             print("INFO: xMLP inference passes verification!")

@@ -35,8 +35,8 @@ help::
 	$(ECHO) "  make build TARGET=<sw_emu/hw_emu/hw> DEVICE=<FPGA platform> HOST_ARCH=<x86>"
 	$(ECHO) "      Command to build xclbin application."
 	$(ECHO) ""
-	$(ECHO) "  make host HOST_ARCH=<x86>"
-	$(ECHO) "      Command to build host application."
+	$(ECHO) "  make pythonApi HOST_ARCH=<x86>"
+	$(ECHO) "      Command to build python api."
 	$(ECHO) ""
 
 # ##################### Setting up default value of TARGET ##########################
@@ -70,6 +70,7 @@ XDEVICE := $(call device2xsa, $(DEVICE))
 TEMP_DIR := _x_temp.$(TARGET).$(XDEVICE)
 TEMP_REPORT_DIR := $(CUR_DIR)/reports/_x.$(TARGET).$(XDEVICE)
 BUILD_DIR := build_dir.$(TARGET).$(XDEVICE)
+PYTHON_LIB_DIR := ./lib
 BUILD_REPORT_DIR := $(CUR_DIR)/reports/_build.$(TARGET).$(XDEVICE)
 EMCONFIG_DIR := $(BUILD_DIR)
 XCLBIN_DIR := $(CUR_DIR)/$(BUILD_DIR)
@@ -77,12 +78,11 @@ export XCL_BINDIR = $(XCLBIN_DIR)
 
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
-HOST_SRCS += $(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/src/sw/hosts/mlpTest.cpp
+HOST_SRCS += $(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/src/sw/pythonapi.cpp
 HOST_SRCS += $(XFLIB_DIR)/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp
 
-CXXFLAGS += -DHW_CLK=3.6e-9 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=8 -DHPC_vecChannels=4 -DHPC_maxInstrs=1000 -DHPC_parEntries=8
+CXXFLAGS += -DHW_CLK=3.33e-9 -DHPC_maxNumDevs=8 -DHPC_maxNumCUsPerDev=8 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=16 -DHPC_vecChannels=2 -DHPC_maxInstrs=100 -DHPC_parEntries=8
 CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/
-CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/externals/
 CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/sw/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L1/include/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/
@@ -92,7 +92,7 @@ CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/tests/sw/include/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L2/include/memKernel/sw/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L2/include/xcl2
-LDFLAGS += -fopenmp
+CXXFLAGS += $(shell python -m pybind11 --includes)
 
 ifeq ($(TARGET),sw_emu)
 CXXFLAGS += -D SW_EMU_TEST
@@ -103,19 +103,20 @@ CXXFLAGS += -D HW_EMU_TEST
 endif
 
 # ######################### Host compiler global settings ############################
-CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
-LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
-CXXFLAGS += -fmessage-length=0 
+//CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_HLS)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
+CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_HLS)/include -std=c++11 -g -O0 -Wall -Wno-unknown-pragmas -Wno-unused-label
+LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE -shared
+CXXFLAGS += -fPIC -fmessage-length=0 -O3
 CXXFLAGS += -I$(CUR_DIR)/src/ 
 
 ifeq ($(HOST_ARCH), x86)
-LDFLAGS += -L$(XILINX_VIVADO)/lnx64/tools/fpo_v7_0 -Wl,--as-needed -lgmp -lmpfr -lIp_floating_point_v7_0_bitacc_cmodel
+LDFLAGS += -L$(XILINX_HLS)/lnx64/tools/fpo_v7_0 -Wl,--as-needed -lgmp -lmpfr -lIp_floating_point_v7_0_bitacc_cmodel
 endif
 
 # ################### Setting package and image directory #######################
 
-EXE_NAME := host.exe
-EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
+PYTHON_LIB_NAME := xilAlveoMLP.so 
+PYTHON_LIB_FILE := $(PYTHON_LIB_DIR)/$(PYTHON_LIB_NAME)
 HOST_ARGS := $(BUILD_DIR)/mlp.xclbin
 
 # ##################### Kernel compiler global settings ##########################
@@ -133,10 +134,10 @@ VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L1/include/
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L1/include/hw
 VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/hw
 
-krnl_fcn_VPP_FLAGS += --hls.clock 333000000:krnl_fcn
-VPP_LDFLAGS_mlp += --kernel_frequency 333
+krnl_fcn_VPP_FLAGS += --hls.clock 300000000:krnl_fcn
+VPP_LDFLAGS_mlp += --kernel_frequency 300
 
-VPP_FLAGS += -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_maxInstrs=1000 -DHPC_numActFuncs=1 -DHPC_maxVecSize=4096 -DHPC_bufferSize=16384 -DHPC_numChannels=8 -DHPC_vecChannels=4 -DHPC_parEntries=8 
+VPP_FLAGS += -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_maxInstrs=100 -DHPC_numActFuncs=1 -DHPC_maxVecSize=4096 -DHPC_bufferSize=16384 -DHPC_numChannels=16 -DHPC_vecChannels=2 -DHPC_parEntries=8 
 
 # Kernel linker flags
 VPP_LDFLAGS_mlp_temp := --config $(CUR_DIR)/opts.cfg
@@ -146,19 +147,20 @@ VPP_LDFLAGS_mlp_temp += --config $(CUR_DIR)/conn_u50.cfg
 endif
 VPP_LDFLAGS_mlp += $(VPP_LDFLAGS_mlp_temp)
 
+# Kernel args
+
 # ############################ Declaring Binary Containers ##########################
 
 BINARY_CONTAINERS += $(BUILD_DIR)/mlp.xclbin
 BINARY_CONTAINER_mlp_OBJS += $(TEMP_DIR)/krnl_fcn.xo
 
 # ######################### Setting Targets of Makefile ################################
-
 -include ./params.mk
 .PHONY: all clean cleanall docs emconfig
-all: check_vpp check_platform check_sysroot $(EXE_FILE) $(BINARY_CONTAINERS) emconfig
+all: check_vpp check_platform check_sysroot $(PYTHON_LIB_FILE) $(BINARY_CONTAINERS) emconfig
 
-.PHONY: host
-host: check_xrt check_sysroot $(EXE_FILE)
+.PHONY: pythonApi
+pythonApi: check_xrt check_sysroot $(PYTHON_LIB_FILE)
 
 .PHONY: xclbin
 xclbin: check_vpp check_sysroot $(BINARY_CONTAINERS)
@@ -170,7 +172,7 @@ build: xclbin
 $(TEMP_DIR)/krnl_fcn.xo: $(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/src/hw/fcnKernel.cpp
 	$(ECHO) "Compiling Kernel: krnl_fcn"
 	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_fcn_VPP_FLAGS) $(VPP_FLAGS) -k krnl_fcn -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
+	$(VPP) -c $(krnl_fcn_VPP_FLAGS) $(VPP_FLAGS) -k krnl_fcn -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' $^
 
 ifneq (,$(shell echo $(XPLATFORM) | awk '/u50/'))
 
@@ -185,8 +187,8 @@ endif
 
 
 # ################# Setting Rules for Host (Building Host Executable) ################
-$(EXE_FILE): $(HOST_SRCS) | check_xrt
-	mkdir -p $(BUILD_DIR)
+$(PYTHON_LIB_FILE): $(HOST_SRCS) | check_xrt
+	mkdir -p $(PYTHON_LIB_DIR)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 emconfig:$(EMCONFIG_DIR)/emconfig.json
@@ -195,19 +197,17 @@ $(EMCONFIG_DIR)/emconfig.json:
 
 
 # ###############Setting Essential Checks And Running Rules For Vitis Flow #############
-run: host
+run: all
 ifeq ($(TARGET),$(filter $(TARGET),sw_emu hw_emu))
-	XCL_EMULATION_MODE=$(TARGET) make data_gen
-	$(CP) $(EMCONFIG_DIR)/emconfig.json .
-	XCL_EMULATION_MODE=$(TARGET) $(EXE_FILE) $(HOST_ARGS)
+	$(error [ERROR]: This test does is not supported $(TARGET).)
 else
 	make data_gen
-	$(EXE_FILE) $(HOST_ARGS)
+	$(PYTHON_LIB_FILE) $(HOST_ARGS)
 endif
 
 # ################################# Cleaning Rules ##################################
 cleanh:
-	-$(RMDIR) $(EXE_FILE) vitis_* TempConfig system_estimate.xtxt *.rpt .run/
+	-$(RMDIR) $(PYTHON_LIB_FILE) vitis_* TempConfig system_estimate.xtxt *.rpt .run/
 	-$(RMDIR) src/*.ll _xocc_* .Xil dltmp* xmltmp* *.log *.jou *.wcfg *.wdb sample_link.ini sample_compile.ini obj* bin* *.csv *.jpg *.jpeg *.png
 
 cleank:

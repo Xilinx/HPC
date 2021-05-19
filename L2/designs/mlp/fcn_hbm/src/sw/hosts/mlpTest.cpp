@@ -42,25 +42,22 @@ int main(int argc, char** argv) {
     for (int i = 0; i < numLayers + 1; i++) layers.push_back(atoi(argv[++l_index]));
 
     string filePath = argv[++l_index];
-    int numDevice = atoi(argv[++l_index]);
     host_buffer_t<HPC_dataType> h_x(layers.front() * p_batch);
     host_buffer_t<HPC_dataType> h_ref(layers.back() * p_batch);
     host_buffer_t<HPC_dataType> h_v(h_ref.size());
     readBin(filePath + "in.mat", h_x.size() * sizeof(HPC_dataType), h_x);
     readBin(filePath + "out.mat", h_ref.size() * sizeof(HPC_dataType), h_ref);
 
-    Options l_options(numDevice);
-    for (int i = 0; i < numDevice; i++) l_options.deviceIds.push_back(i);
-    l_options.xclbinNames = vector<string>(numDevice, binaryFile);
-    l_options.numCUsOnDevice = vector<uint8_t>(numDevice, 1);
-    l_options.cuNames = vector<vector<string> >(numDevice, {"krnl_fcn"});
+    ifstream ifstr(argv[++l_index]);
+    string deviceConfig(istreambuf_iterator<char>(ifstr), (istreambuf_iterator<char>()));
+    Options l_options(deviceConfig);
 
     MLPBase l_mlp(l_options);
     l_mlp.addEmptyModel(numLayers);
     l_mlp.setDim(0, layers.data());
     l_mlp.setAllActFunc(0, "sigmoid");
     l_mlp.loadLayersFromFile(0, filePath.c_str());
-    for (int i = 0; i < numDevice; i++) l_mlp.loadModel(0, i);
+    for (int i = 0; i < l_options.numDevices; i++) l_mlp.loadModel(0, i);
     double sec = l_mlp.inferenceOnAllDevices(h_x, h_v);
 
     cout << "SW measured execution time is: " << sec << " s." << endl;

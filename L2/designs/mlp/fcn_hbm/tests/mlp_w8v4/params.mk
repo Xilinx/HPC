@@ -18,12 +18,12 @@ pyGenMat=${XFLIB_DIR}/L2/designs/mlp/fcn_hbm/src/sw/python/genMLP.py
 batch = 600000
 num = 3
 layers=360 32 16 8
-HPC_numDevice = 1
+HPC_configDevice = ${XFLIB_DIR}/L2/designs/mlp/fcn_hbm/tests/devices.json
 HPC_dataType = float
 HPC_activation = sigmoid
 
 dataDir = ./$(BUILD_DIR)/data_${batch}_${num}/
-HOST_ARGS += $(batch) ${num} ${layers} $(dataDir) ${HPC_numDevice}
+HOST_ARGS += $(batch) ${num} ${layers} $(dataDir) ${HPC_configDevice} 
 
 data_gen: $(dataDir)/sig
 

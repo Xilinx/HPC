@@ -14,7 +14,7 @@
 import math
 import numpy as np
 from tensorflow import keras
-#import xMLPBase as xMLP
+from xilAlveoMLP import alveomlp
 
 
 class CpuModel:
@@ -38,7 +38,13 @@ class CpuModel:
 
 
 class AlveoModel:
-    def __init__(self, weightChannels, vecChannels, parEntries, actFuncs):
+    def __init__(
+            self,
+            alveomlp,
+            weightChannels,
+            vecChannels,
+            parEntries,
+            actFuncs):
         self.weightChannels = weightChannels
         self.vecChannels = vecChannels
         self.parEntries = parEntries
@@ -51,9 +57,11 @@ class AlveoModel:
         self.weights = []
         self.bias = []
         self.actFuncs = []
+        self.alveomlp = alveomlp
 
     def build(self, p_model, p_layerIds, p_dims, p_actFuncs):
         self.numLayers = len(p_layerIds)
+        self.alveomlp.addEmptyModel(self.numLayers)
         self.inDim = p_dims[0]
         self.outDim = p_dims[-1]
         self.lastActFunc = p_actFuncs[-1]
@@ -74,6 +82,7 @@ class AlveoModel:
             self.dims.append(l_dim)
         self.dims.append(math.ceil(
             p_dims[self.numLayers] / self.weightChannels) * self.weightChannels)
+        self.alveomlp.setDim(0, np.array(self.dims, dtype=np.uint32))
         for i in range(self.numLayers):
             l_layer = p_model.layers[p_layerIds[i]]
             l_weights = l_layer.weights[0][:].numpy()
@@ -85,9 +94,15 @@ class AlveoModel:
                 l_weights, [
                     (0, l_padRows), (0, l_padCols)], 'constant')
             l_bias = np.pad(l_bias, (0, l_padRows), 'constant')
-            self.weights.append(l_weights)
-            self.bias.append(l_bias)
-            self.actFuncs.append(p_actFuncs[i])
+            # self.weights.append(l_weights)
+            # self.bias.append(l_bias)
+            # self.actFuncs.append(p_actFuncs[i])
+            self.alveomlp.setLayer(0, i, l_weights, l_bias)
+            if p_actFuncs[i] in self.devFuncs:
+                self.alveomlp.setActFunc(0, i, p_actFuncs[i])
+            else:
+                self.alveomlp.setActFunc(0, i, "linear")
+        self.alveomlp.loadmodel(0, 0)
 
     def predict(self, p_xMat):
         l_xMat = np.reshape(p_xMat, (-1, self.inDim)).astype(np.float32)
@@ -95,24 +110,37 @@ class AlveoModel:
                      (l_xMat.shape[0] % self.vecChannels)) % self.vecChannels
         l_padCols = self.dims[0] - l_xMat.shape[1]
         l_xMat = np.pad(l_xMat, [(0, l_padRows), (0, l_padCols)], 'constant')
-        for i in range(len(self.weights)):
-            l_xMat = self.weights[i] @ np.transpose(l_xMat)
-            l_xMat = np.transpose(l_xMat)
-            l_xMat += self.bias[i]
-            l_act = self.actFuncs[i]
-            if l_act == 'relu':
-                l_xMat = np.maximum(l_xMat, 0)
-            elif l_act == 'sigmoid':
-                l_xMat = 1 / (1 + np.exp(-l_xMat))
-            else:
-                l_xMat = l_xMat[:, 0:self.outDim]
-
+        l_yList = []
+        l_batches = l_xMat.shape[0]
+        l_hwTime = self.alveomlp.predict(
+            l_xMat.flatten().tolist(), l_yList, 0, 0)
+        l_resMat = np.array(l_yList)
+        l_resMat = np.reshape(l_resMat, (l_batches, self.dims[self.numLayers]))
+        l_resMat = l_resMat[:, 0:self.outDim]
         if self.lastActFunc == 'softmax':
-            l_exp = np.exp(l_xMat)
-            for j in range(l_xMat.shape[0]):
+            l_exp = np.exp(l_resMat)
+            for j in range(l_resMat.shape[0]):
                 l_sum = np.sum(l_exp[j])
-                l_xMat[j] = l_exp[j] / l_sum
-        l_resMat = l_xMat[:, 0:self.outDim]
+                l_resMat[j] = l_exp[j] / l_sum
+        l_resMat = l_resMat[:, 0:self.outDim]
+ #        for i in range(len(self.weights)):
+ #            l_xMat = self.weights[i] @ np.transpose(l_xMat)
+ #            l_xMat = np.transpose(l_xMat)
+ #            l_xMat += self.bias[i]
+ #            l_act = self.actFuncs[i]
+ #            if l_act == 'relu':
+ #                l_xMat = np.maximum(l_xMat,0)
+ #            elif l_act == 'sigmoid':
+ #                l_xMat = 1/(1+np.exp(-l_xMat))
+ #            else:
+ #                l_xMat = l_xMat[:, 0:self.outDim]
+
+#        if self.lastActFunc == 'softmax':
+#            l_exp = np.exp(l_xMat)
+#            for j in range(l_xMat.shape[0]):
+#                l_sum = np.sum(l_exp[j])
+#                l_xMat[j] = l_exp[j]/l_sum
+#        l_resMat = l_xMat[:, 0:self.outDim]
         return l_resMat
 
 
@@ -145,7 +173,13 @@ class xMLPInf:
             l_dims.append(p_model.layers[-1].weights[0].shape[1])
         return [l_isMLP, l_layerIds, l_dims, l_actFuncs]
 
-    def createModels(self, p_model, p_layerIds, p_dims, p_actFuncs):
+    def createModels(
+            self,
+            p_model,
+            p_alveomlp,
+            p_layerIds,
+            p_dims,
+            p_actFuncs):
         l_layers = len(p_layerIds)
         l_sId = 0
         l_forCpu = True
@@ -170,6 +204,7 @@ class xMLPInf:
                 l_resModels.append(l_cpuModel)
             elif (not l_forCpu) and l_eId > l_sId:
                 l_alveoModel = AlveoModel(
+                    p_alveomlp,
                     self.weightChannels,
                     self.vecChannels,
                     self.parEntries,
@@ -183,11 +218,11 @@ class xMLPInf:
             l_forCpu = not l_forCpu
         return l_resModels
 
-    def buildModels(self, p_model):
+    def buildModels(self, p_model, p_alveomlp):
         [l_isMlp, l_layerIds, l_dims, l_actFuncs] = self.checkModel(p_model)
         if l_isMlp:
             self.models = self.createModels(
-                p_model, l_layerIds, l_dims, l_actFuncs)
+                p_model, p_alveomlp, l_layerIds, l_dims, l_actFuncs)
             return True
         else:
             return False
