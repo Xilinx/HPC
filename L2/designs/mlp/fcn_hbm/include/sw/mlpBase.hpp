@@ -24,6 +24,8 @@
 #include "fpga.hpp"
 #include "binFiles.hpp"
 #include "mlpKernel.hpp"
+#include "json.hpp"
+using json = nlohmann::json;
 
 using namespace std;
 using namespace xf::hpc::mlp;
@@ -39,6 +41,17 @@ class Options {
     vector<uint8_t> numCUsOnDevice;
     vector<vector<string> > cuNames;
     Options(uint32_t num) { numDevices = num; }
+    Options(string options) {
+        auto j3 = json::parse(options);
+        auto deviceList = j3["devices"];
+        numDevices = deviceList.size();
+        for (auto device : deviceList) {
+            deviceIds.push_back(device["deviceID"]);
+            xclbinNames.push_back(device["xclbinNames"]);
+            numCUsOnDevice.push_back(device["numCUs"]);
+            cuNames.push_back(device["cuNames"]);
+        }
+    }
 };
 
 class MLPBase {
