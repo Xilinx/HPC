@@ -70,6 +70,7 @@ XDEVICE := $(call device2xsa, $(DEVICE))
 TEMP_DIR := _x_temp.$(TARGET).$(XDEVICE)
 TEMP_REPORT_DIR := $(CUR_DIR)/reports/_x.$(TARGET).$(XDEVICE)
 BUILD_DIR := build_dir.$(TARGET).$(XDEVICE)
+PYTHON_LIB_DIR := ./lib
 BUILD_REPORT_DIR := $(CUR_DIR)/reports/_build.$(TARGET).$(XDEVICE)
 EMCONFIG_DIR := $(BUILD_DIR)
 XCLBIN_DIR := $(CUR_DIR)/$(BUILD_DIR)
@@ -102,7 +103,8 @@ CXXFLAGS += -D HW_EMU_TEST
 endif
 
 # ######################### Host compiler global settings ############################
-CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_HLS)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
+//CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_HLS)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
+CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_HLS)/include -std=c++11 -g -O0 -Wall -Wno-unknown-pragmas -Wno-unused-label
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE -shared
 CXXFLAGS += -fPIC -fmessage-length=0 -O3
 CXXFLAGS += -I$(CUR_DIR)/src/ 
@@ -114,7 +116,7 @@ endif
 # ################### Setting package and image directory #######################
 
 PYTHON_LIB_NAME := xilAlveoMLP.so 
-PYTHON_LIB_FILE := $(BUILD_DIR)/$(PYTHON_LIB_NAME)
+PYTHON_LIB_FILE := $(PYTHON_LIB_DIR)/$(PYTHON_LIB_NAME)
 HOST_ARGS := $(BUILD_DIR)/mlp.xclbin
 
 # ##################### Kernel compiler global settings ##########################
@@ -186,7 +188,7 @@ endif
 
 # ################# Setting Rules for Host (Building Host Executable) ################
 $(PYTHON_LIB_FILE): $(HOST_SRCS) | check_xrt
-	mkdir -p $(BUILD_DIR)
+	mkdir -p $(PYTHON_LIB_DIR)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 emconfig:$(EMCONFIG_DIR)/emconfig.json

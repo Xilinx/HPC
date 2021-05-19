@@ -41,6 +41,24 @@ namespace mlp {
 
     class MLPBase {
         public:
+            MLPBase() {
+                Options l_options;
+                l_options.numDevices = 1;
+                l_options.deviceIds[0] = 0;
+                l_options.xclbinNames[0] = "./mlp.xclbin";
+                l_options.numCUsOnDevice[0] = 1;
+                l_options.cuNames[0][0] = "krnl_fcn";
+                for (unsigned int i=0; i<l_options.numDevices; ++i) {
+                    m_devices.push_back(new FPGA(l_options.deviceIds[i]));
+                    m_devices.back()->xclbin(l_options.xclbinNames[i]);
+
+                    for (unsigned int j=0; j<l_options.numCUsOnDevice[i]; ++j) {
+                        m_cus.push_back(new MLPKernel<HPC_dataType, HPC_instrBytes>(m_devices[i], HPC_numChannels, HPC_vecChannels, HPC_parEntries));
+                        m_cus.back()->getCU(l_options.cuNames[i][j]);
+                    }   
+                }   
+
+            }
             MLPBase(const Options& options) {
                 for (unsigned int i=0; i<options.numDevices; ++i) {
                     m_devices.push_back(new FPGA(options.deviceIds[i]));
