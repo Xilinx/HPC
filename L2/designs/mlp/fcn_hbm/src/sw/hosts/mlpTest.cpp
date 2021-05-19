@@ -44,13 +44,13 @@ int main(int argc, char** argv) {
     string filePath = argv[++l_index];
     host_buffer_t<HPC_dataType> h_x(layers.front() * p_batch);
     host_buffer_t<HPC_dataType> h_ref(layers.back() * p_batch);
-    host_buffer_t<HPC_dataType> h_v(h_ref.size());
+    host_buffer_t<HPC_dataType> h_v;
     readBin(filePath + "in.mat", h_x.size() * sizeof(HPC_dataType), h_x);
     readBin(filePath + "out.mat", h_ref.size() * sizeof(HPC_dataType), h_ref);
 
     ifstream ifstr(argv[++l_index]);
     string deviceConfig(istreambuf_iterator<char>(ifstr), (istreambuf_iterator<char>()));
-    Options l_options(deviceConfig);
+    Options l_options(deviceConfig, 1);
 
     MLPBase l_mlp(l_options);
     l_mlp.addEmptyModel(numLayers);

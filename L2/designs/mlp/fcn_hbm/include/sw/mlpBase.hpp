@@ -40,23 +40,43 @@ class Options {
     vector<string> xclbinNames;
     vector<uint8_t> numCUsOnDevice;
     vector<vector<string> > cuNames;
+    Options() {}
     Options(uint32_t num) { numDevices = num; }
-    Options(string options) {
+    Options(string options, uint32_t num = 0) {
         auto j3 = json::parse(options);
         auto deviceList = j3["devices"];
-        numDevices = deviceList.size();
+        int i = 0;
+        if (num != 0)
+            numDevices = num;
+        else
+            numDevices = deviceList.size();
         for (auto device : deviceList) {
             deviceIds.push_back(device["deviceID"]);
             xclbinNames.push_back(device["xclbinNames"]);
             numCUsOnDevice.push_back(device["numCUs"]);
             cuNames.push_back(device["cuNames"]);
+            if (++i == num) break;
         }
     }
 };
 
 class MLPBase {
    public:
-    MLPBase(const Options& options) {
+    MLPBase() {
+        Options l_options;
+        l_options.numDevices = 1;
+        l_options.deviceIds.push_back(0);
+        l_options.xclbinNames.push_back("./mlp.xclbin");
+        l_options.numCUsOnDevice.push_back(1);
+        l_options.cuNames.push_back(vector<string>(1, "krnl_fcn"));
+        init(l_options);
+    }
+    MLPBase(string optionStr, uint32_t num = 0) {
+        Options l_option(optionStr, num);
+        init(l_option);
+    }
+    MLPBase(const Options& options) { init(options); }
+    void init(const Options& options) {
         for (unsigned int i = 0; i < options.numDevices; ++i) {
             m_devices.push_back(new FPGA(options.deviceIds[i]));
             m_devices.back()->xclbin(options.xclbinNames[i]);

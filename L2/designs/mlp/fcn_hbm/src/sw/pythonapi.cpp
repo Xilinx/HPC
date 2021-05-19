@@ -42,7 +42,7 @@ class PyMLPWrapper : public MLPBase {
 
     void addEmptyModel(const uint32_t p_numLayers) { MLPBase::addEmptyModel(p_numLayers); }
 
-    void setDim(const uint32_t p_modelId, py::array_t<HPC_dataType> p_dims) {
+    void setDim(const uint32_t p_modelId, py::array_t<uint32_t> p_dims) {
         auto l_dimBuf = p_dims.request();
         MLPBase::setDim(p_modelId, l_dimBuf.ptr);
     }

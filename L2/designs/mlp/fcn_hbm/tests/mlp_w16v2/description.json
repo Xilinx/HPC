@@ -45,6 +45,7 @@
                 "LIB_DIR/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp"
             ], 
             "includepaths": [
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/externals/", 
                 "LIB_DIR/L2/designs/mlp/fcn_hbm/include/", 
                 "LIB_DIR/L2/designs/mlp/fcn_hbm/include/sw/", 
                 "LIB_DIR/../Vitis_Libraries/hpc/L1/include/",
@@ -66,8 +67,7 @@
                 "HPC_vecChannels=2",
                 "HPC_maxInstrs=100",
                 "HPC_parEntries=8"
-            ], 
-            "options": "-O3"
+            ]
         }
     }, 
     "v++": {

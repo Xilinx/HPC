@@ -91,6 +91,7 @@ class MLPKernel : public Kernel {
     }
 
     double inference(host_buffer_t<t_DataType>& h_x, host_buffer_t<t_DataType>& h_v) {
+        if (h_v.size() < mlp->m_Dims.back() * m_Batch) h_v.resize(mlp->m_Dims.back() * m_Batch);
         setInput(h_x);
         auto startTime = chrono::high_resolution_clock::now();
         enqueueTask();
@@ -122,15 +123,18 @@ class MLPKernel : public Kernel {
                             host_buffer_t<t_DataType>& h_x,
                             host_buffer_t<t_DataType>& h_v) {
         uint32_t l_numK = kernels.size();
+        const int totalBatch = h_x.size();
 #pragma omp prallel for
         for (int i = 0; i < l_numK; i++) {
-            kernels[i]->setInput(h_x.data() + i * h_x.size() / l_numK, h_x.size() / l_numK);
+            kernels[i]->setInput(h_x.data() + i * totalBatch / l_numK, totalBatch / l_numK);
         }
 
         auto startTime = chrono::high_resolution_clock::now();
         for (auto kernel : kernels) kernel->enqueueTask();
         for (auto kernel : kernels) kernel->finish();
         auto finishTime = chrono::high_resolution_clock::now();
+        if (h_v.size() < kernels[0]->mlp->m_Dims.back() * totalBatch * l_numK)
+            h_v.resize(kernels[0]->mlp->m_Dims.back() * totalBatch);
         for (int i = 0; i < l_numK; i++)
             kernels[i]->getOutput(h_v.data() + i * kernels[i]->m_Batch * kernels[i]->mlp->m_Dims.back());
         chrono::duration<double> elapsed = finishTime - startTime;

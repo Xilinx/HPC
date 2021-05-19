@@ -102,7 +102,7 @@ class AlveoModel:
                 self.alveomlp.setActFunc(0, i, p_actFuncs[i])
             else:
                 self.alveomlp.setActFunc(0, i, "linear")
-        self.alveomlp.loadmodel(0, 0)
+        self.alveomlp.loadModel(0, 0)
 
     def predict(self, p_xMat):
         l_xMat = np.reshape(p_xMat, (-1, self.inDim)).astype(np.float32)
