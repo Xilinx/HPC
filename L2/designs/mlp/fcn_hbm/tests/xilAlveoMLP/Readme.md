@@ -13,7 +13,7 @@ make pythonAPi
 
 ### Configuration
 
-Please make sure the information in the configuration file **devices.json** is correct. 
+Please make sure the information in the configuration file [**devices.json**](./devices.json) is correct. 
 
 ### Steps
 
