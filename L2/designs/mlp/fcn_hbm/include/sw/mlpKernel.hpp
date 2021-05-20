@@ -90,16 +90,17 @@ class MLPKernel : public Kernel {
         }
     }
 
-    double inference(host_buffer_t<t_DataType>& h_x, host_buffer_t<t_DataType>& h_v) {
-        if (h_v.size() < mlp->m_Dims.back() * m_Batch) h_v.resize(mlp->m_Dims.back() * m_Batch);
-        setInput(h_x);
+    double inference(const uint32_t p_batch, t_DataType* h_x, t_DataType* h_v) {
+        uint32_t x_size = p_batch * mlp->m_Dims.front();
+        setInput(h_x, x_size);
         auto startTime = chrono::high_resolution_clock::now();
         enqueueTask();
         finish();
         auto finishTime = chrono::high_resolution_clock::now();
         chrono::duration<double> elapsed = finishTime - startTime;
         double t_sec = elapsed.count();
-        getOutput(h_v.data());
+        getOutput(h_v);
+#ifdef DEBUG
         uint64_t l_last = 0;
         for (int i = 0; i < mlp->m_NumLayers + 1; i++) {
             xf::hpc::mlp::FcnInstr<t_InstrBytes> fcnInstr;
@@ -116,12 +117,16 @@ class MLPKernel : public Kernel {
                  << "%." << endl;
         }
         cout << "HW measured execution time " << l_last * HW_CLK << " seconds, ";
+#endif
         return t_sec;
     }
+    double inference(vector<t_DataType>& h_x, vector<t_DataType>& h_v) {
+        uint32_t p_batch = h_x.size() / mlp->m_Dims.front();
+        if (h_v.size() < p_batch * mlp->m_Dims.back()) h_v.resize(p_batch * mlp->m_Dims.back());
+        inference(p_batch, h_x.data(), h_v.data());
+    }
 
-    static double inference(vector<MLPKernel*> kernels,
-                            host_buffer_t<t_DataType>& h_x,
-                            host_buffer_t<t_DataType>& h_v) {
+    static double inference(vector<MLPKernel*> kernels, vector<t_DataType>& h_x, vector<t_DataType>& h_v) {
         uint32_t l_numK = kernels.size();
         const int totalBatch = h_x.size();
 #pragma omp prallel for
@@ -217,7 +222,7 @@ class MLPKernel : public Kernel {
         setRunArgs();
     }
 
-    void setInput(host_buffer_t<t_DataType>& p_x) { setInput(p_x.data(), p_x.size()); }
+    void setInput(vector<t_DataType>& p_x) { setInput(p_x.data(), p_x.size()); }
 
     void setModelArgs() {
         cl_int err;

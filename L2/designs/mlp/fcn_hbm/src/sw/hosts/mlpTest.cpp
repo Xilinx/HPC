@@ -42,9 +42,9 @@ int main(int argc, char** argv) {
     for (int i = 0; i < numLayers + 1; i++) layers.push_back(atoi(argv[++l_index]));
 
     string filePath = argv[++l_index];
-    host_buffer_t<HPC_dataType> h_x(layers.front() * p_batch);
-    host_buffer_t<HPC_dataType> h_ref(layers.back() * p_batch);
-    host_buffer_t<HPC_dataType> h_v;
+    vector<HPC_dataType> h_x(layers.front() * p_batch);
+    vector<HPC_dataType> h_ref(layers.back() * p_batch);
+    vector<HPC_dataType> h_v;
     readBin(filePath + "in.mat", h_x.size() * sizeof(HPC_dataType), h_x);
     readBin(filePath + "out.mat", h_ref.size() * sizeof(HPC_dataType), h_ref);
 

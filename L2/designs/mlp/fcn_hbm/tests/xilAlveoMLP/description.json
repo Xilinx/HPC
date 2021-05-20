@@ -1,0 +1,48 @@
+{
+    "gui": false,
+    "name": "Xilinx FCN Kernel", 
+    "description": "Xilinx HPC FCN Test", 
+    "flow": "vitis", 
+    "platform_type": "pcie", 
+    "platform_whitelist": [
+        "u50"
+    ], 
+    "launch": [
+        {
+            "name": "generic launch for all flows", 
+            "cmd_args": "BUILD/mlp.xclbin"
+        }
+    ], 
+    "host": {
+        "host_exe": "xilAlveoMLP.so", 
+        "compiler": {
+            "sources": [
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/src/sw/pythonapi.cpp", 
+                "LIB_DIR/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp"
+            ], 
+            "includepaths": [
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/externals/", 
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/", 
+                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/sw/", 
+                "LIB_DIR/../Vitis_Libraries/hpc/L1/include/",
+                "LIB_DIR/../Vitis_Libraries/hpc/L2/include/", 
+                "LIB_DIR/../Vitis_Libraries/hpc/L2/include/sw", 
+                "LIB_DIR/../Vitis_Libraries/hpc/L2/include/common", 
+                "LIB_DIR/../Vitis_Libraries/blas/L1/include/", 
+                "LIB_DIR/../Vitis_Libraries/blas/L1/tests/sw/include/", 
+                "LIB_DIR/../Vitis_Libraries/blas/L2/include/memKernel/sw/", 
+                "LIB_DIR/../Vitis_Libraries/blas/L2/include/xcl2"
+            ], 
+            "symbols": [
+                "HW_CLK=3.33e-9",
+                "HPC_instrBytes=64",
+                "HPC_dataType=float", 
+                "HPC_numChannels=16",
+                "HPC_vecChannels=2",
+                "HPC_maxInstrs=100",
+                "HPC_parEntries=8"
+            ], 
+            "options": "$(shell python -m pybind11 --includes) -shared -fPIC"
+        }
+    }
+}

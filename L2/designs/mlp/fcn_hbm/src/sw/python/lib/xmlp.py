@@ -110,11 +110,10 @@ class AlveoModel:
                      (l_xMat.shape[0] % self.vecChannels)) % self.vecChannels
         l_padCols = self.dims[0] - l_xMat.shape[1]
         l_xMat = np.pad(l_xMat, [(0, l_padRows), (0, l_padCols)], 'constant')
-        l_yList = []
         l_batches = l_xMat.shape[0]
-        l_hwTime = self.alveomlp.predict(
-            l_xMat.flatten().tolist(), l_yList, 0, 0)
-        l_resMat = np.array(l_yList)
+        l_resMat = np.zeros(l_batches * self.dims[-1], dtype=np.float32)
+        l_hwTime = self.alveomlp.predict(l_batches,
+                                         l_xMat.flatten(), l_resMat, 0, 0)
         l_resMat = np.reshape(l_resMat, (l_batches, self.dims[self.numLayers]))
         l_resMat = l_resMat[:, 0:self.outDim]
         if self.lastActFunc == 'softmax':

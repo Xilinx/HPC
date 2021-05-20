@@ -126,6 +126,7 @@ def process_model(
         p_inf,
         p_evaluate,
         p_xMLP,
+        p_deviceConfig,
         p_modelPath,
         p_modelName):
     l_path = p_modelPath + '/' + p_modelName
@@ -149,14 +150,15 @@ def process_model(
         print("INFO: Keras inference takes {}ms".format(l_ms))
     if p_xMLP:
         l_xmlpOutFileName = l_path + '/outputs_xmlp.bin'
-        l_alveomlp = alveomlp()
+        with open(p_deviceConfig, 'r') as f:
+            jstr = f.read()
+        l_alveomlp = alveomlp(jstr, 1)
         l_ms = xmlp_inf(
             l_modelFileName,
             l_inFileName,
             l_alveomlp,
             l_xmlpOutFileName)
         print("INFO: xMLP inference takes {}ms".format(l_ms))
-        l_alveomlp.clear()
         l_pass = verify_inf(l_xmlpOutFileName, l_outFileName)
         if l_pass:
             print("INFO: xMLP inference passes verification!")
@@ -181,6 +183,7 @@ def main(args):
             args.kinf,
             args.evaluate,
             args.xinf,
+            args.device_config,
             args.model_path,
             args.model_name)
 
@@ -208,6 +211,10 @@ if __name__ == "__main__":
         '--xinf',
         action='store_true',
         help='use xMLP to do inference from .h5 file')
+    parser.add_argument(
+        '--device_config',
+        type=str,
+        help='path for json files that contain device configuration')
     parser.add_argument(
         '--model_path',
         type=str,

@@ -28,16 +28,9 @@ namespace py = pybind11;
 namespace xilinx_apps {
 namespace mlp {
 
-using HOST_BUFFER_TYPE = vector<HPC_dataType, aligned_allocator<HPC_dataType> >;
-
-HOST_BUFFER_TYPE createBuffer() {
-    HOST_BUFFER_TYPE l_buffer;
-    return l_buffer;
-}
-
 class PyMLPWrapper : public MLPBase {
    public:
-    PyMLPWrapper() : MLPBase() {}
+    PyMLPWrapper(const string& str, const uint32_t num) : MLPBase(str, num) {}
     PyMLPWrapper(const Options& options) : MLPBase(options) {}
 
     void addEmptyModel(const uint32_t p_numLayers) { MLPBase::addEmptyModel(p_numLayers); }
@@ -64,11 +57,13 @@ class PyMLPWrapper : public MLPBase {
 
     void loadModel(const uint32_t p_modelId = 0, const uint32_t p_cuId = 0) { MLPBase::loadModel(p_modelId, p_cuId); }
 
-    double predict(HOST_BUFFER_TYPE& p_x,
-                   HOST_BUFFER_TYPE& p_y,
+    double predict(const uint32_t p_batch,
+                   py::array_t<HPC_dataType> p_x,
+                   py::array_t<HPC_dataType> p_y,
                    const uint32_t p_modelId = 0,
                    const uint32_t p_cuId = 0) {
-        return (MLPBase::inference(p_x, p_y, p_modelId, p_cuId));
+        return (MLPBase::inference(p_batch, (HPC_dataType*)p_x.request().ptr, (HPC_dataType*)p_y.request().ptr,
+                                   p_modelId, p_cuId));
     }
 
     void clear() { MLPBase::clear(); }
@@ -80,7 +75,7 @@ PYBIND11_MODULE(xilAlveoMLP, pc) {
     pc.doc() = "Python bindings for the Xilinx Alveo MLP library";
 
     py::class_<PyMLPWrapper>(pc, "alveomlp")
-        .def(py::init<>())
+        .def(py::init<const string, uint32_t>())
         .def("addEmptyModel", &PyMLPWrapper::addEmptyModel, "add an empty MLP model with given number of layers")
         .def("setDim", &PyMLPWrapper::setDim, "set dimensions of each layer")
         .def("setActFunc", &PyMLPWrapper::setActFunc, "set activation function of a given layer in a given model")

@@ -40,9 +40,12 @@ class Options {
     vector<string> xclbinNames;
     vector<uint8_t> numCUsOnDevice;
     vector<vector<string> > cuNames;
+    vector<uint8_t> numWeightChannels;
+    vector<uint8_t> numVectorChannels;
+    vector<uint8_t> numElements;
     Options() {}
     Options(uint32_t num) { numDevices = num; }
-    Options(string options, uint32_t num = 0) {
+    Options(const string options, uint32_t num = 0) {
         auto j3 = json::parse(options);
         auto deviceList = j3["devices"];
         int i = 0;
@@ -55,6 +58,9 @@ class Options {
             xclbinNames.push_back(device["xclbinNames"]);
             numCUsOnDevice.push_back(device["numCUs"]);
             cuNames.push_back(device["cuNames"]);
+            numWeightChannels.push_back(device["weightChannels"]);
+            numVectorChannels.push_back(device["vectorChannels"]);
+            numElements.push_back(device["elements"]);
             if (++i == num) break;
         }
     }
@@ -62,16 +68,7 @@ class Options {
 
 class MLPBase {
    public:
-    MLPBase() {
-        Options l_options;
-        l_options.numDevices = 1;
-        l_options.deviceIds.push_back(0);
-        l_options.xclbinNames.push_back("./mlp.xclbin");
-        l_options.numCUsOnDevice.push_back(1);
-        l_options.cuNames.push_back(vector<string>(1, "krnl_fcn"));
-        init(l_options);
-    }
-    MLPBase(string optionStr, uint32_t num = 0) {
+    MLPBase(const string optionStr, const uint32_t num = 0) {
         Options l_option(optionStr, num);
         init(l_option);
     }
@@ -82,8 +79,8 @@ class MLPBase {
             m_devices.back()->xclbin(options.xclbinNames[i]);
 
             for (unsigned int j = 0; j < options.numCUsOnDevice[i]; ++j) {
-                m_cus.push_back(new MLPKernel<HPC_dataType, HPC_instrBytes>(m_devices[i], HPC_numChannels,
-                                                                            HPC_vecChannels, HPC_parEntries));
+                m_cus.push_back(new MLPKernel<HPC_dataType, HPC_instrBytes>(
+                    m_devices[i], options.numWeightChannels[i], options.numVectorChannels[i], options.numElements[i]));
                 m_cus.back()->getCU(options.cuNames[i][j]);
             }
         }
@@ -138,17 +135,22 @@ class MLPBase {
         m_cus[p_cuId]->loadModel(m_models[p_modelId]);
     }
 
-    double inferenceOnAllDevices(host_buffer_t<HPC_dataType>& p_x, host_buffer_t<HPC_dataType>& p_y) {
+    double inferenceOnAllDevices(vector<HPC_dataType>& p_x, vector<HPC_dataType>& p_y) {
         double sec = MLPKernel<HPC_dataType, HPC_instrBytes>::inference(m_cus, p_x, p_y);
         return sec;
     }
-    double inference(host_buffer_t<HPC_dataType>& p_x,
-                     host_buffer_t<HPC_dataType>& p_y,
+    double inference(const uint32_t p_batch,
+                     HPC_dataType* p_x,
+                     HPC_dataType* p_y,
                      const uint32_t p_modelId = 0,
                      const uint32_t p_cuId = 0) {
-        double sec = m_cus[p_cuId]->inference(p_x, p_y);
+        double sec = m_cus[p_cuId]->inference(p_batch, p_x, p_y);
         return sec;
     }
+    double inference(vector<HPC_dataType>& p_x,
+                     vector<HPC_dataType>& p_y,
+                     const uint32_t p_modelId = 0,
+                     const uint32_t p_cuId = 0) {}
     void clear() {
         for (int i = 0; i < m_devices.size(); ++i) {
             delete m_devices[i];
