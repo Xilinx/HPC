@@ -2,31 +2,31 @@
 	"devices": [
 		{
 			"deviceID": 0,
-			"xclbinNames": "mlp.xclbin",
+			"xclbinPath": "mlp.xclbin",
 			"numCUs": 1,
 			"cuNames" : ["krnl_fcn"],
-            "weightChannels": 8,
-            "vectorChannels": 4,
-            "elements": 8,
-            "activation_functions": ["relu", "sigmoid", "linear"]
+			"weightChannels": 8,
+			"vectorChannels": 4,
+			"elements": 8,
+			"activation_functions": ["relu", "sigmoid", "linear"]
 		},
 		{
 			"deviceID": 1,
-			"xclbinNames": "mlp.xclbin",
+			"xclbinPath": "mlp.xclbin",
 			"numCUs": 1,
 			"cuNames" : ["krnl_fcn"],
-            "weightChannels": 8,
-            "vectorChannels": 4,
-            "elements": 8
+			"weightChannels": 8,
+			"vectorChannels": 4,
+			"elements": 8
 		},
 		{
 			"deviceID": 2,
-			"xclbinNames": "mlp.xclbin",
+			"xclbinPath": "mlp.xclbin",
 			"numCUs": 1,
 			"cuNames" : ["krnl_fcn"],
-            "weightChannels": 8,
-            "vectorChannels": 4,
-            "elements": 8
+			"weightChannels": 8,
+			"vectorChannels": 4,
+			"elements": 8
 		}
 	]
 }

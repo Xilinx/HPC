@@ -36,4 +36,4 @@ inf:
 	python ${keras} --kinf --model_path ${MODEL_PATH} --model_name ${MODEL_NAME} 
 
 xinf:
-	python ${keras} --xinf --model_path ${MODEL_PATH} --model_name ${MODEL_NAME} --device_config devices.json
+	python ${keras} --xinf --model_path ${MODEL_PATH} --model_name ${MODEL_NAME} --device_config ${CUR_DIR}/devices.json

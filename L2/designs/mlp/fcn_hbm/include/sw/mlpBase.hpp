@@ -55,7 +55,7 @@ class Options {
             numDevices = deviceList.size();
         for (auto device : deviceList) {
             deviceIds.push_back(device["deviceID"]);
-            xclbinNames.push_back(device["xclbinNames"]);
+            xclbinNames.push_back(device["xclbinPath"]);
             numCUsOnDevice.push_back(device["numCUs"]);
             cuNames.push_back(device["cuNames"]);
             numWeightChannels.push_back(device["weightChannels"]);
