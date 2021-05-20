@@ -164,11 +164,12 @@ class MLPKernel : public Kernel {
         }
 
         for (auto& fcn : mlp->m_Layers) {
-            h_bias.insert(h_bias.end(), fcn.m_Bias, fcn.m_Bias + fcn.m_OutputSize);
-            for (int row = 0; row < fcn.m_OutputSize; row++)
+            h_bias.insert(h_bias.end(), fcn.m_Bias.begin(), fcn.m_Bias.end());
+            for (int row = 0; row < fcn.m_OutputSize; row++) {
                 h_weights[row % m_NumChannels].insert(h_weights[row % m_NumChannels].end(),
-                                                      fcn.m_Weight + row * fcn.m_InputSize,
-                                                      fcn.m_Weight + (row + 1) * fcn.m_InputSize);
+                                                      fcn.m_Weight.begin() + row * fcn.m_InputSize,
+                                                      fcn.m_Weight.begin() + (row + 1) * fcn.m_InputSize);
+            }
         }
 
         for (int i = 0; i < m_NumChannels; i++) {

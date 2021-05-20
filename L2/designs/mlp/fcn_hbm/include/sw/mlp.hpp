@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include "fcnInstr.hpp"
 #include "binFiles.hpp"
+#include "fpga.hpp"
 using namespace std;
 
 namespace xf {
@@ -30,8 +31,8 @@ class FCN {
    public:
     int m_InputSize;
     int m_OutputSize;
-    T* m_Weight = nullptr;
-    T* m_Bias = nullptr;
+    host_buffer_t<T> m_Weight;
+    host_buffer_t<T> m_Bias;
     ActFunc_t m_ActFunc;
     bool m_Allocated = false;
 
@@ -39,38 +40,28 @@ class FCN {
     FCN() { m_ActFunc = ActFunc_t::LINEAR; }
     ~FCN() {
         if (m_Allocated) {
-            free(m_Weight);
-            free(m_Bias);
         }
     }
     void setDim(int m_InputSize, int m_OutputSize) {
         this->m_InputSize = m_InputSize;
         this->m_OutputSize = m_OutputSize;
+        m_Bias.resize(m_OutputSize);
+        m_Weight.resize(m_InputSize * m_OutputSize);
     }
-    void allocMem() {
-        if (!m_Allocated) {
-            m_Weight = (T*)aligned_alloc(4096, m_InputSize * m_OutputSize * sizeof(T));
-            m_Bias = (T*)aligned_alloc(4096, m_OutputSize * sizeof(T));
-            m_Allocated = true;
-        }
-    }
-    void freeMem() {
-        if (m_Allocated) {
-            free(m_Weight);
-            free(m_Bias);
-            m_Allocated = false;
-        }
-    }
+
     void setActFunc(ActFunc_t ActFunc) { this->m_ActFunc = ActFunc; }
 
     void loadData(string path_to_wi, string path_to_bi) {
-        allocMem();
         readBin(path_to_wi, m_InputSize * m_OutputSize * sizeof(T), m_Weight);
         readBin(path_to_bi, m_OutputSize * sizeof(T), m_Bias);
     }
     void setData(T* weight, T* bias) {
-        m_Weight = weight;
-        m_Bias = bias;
+        copy(weight, weight + m_InputSize * m_OutputSize, m_Weight.begin());
+        copy(bias, bias + m_OutputSize, m_Bias.begin());
+    }
+    void setData(host_buffer_t<T>& weight, host_buffer_t<T>& bias) {
+        copy(weight.begin(), weight.end(), m_Weight.begin());
+        copy(bias.begin(), bias.end(), m_Bias.begin());
     }
 };
 

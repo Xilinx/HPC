@@ -97,7 +97,7 @@ class AlveoModel:
             # self.weights.append(l_weights)
             # self.bias.append(l_bias)
             # self.actFuncs.append(p_actFuncs[i])
-            self.alveomlp.setLayer(0, i, l_weights, l_bias)
+            self.alveomlp.setLayer(0, i, l_weights.flatten(), l_bias)
             if p_actFuncs[i] in self.devFuncs:
                 self.alveomlp.setActFunc(0, i, p_actFuncs[i])
             else:
@@ -121,7 +121,6 @@ class AlveoModel:
             for j in range(l_resMat.shape[0]):
                 l_sum = np.sum(l_exp[j])
                 l_resMat[j] = l_exp[j] / l_sum
-        l_resMat = l_resMat[:, 0:self.outDim]
  #        for i in range(len(self.weights)):
  #            l_xMat = self.weights[i] @ np.transpose(l_xMat)
  #            l_xMat = np.transpose(l_xMat)
@@ -145,10 +144,10 @@ class AlveoModel:
 
 class xMLPInf:
     def __init__(self, devConf):
-        self.weightChannels = devConf[0]
-        self.vecChannels = devConf[1]
-        self.parEntries = devConf[2]
-        self.devActFuncs = devConf[3]
+        self.weightChannels = devConf["devices"][0]["weightChannels"]
+        self.vecChannels = devConf["devices"][0]["vectorChannels"]
+        self.parEntries = devConf["devices"][0]["elements"]
+        self.devActFuncs = devConf["devices"][0]["activation_functions"]
         self.models = []
 
     def checkModel(self, p_model):

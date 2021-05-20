@@ -23,6 +23,7 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import load_model
 from lib.xmlp import xMLPInf
 from xilAlveoMLP import alveomlp
+import json
 
 
 def get_uncompiled_model():
@@ -85,7 +86,6 @@ def evaluate(
     model.summary()
     l_sTime = time.time_ns()
     x_test = np.reshape(x_test, (-1, l_inputSize)).astype(np.float32)
-    #x_test = x_test.reshape(10000, 784).astype(np.float32)
     y_out = model.predict(x_test, batch_size=x_test.shape[0])
     l_eTime = time.time_ns()
     y_out.astype(np.float32).tofile(p_outFileName)
@@ -96,11 +96,14 @@ def evaluate(
     return l_ms
 
 
-def xmlp_inf(p_modelFileName, p_inFileName, p_alveomlp, p_xmlpOutFileName):
+def xmlp_inf(
+        deviceConfig,
+        p_modelFileName,
+        p_inFileName,
+        p_alveomlp,
+        p_xmlpOutFileName):
     l_model = load_model(p_modelFileName)
-    l_devConf = [16, 2, 8, ['relu', 'sigmoid', 'linear']]
-    #l_devConf = [16, 2, 8, []]
-    l_mlpInf = xMLPInf(l_devConf)
+    l_mlpInf = xMLPInf(deviceConfig)
     l_isMLP = l_mlpInf.buildModels(l_model, p_alveomlp)
     if l_isMLP:
         l_mat = np.fromfile(p_inFileName, dtype=np.float32)
@@ -116,8 +119,14 @@ def verify_inf(p_fileName, p_goldenFileName):
     l_arr = np.fromfile(p_fileName, dtype=np.float32)
     l_refArr = np.fromfile(p_goldenFileName, dtype=np.float32)
     l_equal = l_arr.shape == l_refArr.shape
-    if l_equal:
-        l_equal = np.allclose(l_arr, l_refArr)
+    compare = np.isclose(l_arr, l_refArr)
+    if sum(compare) != compare.size:
+        l_equal = False
+        print("There are %d mismatches." % (compare.size - sum(compare)))
+        index = np.where(compare == False)[:10]
+        print("index of mismatches", index)
+        print("value from inf", l_arr[index])
+        print("value from ref", l_refArr[index])
     return l_equal
 
 
@@ -152,8 +161,10 @@ def process_model(
         l_xmlpOutFileName = l_path + '/outputs_xmlp.bin'
         with open(p_deviceConfig, 'r') as f:
             jstr = f.read()
+        deviceConfig = json.loads(jstr)
         l_alveomlp = alveomlp(jstr, 1)
         l_ms = xmlp_inf(
+            deviceConfig,
             l_modelFileName,
             l_inFileName,
             l_alveomlp,
