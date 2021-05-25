@@ -35,5 +35,6 @@ train:
 inf:
 	python ${keras} --kinf --model_path ${MODEL_PATH} --model_name ${MODEL_NAME} 
 
+export PYTHONPATH:=${LIB_DIR}:$$PYTHONPATH
 xinf:
 	python ${keras} --xinf --model_path ${MODEL_PATH} --model_name ${MODEL_NAME} --device_config ${CUR_DIR}/devices.json

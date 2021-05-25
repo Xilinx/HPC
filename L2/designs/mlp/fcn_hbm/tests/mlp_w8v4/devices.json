@@ -2,7 +2,7 @@
 	"devices": [
 		{
 			"deviceID": 0,
-			"xclbinNames": "build_dir.hw.xilinx_u50_gen3x16_xdma_201920_3/mlp.xclbin",
+			"xclbinPath": "build_dir.hw.xilinx_u50_gen3x16_xdma_201920_3/mlp.xclbin",
 			"numCUs": 1,
 			"cuNames" : ["krnl_fcn"],
             "weightChannels": 8,
@@ -11,7 +11,7 @@
 		},
 		{
 			"deviceID": 1,
-			"xclbinNames": "build_dir.hw.xilinx_u50_gen3x16_xdma_201920_3/mlp.xclbin",
+			"xclbinPath": "build_dir.hw.xilinx_u50_gen3x16_xdma_201920_3/mlp.xclbin",
 			"numCUs": 1,
 			"cuNames" : ["krnl_fcn"],
             "weightChannels": 8,
@@ -20,7 +20,7 @@
 		},
 		{
 			"deviceID": 2,
-			"xclbinNames": "build_dir.hw.xilinx_u50_gen3x16_xdma_201920_3/mlp.xclbin",
+			"xclbinPath": "build_dir.hw.xilinx_u50_gen3x16_xdma_201920_3/mlp.xclbin",
 			"numCUs": 1,
 			"cuNames" : ["krnl_fcn"],
             "weightChannels": 8,

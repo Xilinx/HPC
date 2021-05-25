@@ -17,7 +17,8 @@
 			"cuNames" : ["krnl_fcn"],
 			"weightChannels": 8,
 			"vectorChannels": 4,
-			"elements": 8
+			"elements": 8,
+			"activation_functions": ["relu", "sigmoid", "linear"]
 		},
 		{
 			"deviceID": 2,
@@ -26,7 +27,8 @@
 			"cuNames" : ["krnl_fcn"],
 			"weightChannels": 8,
 			"vectorChannels": 4,
-			"elements": 8
+			"elements": 8,
+			"activation_functions": ["relu", "sigmoid", "linear"]
 		}
 	]
 }
