@@ -162,7 +162,7 @@ def process_model(
         with open(p_deviceConfig, 'r') as f:
             jstr = f.read()
         deviceConfig = json.loads(jstr)
-        l_alveomlp = alveomlp(jstr, 1)
+        l_alveomlp = alveomlp(jstr, 3)
         l_ms = xmlp_inf(
             deviceConfig,
             l_modelFileName,
@@ -226,6 +226,11 @@ if __name__ == "__main__":
         '--device_config',
         type=str,
         help='path for json files that contain device configuration')
+    parser.add_argument(
+        '--lib_path',
+        type=str,
+        default='.',
+        help='path to directory of xilAlveoMLP.so')
     parser.add_argument(
         '--model_path',
         type=str,

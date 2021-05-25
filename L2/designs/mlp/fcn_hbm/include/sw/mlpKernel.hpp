@@ -46,6 +46,7 @@ class MLPKernel : public Kernel {
     int m_MaxVecDim = 0;
     int outputOffset = 0;
     MLP<t_DataType>* mlp = nullptr;
+    MLP<t_DataType>* mlpPad = nullptr;
 
     const int m_VecChannels = 0;
     const int m_NumChannels = 0;
@@ -56,7 +57,9 @@ class MLPKernel : public Kernel {
         h_weights.resize(m_NumChannels);
         h_vector.resize(m_VecChannels);
     }
-    MLPKernel() { init(); }
+    ~MLPKernel() {
+        if (mlpPad != nullptr) delete mlpPad;
+    }
     MLPKernel(int weightChannels, int vecChannels, int parEntries)
         : m_VecChannels(vecChannels), m_NumChannels(weightChannels), m_ParEntries(parEntries) {
         init();
@@ -65,12 +68,12 @@ class MLPKernel : public Kernel {
         : Kernel(fpga), m_VecChannels(vecChannels), m_NumChannels(weightChannels), m_ParEntries(parEntries) {
         init();
     }
-
     void loadModel(MLP<t_DataType>* mlp) {
         this->mlp = mlp;
         int m_NumLayers = mlp->m_NumLayers;
+        padMLP();
         h_fcnInstr.resize(m_NumLayers);
-        m_MaxVecDim = *max_element(mlp->m_Dims.begin() + 1, mlp->m_Dims.end());
+        m_MaxVecDim = *max_element(mlpPad->m_Dims.begin() + 1, mlpPad->m_Dims.end());
 
         createWeightsBuffer();
         createVecBuffer();
@@ -79,13 +82,13 @@ class MLPKernel : public Kernel {
         int weightOffset = 0;
         int biasOffset = 0;
 
-        for (int i = 0; i < mlp->m_NumLayers; i++) {
-            h_fcnInstr[i].setOutVecSize(mlp->m_Dims[i + 1]);
-            h_fcnInstr[i].setInVecSize(mlp->m_Dims[i]);
+        for (int i = 0; i < mlpPad->m_NumLayers; i++) {
+            h_fcnInstr[i].setOutVecSize(mlpPad->m_Dims[i + 1]);
+            h_fcnInstr[i].setInVecSize(mlpPad->m_Dims[i]);
             h_fcnInstr[i].setBiasOffset(biasOffset);
-            biasOffset += mlp->m_Dims[i + 1] * sizeof(t_DataType);
+            biasOffset += mlpPad->m_Dims[i + 1] * sizeof(t_DataType);
             h_fcnInstr[i].setWeightsOffset(weightOffset);
-            weightOffset += mlp->m_Dims[i + 1] * mlp->m_Dims[i] * sizeof(t_DataType) / m_NumChannels;
+            weightOffset += mlpPad->m_Dims[i + 1] * mlpPad->m_Dims[i] * sizeof(t_DataType) / m_NumChannels;
             h_fcnInstr[i].setActivation(mlp->m_Layers[i].m_ActFunc);
         }
     }
@@ -127,21 +130,29 @@ class MLPKernel : public Kernel {
     }
 
     static double inference(vector<MLPKernel*> kernels, vector<t_DataType>& h_x, vector<t_DataType>& h_v) {
+        int l_batchPC = h_x.size() / kernels[0]->mlp->m_Dims.front();
+        if (h_v.size() < kernels[0]->mlp->m_Dims.back() * l_batchPC)
+            h_v.resize(kernels[0]->mlp->m_Dims.back() * l_batchPC);
+        return inference(kernels, l_batchPC, h_x.data(), h_v.data());
+    }
+
+    static double inference(vector<MLPKernel*> kernels, uint32_t p_batch, t_DataType* h_x, t_DataType* h_v) {
         uint32_t l_numK = kernels.size();
-        const int totalBatch = h_x.size();
+        const int l_totalSize = p_batch * kernels[0]->mlp->m_Dims.front();
+        const int l_kernelSize = (p_batch / l_numK) * kernels[0]->mlp->m_Dims.front();
+        vector<int> sizes(l_numK, l_kernelSize);
+        sizes.back() = l_totalSize - l_kernelSize * (l_numK - 1);
 #pragma omp prallel for
         for (int i = 0; i < l_numK; i++) {
-            kernels[i]->setInput(h_x.data() + i * totalBatch / l_numK, totalBatch / l_numK);
+            kernels[i]->setInput(h_x + i * l_kernelSize, sizes[i]);
         }
 
         auto startTime = chrono::high_resolution_clock::now();
         for (auto kernel : kernels) kernel->enqueueTask();
         for (auto kernel : kernels) kernel->finish();
         auto finishTime = chrono::high_resolution_clock::now();
-        if (h_v.size() < kernels[0]->mlp->m_Dims.back() * totalBatch * l_numK)
-            h_v.resize(kernels[0]->mlp->m_Dims.back() * totalBatch);
         for (int i = 0; i < l_numK; i++)
-            kernels[i]->getOutput(h_v.data() + i * kernels[i]->m_Batch * kernels[i]->mlp->m_Dims.back());
+            kernels[i]->getOutput(h_v + i * kernels[0]->m_Batch * kernels[0]->mlp->m_Dims.back());
         chrono::duration<double> elapsed = finishTime - startTime;
         double t_sec = elapsed.count();
 
@@ -149,27 +160,42 @@ class MLPKernel : public Kernel {
     }
 
    private:
+    void padMLP() {
+        mlpPad = new MLP<t_DataType>(mlp->m_NumLayers);
+        vector<uint32_t> dims;
+        for (int i = 0; i <= mlp->m_NumLayers; i++) {
+            int dim = mlp->m_Dims[i];
+            dim = (m_ParEntries + dim - 1) / m_ParEntries * m_ParEntries;
+            if (i != 0) dim = (m_NumChannels + dim - 1) / m_NumChannels * m_NumChannels;
+            dims.push_back(dim);
+        }
+        mlpPad->setDim(dims);
+    }
+
     void createWeightsBuffer() {
         int biasSize = 0, weightSize = 0;
-        for (auto& fcn : mlp->m_Layers) {
-            assert(fcn.m_OutputSize % m_NumChannels == 0);
-            assert(fcn.m_InputSize % m_ParEntries == 0);
+        for (auto& fcn : mlpPad->m_Layers) {
             biasSize += fcn.m_OutputSize;
             weightSize += fcn.m_OutputSize * fcn.m_InputSize;
         }
 
-        h_bias.reserve(biasSize);
+        h_bias.resize(biasSize);
         for (int i = 0; i < m_NumChannels; i++) {
-            h_weights[i].reserve(weightSize / m_NumChannels);
+            h_weights[i].resize(weightSize / m_NumChannels);
         }
 
-        for (auto& fcn : mlp->m_Layers) {
-            h_bias.insert(h_bias.end(), fcn.m_Bias.begin(), fcn.m_Bias.end());
+        int biasPos = 0, weightPos = 0;
+        for (int i = 0; i < mlpPad->m_NumLayers; i++) {
+            FCN<t_DataType>& fcn = mlp->m_Layers[i];
+            copy(fcn.m_Bias.begin(), fcn.m_Bias.end(), h_bias.begin() + biasPos);
+            biasPos += mlpPad->m_Layers[i].m_OutputSize;
+
             for (int row = 0; row < fcn.m_OutputSize; row++) {
-                h_weights[row % m_NumChannels].insert(h_weights[row % m_NumChannels].end(),
-                                                      fcn.m_Weight.begin() + row * fcn.m_InputSize,
-                                                      fcn.m_Weight.begin() + (row + 1) * fcn.m_InputSize);
+                copy(fcn.m_Weight.begin() + row * fcn.m_InputSize, fcn.m_Weight.begin() + (row + 1) * fcn.m_InputSize,
+                     h_weights[row % m_NumChannels].begin() + weightPos +
+                         (row / m_NumChannels) * mlpPad->m_Layers[i].m_InputSize);
             }
+            weightPos += mlpPad->m_Layers[i].m_InputSize * mlpPad->m_Layers[i].m_OutputSize / m_NumChannels;
         }
 
         for (int i = 0; i < m_NumChannels; i++) {
@@ -186,17 +212,19 @@ class MLPKernel : public Kernel {
     void setInput(t_DataType* p_x, uint32_t p_size) {
         assert(p_size % mlp->m_Dims.front() == 0);
         m_Batch = p_size / mlp->m_Dims.front();
-        assert(m_Batch % m_VecChannels == 0);
-
-        outputOffset = (2 * m_MaxVecDim + mlp->m_Dims.front()) * m_Batch / m_VecChannels;
-        int outputSize = mlp->m_Dims.back() * m_Batch / m_VecChannels;
+        const int l_batchPC = (m_Batch + m_VecChannels - 1) / m_VecChannels;
+        outputOffset = (2 * m_MaxVecDim + mlpPad->m_Dims.front()) * l_batchPC;
+        int outputSize = mlpPad->m_Dims.back() * l_batchPC;
         int bufferSize = outputOffset + outputSize;
         assert(bufferSize * sizeof(t_DataType) <= 256 * 1024 * 1024);
 
+        for (int i = 0; i < m_Batch; i++) {
+            copy(p_x + i * mlp->m_Dims.front(), p_x + (i + 1) * mlp->m_Dims.front(),
+                 h_vector[i % m_VecChannels].begin() + (i / m_VecChannels) * mlpPad->m_Dims.front());
+        }
+
         for (int i = 0; i < m_VecChannels; i++) {
-            //    h_x[i].resize(bufferSize);
-            copy(p_x + i * p_size / m_VecChannels, p_x + (i + 1) * p_size / m_VecChannels, h_vector[i].begin());
-            cl_buffer_region buffer_info_x = {0, p_size / m_VecChannels * sizeof(t_DataType)};
+            cl_buffer_region buffer_info_x = {0, l_batchPC * mlpPad->m_Dims.front() * sizeof(t_DataType)};
             m_buffer_x.push_back(
                 m_buffer_v[i].createSubBuffer(CL_MEM_WRITE_ONLY, CL_BUFFER_CREATE_TYPE_REGION, &buffer_info_x));
             cl_buffer_region buffer_info = {outputOffset * sizeof(t_DataType), outputSize * sizeof(t_DataType)};
@@ -204,17 +232,17 @@ class MLPKernel : public Kernel {
                 m_buffer_v[i].createSubBuffer(CL_MEM_WRITE_ONLY, CL_BUFFER_CREATE_TYPE_REGION, &buffer_info));
         }
 
-        int outputOffset[2] = {mlp->m_Dims.front() * m_Batch / m_VecChannels * sizeof(t_DataType),
-                               (m_MaxVecDim + mlp->m_Dims.front()) * m_Batch * sizeof(t_DataType) / m_VecChannels};
+        int outputOffset[2] = {mlpPad->m_Dims.front() * l_batchPC * sizeof(t_DataType),
+                               (m_MaxVecDim + mlpPad->m_Dims.front()) * l_batchPC * sizeof(t_DataType)};
 
-        h_instr.resize(t_InstrBytes * (1 + mlp->m_NumLayers));
-        for (int i = 0; i < mlp->m_NumLayers; i++) {
-            h_fcnInstr[i].setBatch(m_Batch / m_VecChannels);
+        h_instr.resize(t_InstrBytes * (1 + mlpPad->m_NumLayers));
+        for (int i = 0; i < mlpPad->m_NumLayers; i++) {
+            h_fcnInstr[i].setBatch(l_batchPC);
             if (i == 0) {
                 h_fcnInstr[i].setInputOffset(0);
             } else
                 h_fcnInstr[i].setInputOffset(outputOffset[(i + 1) % 2]);
-            if (i == mlp->m_NumLayers - 1)
+            if (i == mlpPad->m_NumLayers - 1)
                 h_fcnInstr[i].setOutputOffset(this->outputOffset * sizeof(t_DataType));
             else
                 h_fcnInstr[i].setOutputOffset(outputOffset[i % 2]);
@@ -270,10 +298,11 @@ class MLPKernel : public Kernel {
         h_m.push_back(m_buffer_instr);
         for (auto& y : m_buffer_y) h_m.push_back(y);
         getBuffer(h_m);
-        for (int i = 0; i < m_VecChannels; i++) {
-            copy(h_vector[i].begin() + outputOffset,
-                 h_vector[i].begin() + outputOffset + mlp->m_Dims.back() * m_Batch / m_VecChannels,
-                 h_v + i * mlp->m_Dims.back() * m_Batch / m_VecChannels);
+        for (int i = 0; i < m_Batch; i++) {
+            int vecIndex = i % m_VecChannels;
+            int dataOffset = outputOffset + (i / m_VecChannels) * mlpPad->m_Dims.back();
+            copy(h_vector[vecIndex].begin() + dataOffset, h_vector[vecIndex].begin() + dataOffset + mlp->m_Dims.back(),
+                 h_v + i * mlp->m_Dims.back());
         }
     }
 };

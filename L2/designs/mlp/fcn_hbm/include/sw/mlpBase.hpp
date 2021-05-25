@@ -45,7 +45,7 @@ class Options {
     vector<uint8_t> numElements;
     Options() {}
     Options(uint32_t num) { numDevices = num; }
-    Options(const string options, uint32_t num = 0) {
+    Options(const string& options, uint32_t num = 0) {
         auto j3 = json::parse(options);
         auto deviceList = j3["devices"];
         int i = 0;
@@ -68,7 +68,7 @@ class Options {
 
 class MLPBase {
    public:
-    MLPBase(const string optionStr, const uint32_t num = 0) {
+    MLPBase(const string& optionStr, const uint32_t num = 0) {
         Options l_option(optionStr, num);
         init(l_option);
     }
@@ -135,22 +135,21 @@ class MLPBase {
         m_cus[p_cuId]->loadModel(m_models[p_modelId]);
     }
 
-    double inferenceOnAllDevices(vector<HPC_dataType>& p_x, vector<HPC_dataType>& p_y) {
+    double inferenceOnAll(vector<HPC_dataType>& p_x, vector<HPC_dataType>& p_y) {
         double sec = MLPKernel<HPC_dataType, HPC_instrBytes>::inference(m_cus, p_x, p_y);
         return sec;
     }
-    double inference(const uint32_t p_batch,
-                     HPC_dataType* p_x,
-                     HPC_dataType* p_y,
-                     const uint32_t p_modelId = 0,
-                     const uint32_t p_cuId = 0) {
+
+    double inferenceOnAll(const uint32_t p_batch, HPC_dataType* p_x, HPC_dataType* p_y) {
+        double sec = MLPKernel<HPC_dataType, HPC_instrBytes>::inference(m_cus, p_batch, p_x, p_y);
+        return sec;
+    }
+
+    double inference(const uint32_t p_batch, HPC_dataType* p_x, HPC_dataType* p_y, const uint32_t p_cuId = 0) {
         double sec = m_cus[p_cuId]->inference(p_batch, p_x, p_y);
         return sec;
     }
-    double inference(vector<HPC_dataType>& p_x,
-                     vector<HPC_dataType>& p_y,
-                     const uint32_t p_modelId = 0,
-                     const uint32_t p_cuId = 0) {}
+
     void clear() {
         for (int i = 0; i < m_devices.size(); ++i) {
             delete m_devices[i];

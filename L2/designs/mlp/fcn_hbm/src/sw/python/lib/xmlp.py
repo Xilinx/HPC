@@ -59,86 +59,39 @@ class AlveoModel:
         self.actFuncs = []
         self.alveomlp = alveomlp
 
-    def build(self, p_model, p_layerIds, p_dims, p_actFuncs):
+    def build(self, p_model, p_layerIds, p_dims, p_actFuncs, numDev=3):
         self.numLayers = len(p_layerIds)
         self.alveomlp.addEmptyModel(self.numLayers)
         self.inDim = p_dims[0]
         self.outDim = p_dims[-1]
         self.lastActFunc = p_actFuncs[-1]
-        # pad dims
-        self.dims.append(
-            math.ceil(
-                p_dims[0] /
-                self.parEntries) *
-            self.parEntries)
-        for i in range(1, self.numLayers):
-            l_dim = p_dims[i]
-            while (
-                    l_dim %
-                    self.parEntries != 0) or (
-                    l_dim %
-                    self.weightChannels != 0):
-                l_dim += 1
-            self.dims.append(l_dim)
-        self.dims.append(math.ceil(
-            p_dims[self.numLayers] / self.weightChannels) * self.weightChannels)
-        self.alveomlp.setDim(0, np.array(self.dims, dtype=np.uint32))
+        self.alveomlp.setDim(0, np.array(p_dims, dtype=np.uint32))
         for i in range(self.numLayers):
             l_layer = p_model.layers[p_layerIds[i]]
             l_weights = l_layer.weights[0][:].numpy()
             l_bias = l_layer.weights[1][:].numpy()
             l_weights = np.transpose(l_weights)
-            l_padRows = self.dims[i + 1] - l_weights.shape[0]
-            l_padCols = self.dims[i] - l_weights.shape[1]
-            l_weights = np.pad(
-                l_weights, [
-                    (0, l_padRows), (0, l_padCols)], 'constant')
-            l_bias = np.pad(l_bias, (0, l_padRows), 'constant')
-            # self.weights.append(l_weights)
-            # self.bias.append(l_bias)
-            # self.actFuncs.append(p_actFuncs[i])
             self.alveomlp.setLayer(0, i, l_weights.flatten(), l_bias)
             if p_actFuncs[i] in self.devFuncs:
                 self.alveomlp.setActFunc(0, i, p_actFuncs[i])
             else:
                 self.alveomlp.setActFunc(0, i, "linear")
-        self.alveomlp.loadModel(0, 0)
+        for i in range(numDev):
+            self.alveomlp.loadModel(0, i)
 
-    def predict(self, p_xMat):
-        l_xMat = np.reshape(p_xMat, (-1, self.inDim)).astype(np.float32)
-        l_padRows = (self.vecChannels -
-                     (l_xMat.shape[0] % self.vecChannels)) % self.vecChannels
-        l_padCols = self.dims[0] - l_xMat.shape[1]
-        l_xMat = np.pad(l_xMat, [(0, l_padRows), (0, l_padCols)], 'constant')
-        l_batches = l_xMat.shape[0]
-        l_resMat = np.zeros(l_batches * self.dims[-1], dtype=np.float32)
-        l_hwTime = self.alveomlp.predict(l_batches,
-                                         l_xMat.flatten(), l_resMat, 0, 0)
-        l_resMat = np.reshape(l_resMat, (l_batches, self.dims[self.numLayers]))
-        l_resMat = l_resMat[:, 0:self.outDim]
+    def predict(self, p_xMat, numDev=3):
+        assert p_xMat.size % self.inDim == 0
+        l_batch = p_xMat.size // self.inDim
+        l_resMat = np.zeros(l_batch * self.outDim, dtype=np.float32)
+        l_hwTime = self.alveomlp.predictOnAll(l_batch,
+                                              p_xMat, l_resMat)
+        print("INFO: hardware inference time: %.2f ms." % (l_hwTime * 1000))
+        l_resMat = np.reshape(l_resMat, (l_batch, self.outDim))
         if self.lastActFunc == 'softmax':
             l_exp = np.exp(l_resMat)
             for j in range(l_resMat.shape[0]):
                 l_sum = np.sum(l_exp[j])
                 l_resMat[j] = l_exp[j] / l_sum
- #        for i in range(len(self.weights)):
- #            l_xMat = self.weights[i] @ np.transpose(l_xMat)
- #            l_xMat = np.transpose(l_xMat)
- #            l_xMat += self.bias[i]
- #            l_act = self.actFuncs[i]
- #            if l_act == 'relu':
- #                l_xMat = np.maximum(l_xMat,0)
- #            elif l_act == 'sigmoid':
- #                l_xMat = 1/(1+np.exp(-l_xMat))
- #            else:
- #                l_xMat = l_xMat[:, 0:self.outDim]
-
-#        if self.lastActFunc == 'softmax':
-#            l_exp = np.exp(l_xMat)
-#            for j in range(l_xMat.shape[0]):
-#                l_sum = np.sum(l_exp[j])
-#                l_xMat[j] = l_exp[j]/l_sum
-#        l_resMat = l_xMat[:, 0:self.outDim]
         return l_resMat
 
 

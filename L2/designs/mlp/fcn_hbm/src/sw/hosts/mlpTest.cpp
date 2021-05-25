@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 
     ifstream ifstr(argv[++l_index]);
     string deviceConfig(istreambuf_iterator<char>(ifstr), (istreambuf_iterator<char>()));
-    Options l_options(deviceConfig, 1);
+    Options l_options(deviceConfig, 3);
 
     MLPBase l_mlp(l_options);
     l_mlp.addEmptyModel(numLayers);
@@ -58,13 +58,12 @@ int main(int argc, char** argv) {
     l_mlp.setAllActFunc(0, "sigmoid");
     l_mlp.loadLayersFromFile(0, filePath.c_str());
     for (int i = 0; i < l_options.numDevices; i++) l_mlp.loadModel(0, i);
-    double sec = l_mlp.inferenceOnAllDevices(h_x, h_v);
+    double sec = l_mlp.inferenceOnAll(h_x, h_v);
 
     cout << "SW measured execution time is: " << sec << " s." << endl;
 
     int err = 0;
-    compare(layers.back() * p_batch, h_v.data(), h_ref.data(), err, false);
-    // destroyModel(mlp);
+    compare(layers.back() * p_batch, h_v.data(), h_ref.data(), err, true);
     if (err == 0) {
         cout << "Results verified." << endl;
         return EXIT_SUCCESS;

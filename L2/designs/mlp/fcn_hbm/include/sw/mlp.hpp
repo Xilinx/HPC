@@ -45,8 +45,6 @@ class FCN {
     void setDim(int m_InputSize, int m_OutputSize) {
         this->m_InputSize = m_InputSize;
         this->m_OutputSize = m_OutputSize;
-        m_Bias.resize(m_OutputSize);
-        m_Weight.resize(m_InputSize * m_OutputSize);
     }
 
     void setActFunc(ActFunc_t ActFunc) { this->m_ActFunc = ActFunc; }
@@ -56,10 +54,14 @@ class FCN {
         readBin(path_to_bi, m_OutputSize * sizeof(T), m_Bias);
     }
     void setData(T* weight, T* bias) {
+        m_Bias.resize(m_OutputSize);
+        m_Weight.resize(m_InputSize * m_OutputSize);
         copy(weight, weight + m_InputSize * m_OutputSize, m_Weight.begin());
         copy(bias, bias + m_OutputSize, m_Bias.begin());
     }
     void setData(host_buffer_t<T>& weight, host_buffer_t<T>& bias) {
+        m_Bias.resize(m_OutputSize);
+        m_Weight.resize(m_InputSize * m_OutputSize);
         copy(weight.begin(), weight.end(), m_Weight.begin());
         copy(bias.begin(), bias.end(), m_Bias.begin());
     }
@@ -77,6 +79,11 @@ class MLP {
         m_NumLayers = num;
         m_Dims.resize(num + 1);
         m_Layers.resize(num);
+    }
+
+    void setDim(vector<uint32_t>& m_Dims) {
+        assert(m_Dims.size() == m_NumLayers + 1);
+        setDim(m_Dims.data());
     }
 
     void setDim(const uint32_t* m_Dims) {

@@ -60,10 +60,13 @@ class PyMLPWrapper : public MLPBase {
     double predict(const uint32_t p_batch,
                    py::array_t<HPC_dataType> p_x,
                    py::array_t<HPC_dataType> p_y,
-                   const uint32_t p_modelId = 0,
                    const uint32_t p_cuId = 0) {
-        return (MLPBase::inference(p_batch, (HPC_dataType*)p_x.request().ptr, (HPC_dataType*)p_y.request().ptr,
-                                   p_modelId, p_cuId));
+        return (
+            MLPBase::inference(p_batch, (HPC_dataType*)p_x.request().ptr, (HPC_dataType*)p_y.request().ptr, p_cuId));
+    }
+
+    double predictOnAll(const uint32_t p_batch, py::array_t<HPC_dataType> p_x, py::array_t<HPC_dataType> p_y) {
+        return (MLPBase::inferenceOnAll(p_batch, (HPC_dataType*)p_x.request().ptr, (HPC_dataType*)p_y.request().ptr));
     }
 
     void clear() { MLPBase::clear(); }
@@ -81,6 +84,7 @@ PYBIND11_MODULE(xilAlveoMLP, pc) {
         .def("setActFunc", &PyMLPWrapper::setActFunc, "set activation function of a given layer in a given model")
         .def("setLayer", &PyMLPWrapper::setLayer, "set the weights and bias of a given layer in a given model")
         .def("loadModel", &PyMLPWrapper::loadModel, "load the given model to the device meory of a given CU")
+        .def("predictOnAll", &PyMLPWrapper::predictOnAll, "given a batch of input, predict the outputs with the model")
         .def("predict", &PyMLPWrapper::predict, "given a batch of input, predict the outputs with the model")
         .def("clear", &PyMLPWrapper::clear, "clear and release all resources");
 }
