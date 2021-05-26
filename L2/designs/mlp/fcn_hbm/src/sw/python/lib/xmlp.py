@@ -44,13 +44,13 @@ class AlveoModel:
             weightChannels,
             vecChannels,
             parEntries,
-            actFuncs):
+            actFuncs,
+            numDev):
         self.weightChannels = weightChannels
         self.vecChannels = vecChannels
         self.parEntries = parEntries
         self.devFuncs = actFuncs
         self.numLayers = 0
-        self.lastActFunc = ''
         self.inDim = 0
         self.outDim = 0
         self.dims = []
@@ -58,13 +58,13 @@ class AlveoModel:
         self.bias = []
         self.actFuncs = []
         self.alveomlp = alveomlp
+        self.numDev = numDev
 
-    def build(self, p_model, p_layerIds, p_dims, p_actFuncs, numDev=3):
+    def build(self, p_model, p_layerIds, p_dims, p_actFuncs):
         self.numLayers = len(p_layerIds)
         self.alveomlp.addEmptyModel(self.numLayers)
         self.inDim = p_dims[0]
         self.outDim = p_dims[-1]
-        self.lastActFunc = p_actFuncs[-1]
         self.alveomlp.setDim(0, np.array(p_dims, dtype=np.uint32))
         for i in range(self.numLayers):
             l_layer = p_model.layers[p_layerIds[i]]
@@ -76,27 +76,28 @@ class AlveoModel:
                 self.alveomlp.setActFunc(0, i, p_actFuncs[i])
             else:
                 self.alveomlp.setActFunc(0, i, "linear")
-        for i in range(numDev):
+        for i in range(self.numDev):
             self.alveomlp.loadModel(0, i)
 
-    def predict(self, p_xMat, numDev=3):
+    def predict(self, p_xMat):
         assert p_xMat.size % self.inDim == 0
         l_batch = p_xMat.size // self.inDim
         l_resMat = np.zeros(l_batch * self.outDim, dtype=np.float32)
-        l_hwTime = self.alveomlp.predictOnAll(l_batch,
-                                              p_xMat, l_resMat)
-        print("INFO: hardware inference time: %.2f ms." % (l_hwTime * 1000))
-        l_resMat = np.reshape(l_resMat, (l_batch, self.outDim))
-        if self.lastActFunc == 'softmax':
-            l_exp = np.exp(l_resMat)
-            for j in range(l_resMat.shape[0]):
-                l_sum = np.sum(l_exp[j])
-                l_resMat[j] = l_exp[j] / l_sum
+        if self.numDev == 0:
+            l_hwTime = self.alveomlp.predictOnCPU(l_batch,
+                                                  p_xMat, l_resMat)
+        else:
+            l_hwTime = self.alveomlp.predictOnAll(l_batch,
+                                                  p_xMat, l_resMat)
+        print(
+            "INFO: xMLP inference on hardware time: %.2f ms." %
+            (l_hwTime * 1e3))
         return l_resMat
 
 
 class xMLPInf:
-    def __init__(self, devConf):
+    def __init__(self, devConf, numDev):
+        self.numDev = numDev
         self.weightChannels = devConf["devices"][0]["weightChannels"]
         self.vecChannels = devConf["devices"][0]["vectorChannels"]
         self.parEntries = devConf["devices"][0]["elements"]
@@ -159,7 +160,8 @@ class xMLPInf:
                     self.weightChannels,
                     self.vecChannels,
                     self.parEntries,
-                    self.devActFuncs)
+                    self.devActFuncs,
+                    self.numDev)
                 l_alveoModel.build(p_model,
                                    p_layerIds[l_sId:l_eId],
                                    p_dims[l_sId:l_eId + 1],

@@ -17,15 +17,20 @@
 #define __XF_HPC_MLP_HPP__
 #include <cstdint>
 #include <vector>
+#include <chrono>
+#include <algorithm>
 #include <cstdlib>
+#include <mkl.h>
 #include "fcnInstr.hpp"
 #include "binFiles.hpp"
 #include "fpga.hpp"
+#include "activations.hpp"
 using namespace std;
 
 namespace xf {
 namespace hpc {
 namespace mlp {
+
 template <typename T>
 class FCN {
    public:
@@ -65,12 +70,20 @@ class FCN {
         copy(weight.begin(), weight.end(), m_Weight.begin());
         copy(bias.begin(), bias.end(), m_Bias.begin());
     }
+
+    void inference(uint32_t batch, T* vecIn, T* vecOut) {
+        copyBias(batch, m_OutputSize, vecOut, m_Bias.data());
+        cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasTrans, batch, m_OutputSize, m_InputSize, 1.0f, vecIn, m_InputSize,
+                    m_Weight.data(), m_InputSize, 1.0f, vecOut, m_OutputSize);
+        funcBatchAct(batch, m_OutputSize, vecOut, m_ActFunc);
+    }
 };
 
 template <typename T>
 class MLP {
    public:
-    int32_t m_NumLayers = 0;
+    uint32_t m_NumLayers = 0;
+    uint32_t m_MaxVecDim = 0;
     vector<uint32_t> m_Dims;
     vector<FCN<T> > m_Layers;
 
@@ -91,6 +104,7 @@ class MLP {
         for (int i = 0; i < m_NumLayers; i++) {
             m_Layers[i].setDim(m_Dims[i], m_Dims[i + 1]);
         }
+        m_MaxVecDim = *max_element(this->m_Dims.begin() + 1, this->m_Dims.end());
     }
 
     void setActFunc(int layerID, ActFunc_t ActFunc) { m_Layers[layerID].setActFunc(ActFunc); }
@@ -103,8 +117,8 @@ class MLP {
 
     void loadLayer(string filePath) {
         for (int id = 0; id < m_NumLayers; id++) {
-            string m_WeightPath = filePath + "W_" + to_string(id) + ".mat";
-            string m_BiasPath = filePath + "b_" + to_string(id) + ".mat";
+            string m_WeightPath = filePath + "/W_" + to_string(id) + ".mat";
+            string m_BiasPath = filePath + "/b_" + to_string(id) + ".mat";
             m_Layers[id].loadData(m_WeightPath, m_BiasPath);
         }
     }
@@ -114,6 +128,29 @@ class MLP {
     }
 
     void setLayer(int layerId, T* weights, T* bias) { m_Layers[layerId].setData(weights, bias); }
+
+    double inference(vector<T>& vecIn, vector<T>& vecOut) {
+        uint32_t batch = vecIn.size() / m_Dims.front();
+        if (vecOut.size() < batch * m_Dims.back()) vecOut.resize(batch * m_Dims.back());
+        return inference(batch, vecIn.data(), vecOut.data());
+    }
+    double inference(uint32_t batch, T* vecIn, T* vecOut) {
+        auto startTime = chrono::high_resolution_clock::now();
+        if (m_NumLayers == 1) {
+            m_Layers.front().inference(batch, vecIn, vecOut);
+        } else {
+            T* tmp[] = {new T[batch * m_MaxVecDim], new T[batch * m_MaxVecDim]};
+            m_Layers.front().inference(batch, vecIn, tmp[0]);
+            for (int i = 1; i < m_NumLayers - 1; i++) m_Layers[i].inference(batch, tmp[(i + 1) % 2], tmp[i % 2]);
+            m_Layers.back().inference(batch, tmp[m_NumLayers % 2], vecOut);
+            delete tmp[0];
+            delete tmp[1];
+        }
+        auto finishTime = chrono::high_resolution_clock::now();
+        chrono::duration<double> elapsed = finishTime - startTime;
+        double t_sec = elapsed.count();
+        return t_sec;
+    }
 };
 }
 }

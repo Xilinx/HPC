@@ -87,6 +87,7 @@ CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/tests/sw/include/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L2/include/memKernel/sw/
 CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L2/include/xcl2
+LDFLAGS += -fopenmp -shared -fPIC
 
 ifeq ($(TARGET),sw_emu)
 CXXFLAGS += -D SW_EMU_TEST
@@ -99,7 +100,7 @@ endif
 # ######################### Host compiler global settings ############################
 CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
-CXXFLAGS += -fmessage-length=0 -fopenmp $(shell python -m pybind11 --includes) -shared -fPIC
+CXXFLAGS += -fmessage-length=0 $(shell python -m pybind11 --includes) -I$(MKLROOT)/include
 CXXFLAGS += -I$(CUR_DIR)/src/ 
 
 ifeq ($(HOST_ARCH), x86)

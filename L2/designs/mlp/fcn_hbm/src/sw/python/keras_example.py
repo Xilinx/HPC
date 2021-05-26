@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from os import path
+import os
 import subprocess
 import argparse
 import time
@@ -51,7 +51,7 @@ def train(p_modelFileName, p_inFileName, p_refFileName, p_modelName):
     (x_train, y_train), (x_test, y_test) = eval(l_kerasFunc)
     x_test = x_test / 255
     model = get_compiled_model()
-    x_train = x_train.reshape(60000, 784).astype(np.float32) / 255
+    x_train = x_train.reshape(-1, 784).astype(np.float32) / 255
     history = model.fit(
         x_train,
         y_train,
@@ -60,8 +60,12 @@ def train(p_modelFileName, p_inFileName, p_refFileName, p_modelName):
         validation_split=0.2)
 
     model.save(p_modelFileName)
-    x_test.astype(np.float32).tofile(p_inFileName)
-    y_test.astype(np.float32).tofile(p_refFileName)
+    if True:
+        np.append(x_train, x_test).astype(np.float32).tofile(p_inFileName)
+        np.append(y_train, y_test).astype(np.float32).tofile(p_refFileName)
+    else:
+        x_test.astype(np.float32).tofile(p_inFileName)
+        y_test.astype(np.float32).tofile(p_refFileName)
     print("INFO: Training done.")
 
 
@@ -96,14 +100,14 @@ def evaluate(
     return l_ms
 
 
-def xmlp_inf(
-        deviceConfig,
-        p_modelFileName,
-        p_inFileName,
-        p_alveomlp,
-        p_xmlpOutFileName):
+def xmlp_inf(numDev,
+             deviceConfig,
+             p_modelFileName,
+             p_inFileName,
+             p_alveomlp,
+             p_xmlpOutFileName):
     l_model = load_model(p_modelFileName)
-    l_mlpInf = xMLPInf(deviceConfig)
+    l_mlpInf = xMLPInf(deviceConfig, numDev)
     l_isMLP = l_mlpInf.buildModels(l_model, p_alveomlp)
     if l_isMLP:
         l_mat = np.fromfile(p_inFileName, dtype=np.float32)
@@ -136,10 +140,11 @@ def process_model(
         p_evaluate,
         p_xMLP,
         p_deviceConfig,
+        p_devNum,
         p_modelPath,
         p_modelName):
     l_path = p_modelPath + '/' + p_modelName
-    if not path.exists(l_path):
+    if not os.path.exists(l_path):
         subprocess.run(["mkdir", "-p", l_path])
     l_modelFileName = l_path + '/model.h5'
     l_inFileName = l_path + '/inputs.bin'
@@ -162,14 +167,14 @@ def process_model(
         with open(p_deviceConfig, 'r') as f:
             jstr = f.read()
         deviceConfig = json.loads(jstr)
-        l_alveomlp = alveomlp(jstr, 3)
-        l_ms = xmlp_inf(
-            deviceConfig,
-            l_modelFileName,
-            l_inFileName,
-            l_alveomlp,
-            l_xmlpOutFileName)
-        print("INFO: xMLP inference takes {}ms".format(l_ms))
+        l_alveomlp = alveomlp(jstr, p_devNum)
+        l_ms = xmlp_inf(p_devNum,
+                        deviceConfig,
+                        l_modelFileName,
+                        l_inFileName,
+                        l_alveomlp,
+                        l_xmlpOutFileName)
+        print("INFO: xMLP inference takes {} ms".format(l_ms))
         l_pass = verify_inf(l_xmlpOutFileName, l_outFileName)
         if l_pass:
             print("INFO: xMLP inference passes verification!")
@@ -179,6 +184,7 @@ def process_model(
 
 
 def main(args):
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     if (args.usage):
         print('Usage example:')
         print(
@@ -195,6 +201,7 @@ def main(args):
             args.evaluate,
             args.xinf,
             args.device_config,
+            args.dev_num,
             args.model_path,
             args.model_name)
 
@@ -236,6 +243,11 @@ if __name__ == "__main__":
         type=str,
         default='./models',
         help='path for .h5 files that contain models and weights')
+    parser.add_argument(
+        '--dev_num',
+        type=int,
+        default=1,
+        help='model name')
     parser.add_argument(
         '--model_name',
         type=str,

@@ -26,6 +26,7 @@
 // This file is required for OpenCL C++ wrapper APIs
 #include "mlpBase.hpp"
 #include "utils.hpp"
+#include "benchmark.hpp"
 
 using namespace std;
 using namespace xilinx_apps::mlp;
@@ -34,6 +35,7 @@ int main(int argc, char** argv) {
     int32_t l_index = 0;
 
     string binaryFile = argv[++l_index];
+    int numDev = atoi(argv[++l_index]);
 
     int p_batch = atoi(argv[++l_index]);
 
@@ -43,14 +45,15 @@ int main(int argc, char** argv) {
 
     string filePath = argv[++l_index];
     vector<HPC_dataType> h_x(layers.front() * p_batch);
-    vector<HPC_dataType> h_ref(layers.back() * p_batch);
-    vector<HPC_dataType> h_v;
+    vector<HPC_dataType> h_ref;
+    vector<HPC_dataType> h_vf;
+    vector<HPC_dataType> h_vc;
     readBin(filePath + "in.mat", h_x.size() * sizeof(HPC_dataType), h_x);
     readBin(filePath + "out.mat", h_ref.size() * sizeof(HPC_dataType), h_ref);
 
     ifstream ifstr(argv[++l_index]);
     string deviceConfig(istreambuf_iterator<char>(ifstr), (istreambuf_iterator<char>()));
-    Options l_options(deviceConfig, 3);
+    Options l_options(deviceConfig, numDev);
 
     MLPBase l_mlp(l_options);
     l_mlp.addEmptyModel(numLayers);
@@ -58,12 +61,20 @@ int main(int argc, char** argv) {
     l_mlp.setAllActFunc(0, "sigmoid");
     l_mlp.loadLayersFromFile(0, filePath.c_str());
     for (int i = 0; i < l_options.numDevices; i++) l_mlp.loadModel(0, i);
-    double sec = l_mlp.inferenceOnAll(h_x, h_v);
+    double sec = 0;
 
-    cout << "SW measured execution time is: " << sec << " s." << endl;
+    sec = l_mlp.inferenceOnAll(h_x, h_vf);
+    cout << "SW measured FPGA execution time is: " << sec << " s." << endl;
+
+    auto models = l_mlp.getModels();
+    sec = models[0]->inference(h_x, h_vc);
+    cout << "SW measured CPU execution time is: " << sec << " s." << endl;
 
     int err = 0;
-    compare(layers.back() * p_batch, h_v.data(), h_ref.data(), err, true);
+    compare(layers.back() * p_batch, h_vf.data(), h_ref.data(), err, false);
+    cout << "There are in total " << err << " mismatches in the FPGA solution." << endl;
+    compare(layers.back() * p_batch, h_vc.data(), h_ref.data(), err, false);
+    cout << "There are in total " << err << " mismatches in the CPU solution." << endl;
     if (err == 0) {
         cout << "Results verified." << endl;
         return EXIT_SUCCESS;

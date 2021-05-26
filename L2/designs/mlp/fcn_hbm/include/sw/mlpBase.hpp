@@ -49,11 +49,9 @@ class Options {
         auto j3 = json::parse(options);
         auto deviceList = j3["devices"];
         int i = 0;
-        if (num != 0)
-            numDevices = num;
-        else
-            numDevices = deviceList.size();
+        numDevices = num;
         for (auto device : deviceList) {
+            if (i == num) break;
             deviceIds.push_back(device["deviceID"]);
             xclbinNames.push_back(device["xclbinPath"]);
             numCUsOnDevice.push_back(device["numCUs"]);
@@ -61,19 +59,16 @@ class Options {
             numWeightChannels.push_back(device["weightChannels"]);
             numVectorChannels.push_back(device["vectorChannels"]);
             numElements.push_back(device["elements"]);
-            if (++i == num) break;
         }
     }
 };
 
 class MLPBase {
    public:
-    MLPBase(const string& optionStr, const uint32_t num = 0) {
-        Options l_option(optionStr, num);
-        init(l_option);
-    }
-    MLPBase(const Options& options) { init(options); }
-    void init(const Options& options) {
+    MLPBase(const string& optionStr, const uint32_t num = 0) : options(optionStr, num) { init(); }
+    MLPBase(const Options& options) : options(options) { init(); }
+
+    void init() {
         for (unsigned int i = 0; i < options.numDevices; ++i) {
             m_devices.push_back(new FPGA(options.deviceIds[i]));
             m_devices.back()->xclbin(options.xclbinNames[i]);
@@ -101,7 +96,10 @@ class MLPBase {
             l_func = ActFunc_t::SIGMOID;
         } else if (p_act == "tansig") {
             l_func = ActFunc_t::TANSIG;
+        } else if (p_act == "softmax") {
+            l_func = ActFunc_t::SOFTMAX;
         }
+
         m_models[p_modelId]->setActFunc(p_layerId, l_func);
     }
 
@@ -115,6 +113,8 @@ class MLPBase {
             l_func = ActFunc_t::SIGMOID;
         } else if (p_act == "tansig") {
             l_func = ActFunc_t::TANSIG;
+        } else if (p_act == "softmax") {
+            l_func = ActFunc_t::SOFTMAX;
         }
         m_models[p_modelId]->setActFunc(l_func);
     }
@@ -150,6 +150,13 @@ class MLPBase {
         return sec;
     }
 
+    double inferenceOnCPU(const uint32_t p_batch, HPC_dataType* p_x, HPC_dataType* p_y, const uint32_t p_modelId = 0) {
+        double sec = m_models[p_modelId]->inference(p_batch, p_x, p_y);
+        return sec;
+    }
+
+    vector<MLP<HPC_dataType>*> getModels() { return m_models; }
+
     void clear() {
         for (int i = 0; i < m_devices.size(); ++i) {
             delete m_devices[i];
@@ -166,7 +173,8 @@ class MLPBase {
     vector<FPGA*> m_devices;
     vector<MLPKernel<HPC_dataType, HPC_instrBytes>*> m_cus;
     vector<MLP<HPC_dataType>*> m_models;
+    Options options;
 };
 }
-};
+}
 #endif

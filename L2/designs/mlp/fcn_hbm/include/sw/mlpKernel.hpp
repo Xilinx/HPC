@@ -43,7 +43,6 @@ class MLPKernel : public Kernel {
     cl::Buffer m_buffer_instr;
 
     int m_Batch = 0;
-    int m_MaxVecDim = 0;
     int outputOffset = 0;
     MLP<t_DataType>* mlp = nullptr;
     MLP<t_DataType>* mlpPad = nullptr;
@@ -73,7 +72,6 @@ class MLPKernel : public Kernel {
         int m_NumLayers = mlp->m_NumLayers;
         padMLP();
         h_fcnInstr.resize(m_NumLayers);
-        m_MaxVecDim = *max_element(mlpPad->m_Dims.begin() + 1, mlpPad->m_Dims.end());
 
         createWeightsBuffer();
         createVecBuffer();
@@ -142,7 +140,6 @@ class MLPKernel : public Kernel {
         const int l_kernelSize = (p_batch / l_numK) * kernels[0]->mlp->m_Dims.front();
         vector<int> sizes(l_numK, l_kernelSize);
         sizes.back() = l_totalSize - l_kernelSize * (l_numK - 1);
-#pragma omp prallel for
         for (int i = 0; i < l_numK; i++) {
             kernels[i]->setInput(h_x + i * l_kernelSize, sizes[i]);
         }
@@ -151,11 +148,14 @@ class MLPKernel : public Kernel {
         for (auto kernel : kernels) kernel->enqueueTask();
         for (auto kernel : kernels) kernel->finish();
         auto finishTime = chrono::high_resolution_clock::now();
-        for (int i = 0; i < l_numK; i++)
-            kernels[i]->getOutput(h_v + i * kernels[0]->m_Batch * kernels[0]->mlp->m_Dims.back());
         chrono::duration<double> elapsed = finishTime - startTime;
         double t_sec = elapsed.count();
+        for (int i = 0; i < l_numK; i++) {
+            kernels[i]->getOutput(h_v + i * kernels[0]->m_Batch * kernels[0]->mlp->m_Dims.back());
+        }
 
+        if (kernels[0]->mlp->m_Layers.back().m_ActFunc == ActFunc_t::SOFTMAX)
+            softmax(p_batch, kernels[0]->mlp->m_Dims.back(), h_v);
         return t_sec;
     }
 
@@ -213,7 +213,7 @@ class MLPKernel : public Kernel {
         assert(p_size % mlp->m_Dims.front() == 0);
         m_Batch = p_size / mlp->m_Dims.front();
         const int l_batchPC = (m_Batch + m_VecChannels - 1) / m_VecChannels;
-        outputOffset = (2 * m_MaxVecDim + mlpPad->m_Dims.front()) * l_batchPC;
+        outputOffset = (2 * mlpPad->m_MaxVecDim + mlpPad->m_Dims.front()) * l_batchPC;
         int outputSize = mlpPad->m_Dims.back() * l_batchPC;
         int bufferSize = outputOffset + outputSize;
         assert(bufferSize * sizeof(t_DataType) <= 256 * 1024 * 1024);
@@ -233,7 +233,7 @@ class MLPKernel : public Kernel {
         }
 
         int outputOffset[2] = {mlpPad->m_Dims.front() * l_batchPC * sizeof(t_DataType),
-                               (m_MaxVecDim + mlpPad->m_Dims.front()) * l_batchPC * sizeof(t_DataType)};
+                               (mlpPad->m_MaxVecDim + mlpPad->m_Dims.front()) * l_batchPC * sizeof(t_DataType)};
 
         h_instr.resize(t_InstrBytes * (1 + mlpPad->m_NumLayers));
         for (int i = 0; i < mlpPad->m_NumLayers; i++) {

@@ -19,6 +19,8 @@ keras=${XFLIB_DIR}/L2/designs/mlp/fcn_hbm/src/sw/python/keras_example.py
 LIB_DIR = ${CUR_DIR}/lib
 LIB_FILE = ${LIB_DIR}/${EXE_NAME}
 
+export PYTHONPATH:=${LIB_DIR}:$$PYTHONPATH
+export OMP_NUM_THREADS:=64
 pythonApi: ${LIB_FILE}
 
 ${LIB_FILE}: ${EXE_FILE}
@@ -28,6 +30,7 @@ ${LIB_FILE}: ${EXE_FILE}
 
 MODEL_NAME=mnist
 MODEL_PATH=./models
+DEV_NUM=1
 
 train: 
 	python ${keras} --train --model_path ${MODEL_PATH} --model_name ${MODEL_NAME} 
@@ -35,6 +38,5 @@ train:
 inf:
 	python ${keras} --kinf --model_path ${MODEL_PATH} --model_name ${MODEL_NAME} 
 
-export PYTHONPATH:=${LIB_DIR}:$$PYTHONPATH
 xinf:
-	python ${keras} --xinf --model_path ${MODEL_PATH} --model_name ${MODEL_NAME} --device_config ${CUR_DIR}/devices.json
+	python ${keras} --xinf --model_path ${MODEL_PATH} --model_name ${MODEL_NAME} --device_config ${CUR_DIR}/devices.json --dev_num ${DEV_NUM}

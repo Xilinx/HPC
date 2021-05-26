@@ -32,7 +32,7 @@ namespace mlp {
 
 /** enum class ActFunc_t defines a set of activation function types
  */
-enum class ActFunc_t : uint8_t { NONE = 0, LINEAR = 1, RELU = 2, SIGMOID = 3, TANSIG = 4 };
+enum class ActFunc_t : uint8_t { NONE = 0, LINEAR = 1, RELU = 2, SIGMOID = 3, TANSIG = 4, SOFTMAX = 5 };
 
 /** Class FcnInstr defines a set of parameters used in between host and the kernel
  */
