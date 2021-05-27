@@ -1,5 +1,5 @@
 {
     "id": "hpc_poc",
     "name": "Vitis HPC Applications",
-    "description": "Vitis HPC Applications are open-sourced Vitis applications written in C++ for accelerating various HPC algorithms."
+    "description": "Vitis HPC Applications are open-sourced Vitis applications written in C++ for accelerating various HPC applications."
 }
