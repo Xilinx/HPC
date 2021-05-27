@@ -30,7 +30,7 @@
 
 #include "ap_int.h"
 #include "hls_stream.h"
-#include "xf_blas/helpers.hpp"
+#include "blas/helpers.hpp"
 
 namespace xf {
 
