@@ -4,11 +4,21 @@
 
 ### Dependencies
 
-Please check the information at page [MLP Design on HBM Devices](../../Readme.md) for dependencies. 
+#### conda mlp environment
+Run following command to activate mlp environment from conda.
+```
+conda activate mlp
+```
+
+#### MKL library
+Install MKL library and run the following command to setup the environment.
+```
+source mklvars.sh intel64
+```
 
 ### Build Shared Library
 ```
-make pythonAPi
+make host TARGET=hw 
 ```
 
 ### Configuration

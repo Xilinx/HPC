@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-keras=${XFLIB_DIR}/L2/designs/mlp/fcn_hbm/src/sw/python/keras_example.py
+keras=${XFLIB_DIR}/mlp/src/sw/python/keras_example.py
 
 LIB_DIR = ${CUR_DIR}/lib
 LIB_FILE = ${LIB_DIR}/${EXE_NAME}

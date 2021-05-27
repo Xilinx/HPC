@@ -9,7 +9,7 @@
 Use the following command to create mlp environment with proper python libraries
 
 ```
-conda env create -f ../environment.yml
+conda env create -f ./environment.yml
 
 ```
 
