@@ -42,7 +42,7 @@
         "compiler": {
             "sources": [
                 "LIB_DIR/mlp/src/sw/c++/mlpTest.cpp", 
-                "LIB_DIR/L2/src/sw/xcl2.cpp"
+                "LIB_DIR/L2/common/src/sw/xcl2.cpp"
             ], 
             "includepaths": [
                 "LIB_DIR/mlp/externals/", 
@@ -62,7 +62,8 @@
                 "HPC_vecChannels=2",
                 "HPC_maxInstrs=100",
                 "HPC_parEntries=8"
-            ]
+            ],
+            "options": "-lmkl_rt"
         }
     }, 
     "v++": {

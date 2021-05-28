@@ -78,7 +78,7 @@ export XCL_BINDIR = $(XCLBIN_DIR)
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
 HOST_SRCS += $(XFLIB_DIR)/mlp/src/sw/c++/mlpTest.cpp
-HOST_SRCS += $(XFLIB_DIR)/L2/src/sw/xcl2.cpp
+HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp
 
 CXXFLAGS += -DHW_CLK=3.33e-9 -DHPC_maxNumDevs=8 -DHPC_maxNumCUsPerDev=8 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=16 -DHPC_vecChannels=2 -DHPC_maxInstrs=100 -DHPC_parEntries=8
 CXXFLAGS += -I$(XFLIB_DIR)/mlp/externals/
@@ -99,7 +99,7 @@ endif
 # ######################### Host compiler global settings ############################
 CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_HLS)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
-CXXFLAGS += -fmessage-length=0 
+CXXFLAGS += -fmessage-length=0 -lmkl_rt
 CXXFLAGS += -I$(CUR_DIR)/src/ 
 
 ifeq ($(HOST_ARCH), x86)

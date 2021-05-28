@@ -26,7 +26,6 @@
 // This file is required for OpenCL C++ wrapper APIs
 #include "mlpBase.hpp"
 #include "utils.hpp"
-#include "benchmark.hpp"
 
 using namespace std;
 using namespace xilinx_apps::mlp;
