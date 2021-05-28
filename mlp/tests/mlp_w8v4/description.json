@@ -1,7 +1,7 @@
 {
     "gui": false,
     "name": "Xilinx FCN Kernel", 
-    "description": "Xilinx HPC FCN Test", 
+    "description": "Xilinx HPC GEMV based FCN Test", 
     "flow": "vitis", 
     "platform_type": "pcie", 
     "platform_whitelist": [
@@ -44,21 +44,17 @@
         },
         "compiler": {
             "sources": [
-                "LIB_DIR/L2/designs/mlp/fcn_hbm/src/sw/hosts/mlpTest.cpp", 
-                "LIB_DIR/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp"
+                "LIB_DIR/mlp/src/sw/c++/mlpTest.cpp", 
+                "LIB_DIR/L2/common/src/sw/xcl2.cpp"
             ], 
             "includepaths": [
-                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/", 
-                "LIB_DIR/L2/designs/mlp/fcn_hbm/externals/", 
-                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/sw/", 
-                "LIB_DIR/../Vitis_Libraries/hpc/L1/include/",
-                "LIB_DIR/../Vitis_Libraries/hpc/L2/include/", 
-                "LIB_DIR/../Vitis_Libraries/hpc/L2/include/sw", 
-                "LIB_DIR/../Vitis_Libraries/hpc/L2/include/common", 
-                "LIB_DIR/../Vitis_Libraries/blas/L1/include/", 
-                "LIB_DIR/../Vitis_Libraries/blas/L1/tests/sw/include/", 
-                "LIB_DIR/../Vitis_Libraries/blas/L2/include/memKernel/sw/", 
-                "LIB_DIR/../Vitis_Libraries/blas/L2/include/xcl2"
+                "LIB_DIR/mlp/include/", 
+                "LIB_DIR/mlp/externals/", 
+                "LIB_DIR/mlp/include/sw/", 
+                "LIB_DIR/L1/hpc/include/",
+                "LIB_DIR/L2/common/include/", 
+                "LIB_DIR/L2/common/include/sw", 
+                "LIB_DIR/utils/include/sw"
             ], 
             "symbols": [
                 "HW_CLK=3.6e-9",
@@ -86,16 +82,15 @@
                 "HPC_parEntries=8"
             ], 
             "includepaths": [
-                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/", 
-                "LIB_DIR/L2/designs/mlp/fcn_hbm/include/hw/", 
-                "LIB_DIR/../Vitis_Libraries/hpc/L1/include/hw/mlp/", 
-                "LIB_DIR/../Vitis_Libraries/hpc/L2/include/common", 
-                "LIB_DIR/../Vitis_Libraries/blas/L1/include/", 
-                "LIB_DIR/../Vitis_Libraries/blas/L1/include/hw/", 
-                "LIB_DIR/../Vitis_Libraries/blas/L1/include/hw/xf_blas", 
-                "LIB_DIR/../Vitis_Libraries/hpc/L1/include/",
-                "LIB_DIR/../Vitis_Libraries/hpc/L1/include/hw",
-                "LIB_DIR/../Vitis_Libraries/hpc/L2/include/hw"
+                "LIB_DIR/mlp/include/", 
+                "LIB_DIR/mlp/include/hw/", 
+                "LIB_DIR/L1/hpc/include/hw/mlp/", 
+                "LIB_DIR/L1/blas/include/", 
+                "LIB_DIR/L1/blas/include/hw/", 
+                "LIB_DIR/L1/blas/include/hw/xf_blas", 
+                "LIB_DIR/L1/hpc/include/",
+                "LIB_DIR/L1/hpc/include/hw",
+                "LIB_DIR/L2/common/include/hw"
             ]
         }
     }, 
@@ -107,7 +102,7 @@
             "accelerators": [
                 {
                     "name": "krnl_fcn", 
-                    "location": "LIB_DIR/L2/designs/mlp/fcn_hbm/src/hw/fcnKernel.cpp", 
+                    "location": "LIB_DIR/mlp/src/hw/fcnKernel.cpp", 
                     "frequency": 333
                 }
             ]

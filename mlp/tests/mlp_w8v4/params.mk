@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-pyGenMat=${XFLIB_DIR}/L2/designs/mlp/fcn_hbm/src/sw/python/genMLP.py
+pyGenMat=${XFLIB_DIR}/mlp/src/sw/python/genMLP.py
 batch = 60000
 numLayers = 3
 DEV_NUM=3
