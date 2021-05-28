@@ -1,7 +1,7 @@
 {
     "gui": false,
     "name": "Xilinx FCN Kernel", 
-    "description": "Xilinx HPC GEMV based FCN Test", 
+    "description": "Xilinx HPC FCN Test", 
     "flow": "vitis", 
     "platform_type": "pcie", 
     "platform_whitelist": [
@@ -39,6 +39,9 @@
     ], 
     "host": {
         "host_exe": "host.exe", 
+        "linker": {
+            "options": "-fopenmp -lmkl_rt"
+        },
         "compiler": {
             "sources": [
                 "LIB_DIR/mlp/src/sw/c++/mlpTest.cpp", 
@@ -54,8 +57,6 @@
             ], 
             "symbols": [
                 "HW_CLK=3.33e-9",
-                "HPC_maxNumDevs=8",
-                "HPC_maxNumCUsPerDev=8",
                 "HPC_instrBytes=64",
                 "HPC_dataType=float", 
                 "HPC_numChannels=16",
@@ -63,7 +64,7 @@
                 "HPC_maxInstrs=100",
                 "HPC_parEntries=8"
             ],
-            "options": "-lmkl_rt"
+            "options": "-I$(MKLROOT)/include"
         }
     }, 
     "v++": {

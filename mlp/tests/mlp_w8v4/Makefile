@@ -60,7 +60,7 @@ endif
 
 # ######################## Setting up Project Variables #################################
 MK_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
-XF_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/L2/*}')
+XF_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/mlp/*}')
 CUR_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
 XFLIB_DIR = $(XF_PROJ_ROOT)
 
@@ -77,21 +77,16 @@ export XCL_BINDIR = $(XCLBIN_DIR)
 
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
-HOST_SRCS += $(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/src/sw/hosts/mlpTest.cpp
-HOST_SRCS += $(XFLIB_DIR)/../Vitis_Libraries/blas/L2/src/xcl2/xcl2.cpp
+HOST_SRCS += $(XFLIB_DIR)/mlp/src/sw/c++/mlpTest.cpp
+HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp
 
 CXXFLAGS += -DHW_CLK=3.6e-9 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=8 -DHPC_vecChannels=4 -DHPC_maxInstrs=1000 -DHPC_parEntries=8
-CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/
-CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/externals/
-CXXFLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/sw/
-CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L1/include/
-CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/
-CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/sw
-CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/common
-CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/
-CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/tests/sw/include/
-CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L2/include/memKernel/sw/
-CXXFLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L2/include/xcl2
+CXXFLAGS += -I$(XFLIB_DIR)/mlp/externals/
+CXXFLAGS += -I$(XFLIB_DIR)/mlp/include/
+CXXFLAGS += -I$(XFLIB_DIR)/mlp/include/sw/
+CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
+CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
+CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
 LDFLAGS += -fopenmp -lmkl_rt
 
 ifeq ($(TARGET),sw_emu)
@@ -122,16 +117,15 @@ HOST_ARGS := $(BUILD_DIR)/mlp.xclbin
 VPP_FLAGS += -t $(TARGET) --platform $(XPLATFORM) --save-temps --optimize 2
 VPP_FLAGS += --hls.jobs 8
 VPP_LDFLAGS += --vivado.synth.jobs 8 --vivado.impl.jobs 8
-VPP_FLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/
-VPP_FLAGS += -I$(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/include/hw/
-VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L1/include/hw/mlp/
-VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/common
-VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/
-VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/hw/
-VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/blas/L1/include/hw/xf_blas
-VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L1/include/
-VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L1/include/hw
-VPP_FLAGS += -I$(XFLIB_DIR)/../Vitis_Libraries/hpc/L2/include/hw
+VPP_FLAGS += -I$(XFLIB_DIR)/mlp/include/
+VPP_FLAGS += -I$(XFLIB_DIR)/mlp/include/hw/
+VPP_FLAGS += -I$(XFLIB_DIR)/L1/hpc/include/hw/mlp/
+VPP_FLAGS += -I$(XFLIB_DIR)/L1/blas/include/
+VPP_FLAGS += -I$(XFLIB_DIR)/L1/blas/include/hw/
+VPP_FLAGS += -I$(XFLIB_DIR)/L1/blas/include/hw/xf_blas
+VPP_FLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
+VPP_FLAGS += -I$(XFLIB_DIR)/L1/hpc/include/hw
+VPP_FLAGS += -I$(XFLIB_DIR)/L2/common/include/hw
 
 krnl_fcn_VPP_FLAGS += --hls.clock 333000000:krnl_fcn
 VPP_LDFLAGS_mlp += --kernel_frequency 333
@@ -167,7 +161,7 @@ xclbin: check_vpp check_sysroot $(BINARY_CONTAINERS)
 build: xclbin
 
 # ################ Setting Rules for Binary Containers (Building Kernels) ################
-$(TEMP_DIR)/krnl_fcn.xo: $(XFLIB_DIR)/L2/designs/mlp/fcn_hbm/src/hw/fcnKernel.cpp
+$(TEMP_DIR)/krnl_fcn.xo: $(XFLIB_DIR)/mlp/src/hw/fcnKernel.cpp
 	$(ECHO) "Compiling Kernel: krnl_fcn"
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(krnl_fcn_VPP_FLAGS) $(VPP_FLAGS) -k krnl_fcn -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
