@@ -80,13 +80,14 @@ export XCL_BINDIR = $(XCLBIN_DIR)
 HOST_SRCS += $(XFLIB_DIR)/mlp/src/sw/c++/mlpTest.cpp
 HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp
 
-CXXFLAGS += -DHW_CLK=3.33e-9 -DHPC_maxNumDevs=8 -DHPC_maxNumCUsPerDev=8 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=16 -DHPC_vecChannels=2 -DHPC_maxInstrs=100 -DHPC_parEntries=8
+CXXFLAGS += -DHW_CLK=3.33e-9 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=16 -DHPC_vecChannels=2 -DHPC_maxInstrs=100 -DHPC_parEntries=8
 CXXFLAGS += -I$(XFLIB_DIR)/mlp/externals/
 CXXFLAGS += -I$(XFLIB_DIR)/mlp/include/
 CXXFLAGS += -I$(XFLIB_DIR)/mlp/include/sw/
 CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
+LDFLAGS += -fopenmp -lmkl_rt
 
 ifeq ($(TARGET),sw_emu)
 CXXFLAGS += -D SW_EMU_TEST
@@ -97,13 +98,13 @@ CXXFLAGS += -D HW_EMU_TEST
 endif
 
 # ######################### Host compiler global settings ############################
-CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_HLS)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
+CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
-CXXFLAGS += -fmessage-length=0 -lmkl_rt
+CXXFLAGS += -fmessage-length=0 -I$(MKLROOT)/include
 CXXFLAGS += -I$(CUR_DIR)/src/ 
 
 ifeq ($(HOST_ARCH), x86)
-LDFLAGS += -L$(XILINX_HLS)/lnx64/tools/fpo_v7_0 -Wl,--as-needed -lgmp -lmpfr -lIp_floating_point_v7_0_bitacc_cmodel
+LDFLAGS += -L$(XILINX_VIVADO)/lnx64/tools/fpo_v7_0 -Wl,--as-needed -lgmp -lmpfr -lIp_floating_point_v7_0_bitacc_cmodel
 endif
 
 # ################### Setting package and image directory #######################
@@ -139,35 +140,22 @@ VPP_LDFLAGS_mlp_temp += --config $(CUR_DIR)/conn_u50.cfg
 endif
 VPP_LDFLAGS_mlp += $(VPP_LDFLAGS_mlp_temp)
 
-# Kernel args
-
 # ############################ Declaring Binary Containers ##########################
 
 BINARY_CONTAINERS += $(BUILD_DIR)/mlp.xclbin
 BINARY_CONTAINER_mlp_OBJS += $(TEMP_DIR)/krnl_fcn.xo
 
 # ######################### Setting Targets of Makefile ################################
+
 -include ./params.mk
 .PHONY: all clean cleanall docs emconfig
-ifeq ($(HOST_ARCH), x86)
-all:  check_version check_vpp check_platform check_xrt $(EXE_FILE) $(BINARY_CONTAINERS) emconfig
-else
-all:  check_version check_vpp check_platform check_sysroot $(EXE_FILE) $(BINARY_CONTAINERS) emconfig  sd_card
-endif
+all: check_vpp check_platform check_sysroot $(EXE_FILE) $(BINARY_CONTAINERS) emconfig
 
 .PHONY: host
-ifeq ($(HOST_ARCH), x86)
-host:   check_xrt $(EXE_FILE)
-else
-host:   check_sysroot $(EXE_FILE)
-endif
+host: check_xrt check_sysroot $(EXE_FILE)
 
 .PHONY: xclbin
-ifeq ($(HOST_ARCH), x86)
-xclbin: check_vpp  check_xrt  $(BINARY_CONTAINERS)
-else
-xclbin: check_vpp  check_sysroot  $(BINARY_CONTAINERS)
-endif
+xclbin: check_vpp check_sysroot $(BINARY_CONTAINERS)
 
 .PHONY: build
 build: xclbin
@@ -176,7 +164,7 @@ build: xclbin
 $(TEMP_DIR)/krnl_fcn.xo: $(XFLIB_DIR)/mlp/src/hw/fcnKernel.cpp
 	$(ECHO) "Compiling Kernel: krnl_fcn"
 	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_fcn_VPP_FLAGS) $(VPP_FLAGS) -k krnl_fcn -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' $^
+	$(VPP) -c $(krnl_fcn_VPP_FLAGS) $(VPP_FLAGS) -k krnl_fcn -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
 
 ifneq (,$(shell echo $(XPLATFORM) | awk '/u50/'))
 
@@ -191,12 +179,7 @@ endif
 
 
 # ################# Setting Rules for Host (Building Host Executable) ################
-ifeq ($(HOST_ARCH), x86)
-$(EXE_FILE):  $(HOST_SRCS) | check_xrt 
-else
-$(EXE_FILE):  $(HOST_SRCS) | check_sysroot 
-endif
-
+$(EXE_FILE): $(HOST_SRCS) | check_xrt
 	mkdir -p $(BUILD_DIR)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
@@ -222,7 +205,7 @@ cleanh:
 	-$(RMDIR) src/*.ll _xocc_* .Xil dltmp* xmltmp* *.log *.jou *.wcfg *.wdb sample_link.ini sample_compile.ini obj* bin* *.csv *.jpg *.jpeg *.png
 
 cleank:
-	-$(RMDIR) $(BUILD_DIR)/*.xclbin _vimage *xclbin.run_summary qemu-memory-_* emulation/ _vimage/ start_simulation.sh *.xclbin
+	-$(RMDIR) $(BUILD_DIR)/*.xclbin _vimage *xclbin.run_summary qemu-memory-_* emulation/ _vimage/ pl* start_simulation.sh *.xclbin
 	-$(RMDIR) _x_temp.*/_x.* _x_temp.*/.Xil _x_temp.*/profile_summary.* xo_* _x*
 	-$(RMDIR) _x_temp.*/dltmp* _x_temp.*/kernel_info.dat _x_temp.*/*.log 
 	-$(RMDIR) _x_temp.* 
