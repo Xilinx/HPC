@@ -60,12 +60,8 @@ def train(p_modelFileName, p_inFileName, p_refFileName, p_modelName):
         validation_split=0.2)
 
     model.save(p_modelFileName)
-    if True:
-        np.append(x_train, x_test).astype(np.float32).tofile(p_inFileName)
-        np.append(y_train, y_test).astype(np.float32).tofile(p_refFileName)
-    else:
-        x_test.astype(np.float32).tofile(p_inFileName)
-        y_test.astype(np.float32).tofile(p_refFileName)
+    x_test.astype(np.float32).tofile(p_inFileName)
+    y_test.astype(np.float32).tofile(p_refFileName)
     print("INFO: Training done.")
 
 
