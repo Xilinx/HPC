@@ -44,23 +44,29 @@ class DoubleBuffer : public Buffer<t_DataType, t_BufferSize> {
                  unsigned int p_batch = 1) {
         DdrStream p_s0_0, p_s0_1, p_s1_0, p_s1_1;
 #pragma HLS DATAFLOW
-        split(p_n, p_batch, p_streamIn, p_s0_0, p_s0_1);
+        split(p_n, p_batch, p_n > t_BufferSize ? p_reuseNum : 1, p_streamIn, p_s0_0, p_s0_1);
         buffer_0.buffer(p_n, (p_batch / 2) + (p_batch % 2), p_s0_0, p_s1_0, p_reuseNum);
         buffer_1.buffer(p_n, (p_batch / 2), p_s0_1, p_s1_1, p_reuseNum);
         merge(p_n, p_batch, p_s1_0, p_s1_1, p_streamOut, p_reuseNum);
     }
 
-    void split(unsigned int p_n, unsigned int p_batch, DdrStream& p_in, DdrStream& p_out1, DdrStream& p_out2) {
+    void split(unsigned int p_n,
+               unsigned int p_batch,
+               unsigned int p_reuse,
+               DdrStream& p_in,
+               DdrStream& p_out1,
+               DdrStream& p_out2) {
         for (int i = 0; i < p_batch; ++i) {
-            for (int j = 0; j < p_n; ++j) {
+            for (int r = 0; r < p_reuse; r++)
+                for (int j = 0; j < p_n; ++j) {
 #pragma HLS PIPELINE
-                t_DataType l_word = p_in.read();
-                if ((i % 2) == 0) {
-                    p_out1.write(l_word);
-                } else {
-                    p_out2.write(l_word);
+                    t_DataType l_word = p_in.read();
+                    if ((i % 2) == 0) {
+                        p_out1.write(l_word);
+                    } else {
+                        p_out2.write(l_word);
+                    }
                 }
-            }
         }
     }
 

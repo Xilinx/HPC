@@ -87,7 +87,7 @@ CXXFLAGS += -I$(XFLIB_DIR)/mlp/include/sw/
 CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
-LDFLAGS += -fopenmp -lmkl_rt
+LDFLAGS += -fopenmp 
 
 ifeq ($(TARGET),sw_emu)
 CXXFLAGS += -D SW_EMU_TEST
@@ -100,7 +100,7 @@ endif
 # ######################### Host compiler global settings ############################
 CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
-CXXFLAGS += -fmessage-length=0 -I$(MKLROOT)/include
+CXXFLAGS += -fmessage-length=0 
 CXXFLAGS += -I$(CUR_DIR)/src/ 
 
 ifeq ($(HOST_ARCH), x86)

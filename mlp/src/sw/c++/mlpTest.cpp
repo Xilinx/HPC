@@ -35,9 +35,7 @@ int main(int argc, char** argv) {
 
     string binaryFile = argv[++l_index];
     int numDev = atoi(argv[++l_index]);
-
     int p_batch = atoi(argv[++l_index]);
-
     int numLayers = atoi(argv[++l_index]);
     vector<uint32_t> layers;
     for (int i = 0; i < numLayers + 1; i++) layers.push_back(atoi(argv[++l_index]));
@@ -53,32 +51,38 @@ int main(int argc, char** argv) {
     ifstream ifstr(argv[++l_index]);
     string deviceConfig(istreambuf_iterator<char>(ifstr), (istreambuf_iterator<char>()));
     Options l_options(deviceConfig, numDev);
+    l_options.xclbinNames = vector<string>(numDev, binaryFile);
 
     MLPBase l_mlp(l_options);
     l_mlp.addEmptyModel(numLayers);
     l_mlp.setDim(0, layers.data());
     l_mlp.setAllActFunc(0, "sigmoid");
+    l_mlp.setLastActFunc(0, "softmax");
     l_mlp.loadLayersFromFile(0, filePath.c_str());
     for (int i = 0; i < l_options.numDevices; i++) l_mlp.loadModel(0, i);
-    double sec = 0;
 
-    sec = l_mlp.inferenceOnAll(h_x, h_vf);
-    cout << "SW measured FPGA execution time is: " << sec << " s." << endl;
+    auto startTime = chrono::high_resolution_clock::now();
+    l_mlp.inferenceOnAll(h_x, h_vf);
+    auto finishTime = chrono::high_resolution_clock::now();
+    chrono::duration<double> elapsed = finishTime - startTime;
+    double t_sec = elapsed.count();
+    cout << "SW measured FPGA execution time is:\t" << t_sec << " s." << endl;
 
     auto models = l_mlp.getModels();
-    sec = models[0]->inference(h_x, h_vc);
-    cout << "SW measured CPU execution time is: " << sec << " s." << endl;
+    startTime = chrono::high_resolution_clock::now();
+    models[0]->inference(h_x, h_vc);
+    finishTime = chrono::high_resolution_clock::now();
+    elapsed = finishTime - startTime;
+    t_sec = elapsed.count();
+    cout << "SW measured CPU execution time is::\t" << t_sec << " s." << endl;
 
     int err = 0;
-    compare(layers.back() * p_batch, h_vf.data(), h_ref.data(), err, false);
-    cout << "There are in total " << err << " mismatches in the FPGA solution." << endl;
-    compare(layers.back() * p_batch, h_vc.data(), h_ref.data(), err, false);
-    cout << "There are in total " << err << " mismatches in the CPU solution." << endl;
+    compare(layers.back() * p_batch, h_vf.data(), h_vc.data(), err, false);
     if (err == 0) {
         cout << "Results verified." << endl;
         return EXIT_SUCCESS;
     } else {
-        cout << "There are in total " << err << " mismatches in the solution." << endl;
+        cout << "There are in total " << err << " mismatch(es) in between FPGA and CPU solution." << endl;
         return EXIT_FAILURE;
     }
 }

@@ -20,11 +20,13 @@
 #include <chrono>
 #include <algorithm>
 #include <cstdlib>
-#include <mkl.h>
 #include "fcnInstr.hpp"
 #include "binFiles.hpp"
 #include "fpga.hpp"
 #include "activations.hpp"
+#ifdef MKLROOT
+#include <mkl.h>
+#endif
 using namespace std;
 
 namespace xf {
@@ -72,9 +74,20 @@ class FCN {
     }
 
     void inference(uint32_t batch, T* vecIn, T* vecOut) {
+#ifdef MKLROOT
         copyBias(batch, m_OutputSize, vecOut, m_Bias.data());
         cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasTrans, batch, m_OutputSize, m_InputSize, 1.0f, vecIn, m_InputSize,
                     m_Weight.data(), m_InputSize, 1.0f, vecOut, m_OutputSize);
+#else
+#pragma omp parallel for
+        for (int i = 0; i < batch; i++) {
+            for (int j = 0; j < m_OutputSize; j++) {
+                T sum = m_Bias[j];
+                for (int k = 0; k < m_InputSize; k++) sum += vecIn[i * m_InputSize + k] * m_Weight[j * m_InputSize + k];
+                vecOut[i * m_OutputSize + j] = sum;
+            }
+        }
+#endif
         funcBatchAct(batch, m_OutputSize, vecOut, m_ActFunc);
     }
 };
@@ -109,6 +122,7 @@ class MLP {
 
     void setActFunc(int layerID, ActFunc_t ActFunc) { m_Layers[layerID].setActFunc(ActFunc); }
 
+    void setLastActFunc(ActFunc_t ActFunc) { m_Layers.back().setActFunc(ActFunc); }
     void setActFunc(ActFunc_t ActFunc) {
         for (int i = 0; i < m_NumLayers - 1; i++) {
             m_Layers[i].setActFunc(ActFunc);

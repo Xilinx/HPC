@@ -40,7 +40,7 @@
     "host": {
         "host_exe": "host.exe", 
         "linker": {
-            "options": "-fopenmp -lmkl_rt"
+            "options": "-fopenmp"
         },
         "compiler": {
             "sources": [
@@ -63,8 +63,7 @@
                 "HPC_vecChannels=2",
                 "HPC_maxInstrs=100",
                 "HPC_parEntries=8"
-            ],
-            "options": "-I$(MKLROOT)/include"
+            ]
         }
     }, 
     "v++": {

@@ -28,7 +28,7 @@ class Buffer {
                 hls::stream<t_DataType>& p_in,
                 hls::stream<t_DataType>& p_out,
                 unsigned int p_reuseNum = 1) {
-        if (p_n > t_BufferSize) {
+        if (p_n > t_BufferSize || p_reuseNum == 1) {
             for (int l_block = 0; l_block < p_batch * p_n * p_reuseNum; ++l_block) {
 #pragma HLS PIPELINE
                 p_out.write(p_in.read());

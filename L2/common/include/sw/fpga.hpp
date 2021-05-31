@@ -188,7 +188,6 @@ class Kernel {
     void sendBuffer(vector<cl::Memory>& h_m) {
         cl_int err;
         OCL_CHECK(err, err = m_fpga->getCommandQueue().enqueueMigrateMemObjects(h_m, 0)); /* 0 means from host*/
-        finish();
     }
 
     template <typename T>

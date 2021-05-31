@@ -101,24 +101,6 @@ class MLPKernel : public Kernel {
         chrono::duration<double> elapsed = finishTime - startTime;
         double t_sec = elapsed.count();
         getOutput(h_v);
-#ifdef DEBUG
-        uint64_t l_last = 0;
-        for (int i = 0; i < mlp->m_NumLayers + 1; i++) {
-            xf::hpc::mlp::FcnInstr<t_InstrBytes> fcnInstr;
-            fcnInstr.template load<uint8_t>(h_instr.data() + t_InstrBytes * i);
-            uint64_t l_clock = fcnInstr.getClock();
-            if (l_clock == 0) break;
-            l_clock -= l_last;
-            l_last += l_clock;
-            cout << "Instruction " << i << ": ";
-            cout << "HW measured time " << l_clock * HW_CLK << " seconds, ";
-            cout << "HW efficiency: "
-                 << 100.0 * fcnInstr.getOutVecSize() * fcnInstr.getInVecSize() * fcnInstr.getBatch() / m_ParEntries /
-                        m_NumChannels / l_clock
-                 << "%." << endl;
-        }
-        cout << "HW measured execution time " << l_last * HW_CLK << " seconds, ";
-#endif
         return t_sec;
     }
     double inference(vector<t_DataType>& h_x, vector<t_DataType>& h_v) {
@@ -278,6 +260,25 @@ class MLPKernel : public Kernel {
         finish();
     }
 
+    void perf(){
+        uint64_t l_last = 0;
+        for (int i = 0; i < mlp->m_NumLayers; i++) {
+            xf::hpc::mlp::FcnInstr<t_InstrBytes> fcnInstr;
+            fcnInstr.template load<uint8_t>(h_instr.data() + t_InstrBytes * i);
+            uint64_t l_clock = fcnInstr.getClock();
+            if (l_clock == 0) break;
+            l_clock -= l_last;
+            l_last += l_clock;
+            cout << "Instruction " << i << ": ";
+            cout << "HW measured time " << l_clock * HW_CLK << " seconds, ";
+            cout << "HW efficiency: "
+                 << 100.0 * fcnInstr.getOutVecSize() * fcnInstr.getInVecSize() * fcnInstr.getBatch() / m_ParEntries /
+                        m_NumChannels / l_clock
+                 << "%." << endl;
+        }
+        cout << "HW measured execution time " << l_last * HW_CLK << " seconds, ";
+    }
+
     void setRunArgs() {
         cl_int err;
         vector<cl::Memory> l_buffers;
@@ -290,7 +291,6 @@ class MLPKernel : public Kernel {
 
         // Copy input data to device global memory
         sendBuffer(l_buffers); /* 0 means from host*/
-        finish();
     }
 
     void getOutput(t_DataType* h_v) {

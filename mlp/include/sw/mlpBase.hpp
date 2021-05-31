@@ -86,6 +86,23 @@ class MLPBase {
 
     void setDim(const uint32_t p_modelId, const void* dims) { m_models[p_modelId]->setDim((uint32_t*)(dims)); }
 
+    void setLastActFunc(const uint32_t p_modelId, const string& p_act) {
+        auto l_func = ActFunc_t::NONE;
+        if (p_act == "linear") {
+            l_func = ActFunc_t::LINEAR;
+        } else if (p_act == "relu") {
+            l_func = ActFunc_t::RELU;
+        } else if (p_act == "sigmoid") {
+            l_func = ActFunc_t::SIGMOID;
+        } else if (p_act == "tansig") {
+            l_func = ActFunc_t::TANSIG;
+        } else if (p_act == "softmax") {
+            l_func = ActFunc_t::SOFTMAX;
+        }
+
+        m_models[p_modelId]->setLastActFunc(l_func);
+    }
+
     void setActFunc(const uint32_t p_modelId, const uint32_t p_layerId, const string& p_act) {
         auto l_func = ActFunc_t::NONE;
         if (p_act == "linear") {
