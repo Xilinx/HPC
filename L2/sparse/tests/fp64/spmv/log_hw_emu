@@ -1,0 +1,1021 @@
+utils.mk:97: [WARNING]: g++ version too old. Using g++ provided by the tool: /proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vivado/2021.1/tps/lnx64/gcc-6.2.0/bin/g++
+* [31mbc5df2f[m -[33m (HEAD, origin/master, origin/HEAD, master)[m beautify README [32m(6 hours ago) [1;34m<Lisa Liu>[m/proj/rdi-xsj/staff/lingl/nobkup/FaaSApps/HPC/L2/sparse/tests/fp64/spmv
+Compiling Kernel: loadNnzKernel
+mkdir -p _x_temp.hw_emu.xilinx_u280_xdma_201920_3
+v++ -c --hls.clock 333000000:loadNnzKernel -t hw_emu --platform /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm --save-temps --optimize 2 --hls.jobs 8 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/sparse/include/hw/ -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/include/hw/fp64 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/common/include/hw -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/blas/include/hw -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_accLatency=8 -DSPARSE_dataBits=64 -DSPARSE_indexBits=16  -k loadNnzKernel -I'/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64' --temp_dir _x_temp.hw_emu.xilinx_u280_xdma_201920_3 --report_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3 -o'_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadNnzKernel.xo' /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64/loadNnzKernel.cpp
+Option Map File Used: '/proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vitis/2021.1/data/vitis/vpp/optMap.xml'
+
+****** v++ v2021.1 (64-bit)
+  **** SW Build 1879 on 2021-05-26-15:29:55
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+INFO: [v++ 60-1306] Additional information associated with this v++ compile can be found at:
+	Reports: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/loadNnzKernel
+	Log files: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/logs/loadNnzKernel
+Running Dispatch Server on port: 37530
+INFO: [v++ 60-1548] Creating build summary session with primary output /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadNnzKernel.xo.compile_summary, at Fri May 28 10:18:39 2021
+INFO: [v++ 60-1316] Initiating connection to rulecheck server, at Fri May 28 10:18:39 2021
+Running Rule Check Server on port:33818
+INFO: [v++ 60-1315] Creating rulecheck session with output '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/loadNnzKernel/v++_compile_loadNnzKernel_guidance.html', at Fri May 28 10:18:41 2021
+INFO: [v++ 60-895]   Target platform: /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm
+INFO: [v++ 60-1578]   This platform contains Xilinx Shell Archive '/proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/hw/xilinx_u280_xdma_201920_3.xsa'
+INFO: [v++ 74-78] Compiler Version string: 2021.1
+INFO: [v++ 60-1302] Platform 'xilinx_u280_xdma_201920_3.xpfm' has been explicitly enabled for this release.
+INFO: [v++ 60-585] Compiling for hardware emulation target
+INFO: [v++ 60-423]   Target device: xilinx_u280_xdma_201920_3
+INFO: [v++ 60-242] Creating kernel: 'loadNnzKernel'
+INFO: [v++ 60-1616] Creating a HLS clock using hls.clock option: 333 MHz
+
+===>The following messages were generated while  performing high-level synthesis for kernel: loadNnzKernel Log file: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadNnzKernel/loadNnzKernel/vitis_hls.log :
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_56_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_56_1'
+INFO: [v++ 200-789] **** Estimated Fmax: 456.16 MHz
+INFO: [v++ 60-594] Finished kernel compilation
+INFO: [v++ 60-244] Generating system estimate report...
+INFO: [v++ 60-1092] Generated system estimate report: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/loadNnzKernel/system_estimate_loadNnzKernel.xtxt
+INFO: [v++ 60-586] Created _x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadNnzKernel.xo
+INFO: [v++ 60-2343] Use the vitis_analyzer tool to visualize and navigate the relevant reports. Run the following command. 
+    vitis_analyzer /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadNnzKernel.xo.compile_summary 
+INFO: [v++ 60-791] Total elapsed time: 0h 3m 51s
+INFO: [v++ 60-1653] Closing dispatch client.
+Compiling Kernel: loadParXkernel
+mkdir -p _x_temp.hw_emu.xilinx_u280_xdma_201920_3
+v++ -c --hls.clock 333000000:loadParXkernel -t hw_emu --platform /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm --save-temps --optimize 2 --hls.jobs 8 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/sparse/include/hw/ -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/include/hw/fp64 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/common/include/hw -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/blas/include/hw -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_accLatency=8 -DSPARSE_dataBits=64 -DSPARSE_indexBits=16  -k loadParXkernel -I'/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64' --temp_dir _x_temp.hw_emu.xilinx_u280_xdma_201920_3 --report_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3 -o'_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadParXkernel.xo' /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64/loadParXkernel.cpp
+Option Map File Used: '/proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vitis/2021.1/data/vitis/vpp/optMap.xml'
+
+****** v++ v2021.1 (64-bit)
+  **** SW Build 1879 on 2021-05-26-15:29:55
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+INFO: [v++ 60-1306] Additional information associated with this v++ compile can be found at:
+	Reports: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/loadParXkernel
+	Log files: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/logs/loadParXkernel
+Running Dispatch Server on port: 35933
+INFO: [v++ 60-1548] Creating build summary session with primary output /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadParXkernel.xo.compile_summary, at Fri May 28 10:22:33 2021
+INFO: [v++ 60-1316] Initiating connection to rulecheck server, at Fri May 28 10:22:33 2021
+Running Rule Check Server on port:34249
+INFO: [v++ 60-1315] Creating rulecheck session with output '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/loadParXkernel/v++_compile_loadParXkernel_guidance.html', at Fri May 28 10:22:35 2021
+INFO: [v++ 60-895]   Target platform: /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm
+INFO: [v++ 60-1578]   This platform contains Xilinx Shell Archive '/proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/hw/xilinx_u280_xdma_201920_3.xsa'
+INFO: [v++ 74-78] Compiler Version string: 2021.1
+INFO: [v++ 60-1302] Platform 'xilinx_u280_xdma_201920_3.xpfm' has been explicitly enabled for this release.
+INFO: [v++ 60-585] Compiling for hardware emulation target
+INFO: [v++ 60-423]   Target device: xilinx_u280_xdma_201920_3
+INFO: [v++ 60-242] Creating kernel: 'loadParXkernel'
+INFO: [v++ 60-1616] Creating a HLS clock using hls.clock option: 333 MHz
+
+===>The following messages were generated while  performing high-level synthesis for kernel: loadParXkernel Log file: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadParXkernel/loadParXkernel/vitis_hls.log :
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_175_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_175_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_209_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_209_2'
+INFO: [v++ 200-789] **** Estimated Fmax: 456.16 MHz
+INFO: [v++ 60-594] Finished kernel compilation
+INFO: [v++ 60-244] Generating system estimate report...
+INFO: [v++ 60-1092] Generated system estimate report: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/loadParXkernel/system_estimate_loadParXkernel.xtxt
+INFO: [v++ 60-586] Created _x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadParXkernel.xo
+INFO: [v++ 60-2343] Use the vitis_analyzer tool to visualize and navigate the relevant reports. Run the following command. 
+    vitis_analyzer /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadParXkernel.xo.compile_summary 
+INFO: [v++ 60-791] Total elapsed time: 0h 2m 22s
+INFO: [v++ 60-1653] Closing dispatch client.
+Compiling Kernel: fwdParParamKernel
+mkdir -p _x_temp.hw_emu.xilinx_u280_xdma_201920_3
+v++ -c --hls.clock 333000000:fwdParParamKernel -t hw_emu --platform /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm --save-temps --optimize 2 --hls.jobs 8 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/sparse/include/hw/ -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/include/hw/fp64 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/common/include/hw -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/blas/include/hw -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_accLatency=8 -DSPARSE_dataBits=64 -DSPARSE_indexBits=16  -k fwdParParamKernel -I'/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64' --temp_dir _x_temp.hw_emu.xilinx_u280_xdma_201920_3 --report_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3 -o'_x_temp.hw_emu.xilinx_u280_xdma_201920_3/fwdParParamKernel.xo' /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64/fwdParParamKernel.cpp
+Option Map File Used: '/proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vitis/2021.1/data/vitis/vpp/optMap.xml'
+
+****** v++ v2021.1 (64-bit)
+  **** SW Build 1879 on 2021-05-26-15:29:55
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+INFO: [v++ 60-1306] Additional information associated with this v++ compile can be found at:
+	Reports: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/fwdParParamKernel
+	Log files: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/logs/fwdParParamKernel
+Running Dispatch Server on port: 37832
+INFO: [v++ 60-1548] Creating build summary session with primary output /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/fwdParParamKernel.xo.compile_summary, at Fri May 28 10:24:58 2021
+INFO: [v++ 60-1316] Initiating connection to rulecheck server, at Fri May 28 10:24:58 2021
+Running Rule Check Server on port:43607
+INFO: [v++ 60-1315] Creating rulecheck session with output '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/fwdParParamKernel/v++_compile_fwdParParamKernel_guidance.html', at Fri May 28 10:25:00 2021
+INFO: [v++ 60-895]   Target platform: /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm
+INFO: [v++ 60-1578]   This platform contains Xilinx Shell Archive '/proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/hw/xilinx_u280_xdma_201920_3.xsa'
+INFO: [v++ 74-78] Compiler Version string: 2021.1
+INFO: [v++ 60-1302] Platform 'xilinx_u280_xdma_201920_3.xpfm' has been explicitly enabled for this release.
+INFO: [v++ 60-585] Compiling for hardware emulation target
+INFO: [v++ 60-423]   Target device: xilinx_u280_xdma_201920_3
+INFO: [v++ 60-242] Creating kernel: 'fwdParParamKernel'
+INFO: [v++ 60-1616] Creating a HLS clock using hls.clock option: 333 MHz
+
+===>The following messages were generated while  performing high-level synthesis for kernel: fwdParParamKernel Log file: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/fwdParParamKernel/fwdParParamKernel/vitis_hls.log :
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_29_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_29_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
+INFO: [v++ 200-789] **** Estimated Fmax: 912.33 MHz
+INFO: [v++ 60-594] Finished kernel compilation
+INFO: [v++ 60-244] Generating system estimate report...
+INFO: [v++ 60-1092] Generated system estimate report: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/fwdParParamKernel/system_estimate_fwdParParamKernel.xtxt
+INFO: [v++ 60-586] Created _x_temp.hw_emu.xilinx_u280_xdma_201920_3/fwdParParamKernel.xo
+INFO: [v++ 60-2343] Use the vitis_analyzer tool to visualize and navigate the relevant reports. Run the following command. 
+    vitis_analyzer /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/fwdParParamKernel.xo.compile_summary 
+INFO: [v++ 60-791] Total elapsed time: 0h 2m 22s
+INFO: [v++ 60-1653] Closing dispatch client.
+Compiling Kernel: moveXkernel
+mkdir -p _x_temp.hw_emu.xilinx_u280_xdma_201920_3
+v++ -c --hls.clock 333000000:moveXkernel -t hw_emu --platform /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm --save-temps --optimize 2 --hls.jobs 8 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/sparse/include/hw/ -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/include/hw/fp64 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/common/include/hw -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/blas/include/hw -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_accLatency=8 -DSPARSE_dataBits=64 -DSPARSE_indexBits=16  -k moveXkernel -I'/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64' --temp_dir _x_temp.hw_emu.xilinx_u280_xdma_201920_3 --report_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3 -o'_x_temp.hw_emu.xilinx_u280_xdma_201920_3/moveXkernel.xo' /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64/moveXkernel.cpp
+Option Map File Used: '/proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vitis/2021.1/data/vitis/vpp/optMap.xml'
+
+****** v++ v2021.1 (64-bit)
+  **** SW Build 1879 on 2021-05-26-15:29:55
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+INFO: [v++ 60-1306] Additional information associated with this v++ compile can be found at:
+	Reports: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/moveXkernel
+	Log files: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/logs/moveXkernel
+Running Dispatch Server on port: 43597
+INFO: [v++ 60-1548] Creating build summary session with primary output /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/moveXkernel.xo.compile_summary, at Fri May 28 10:27:23 2021
+INFO: [v++ 60-1316] Initiating connection to rulecheck server, at Fri May 28 10:27:23 2021
+Running Rule Check Server on port:34589
+INFO: [v++ 60-1315] Creating rulecheck session with output '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/moveXkernel/v++_compile_moveXkernel_guidance.html', at Fri May 28 10:27:25 2021
+INFO: [v++ 60-895]   Target platform: /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm
+INFO: [v++ 60-1578]   This platform contains Xilinx Shell Archive '/proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/hw/xilinx_u280_xdma_201920_3.xsa'
+INFO: [v++ 74-78] Compiler Version string: 2021.1
+INFO: [v++ 60-1302] Platform 'xilinx_u280_xdma_201920_3.xpfm' has been explicitly enabled for this release.
+INFO: [v++ 60-585] Compiling for hardware emulation target
+INFO: [v++ 60-423]   Target device: xilinx_u280_xdma_201920_3
+INFO: [v++ 60-242] Creating kernel: 'moveXkernel'
+INFO: [v++ 60-1616] Creating a HLS clock using hls.clock option: 333 MHz
+
+===>The following messages were generated while  performing high-level synthesis for kernel: moveXkernel Log file: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/moveXkernel/moveXkernel/vitis_hls.log :
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_254_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_254_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_277_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_277_1'
+INFO: [v++ 200-789] **** Estimated Fmax: 470.81 MHz
+INFO: [v++ 60-594] Finished kernel compilation
+INFO: [v++ 60-244] Generating system estimate report...
+INFO: [v++ 60-1092] Generated system estimate report: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/moveXkernel/system_estimate_moveXkernel.xtxt
+INFO: [v++ 60-586] Created _x_temp.hw_emu.xilinx_u280_xdma_201920_3/moveXkernel.xo
+INFO: [v++ 60-2343] Use the vitis_analyzer tool to visualize and navigate the relevant reports. Run the following command. 
+    vitis_analyzer /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/moveXkernel.xo.compile_summary 
+INFO: [v++ 60-791] Total elapsed time: 0h 2m 35s
+INFO: [v++ 60-1653] Closing dispatch client.
+Compiling Kernel: selMultXkernel
+mkdir -p _x_temp.hw_emu.xilinx_u280_xdma_201920_3
+v++ -c --hls.clock 333000000:selMultXkernel -t hw_emu --platform /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm --save-temps --optimize 2 --hls.jobs 8 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/sparse/include/hw/ -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/include/hw/fp64 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/common/include/hw -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/blas/include/hw -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_accLatency=8 -DSPARSE_dataBits=64 -DSPARSE_indexBits=16  -k selMultXkernel -I'/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64' --temp_dir _x_temp.hw_emu.xilinx_u280_xdma_201920_3 --report_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3 -o'_x_temp.hw_emu.xilinx_u280_xdma_201920_3/selMultXkernel.xo' /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64/selMultXkernel.cpp
+Option Map File Used: '/proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vitis/2021.1/data/vitis/vpp/optMap.xml'
+
+****** v++ v2021.1 (64-bit)
+  **** SW Build 1879 on 2021-05-26-15:29:55
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+INFO: [v++ 60-1306] Additional information associated with this v++ compile can be found at:
+	Reports: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/selMultXkernel
+	Log files: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/logs/selMultXkernel
+Running Dispatch Server on port: 41979
+INFO: [v++ 60-1548] Creating build summary session with primary output /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/selMultXkernel.xo.compile_summary, at Fri May 28 10:30:01 2021
+INFO: [v++ 60-1316] Initiating connection to rulecheck server, at Fri May 28 10:30:01 2021
+Running Rule Check Server on port:40845
+INFO: [v++ 60-1315] Creating rulecheck session with output '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/selMultXkernel/v++_compile_selMultXkernel_guidance.html', at Fri May 28 10:30:03 2021
+INFO: [v++ 60-895]   Target platform: /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm
+INFO: [v++ 60-1578]   This platform contains Xilinx Shell Archive '/proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/hw/xilinx_u280_xdma_201920_3.xsa'
+INFO: [v++ 74-78] Compiler Version string: 2021.1
+INFO: [v++ 60-1302] Platform 'xilinx_u280_xdma_201920_3.xpfm' has been explicitly enabled for this release.
+INFO: [v++ 60-585] Compiling for hardware emulation target
+INFO: [v++ 60-423]   Target device: xilinx_u280_xdma_201920_3
+INFO: [v++ 60-242] Creating kernel: 'selMultXkernel'
+INFO: [v++ 60-1616] Creating a HLS clock using hls.clock option: 333 MHz
+
+===>The following messages were generated while  performing high-level synthesis for kernel: selMultXkernel Log file: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/selMultXkernel/selMultXkernel/vitis_hls.log :
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_230_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_230_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_256_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 16, Final II = 16, Depth = 17, loop 'VITIS_LOOP_256_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_268_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_268_3'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_302_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_302_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_68_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 1, loop 'VITIS_LOOP_68_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_76_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 5, loop 'VITIS_LOOP_76_3'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_256_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 16, Final II = 16, Depth = 17, loop 'VITIS_LOOP_256_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_268_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_268_3'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_39_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_39_1'
+INFO: [v++ 204-61] Pipelining loop 'LOOP_MULX'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 44, loop 'LOOP_MULX'
+INFO: [v++ 204-61] Pipelining loop 'regAccLoop'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 73, loop 'regAccLoop'
+INFO: [v++ 200-789] **** Estimated Fmax: 456.16 MHz
+INFO: [v++ 60-594] Finished kernel compilation
+INFO: [v++ 60-244] Generating system estimate report...
+INFO: [v++ 60-1092] Generated system estimate report: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/selMultXkernel/system_estimate_selMultXkernel.xtxt
+INFO: [v++ 60-586] Created _x_temp.hw_emu.xilinx_u280_xdma_201920_3/selMultXkernel.xo
+INFO: [v++ 60-2343] Use the vitis_analyzer tool to visualize and navigate the relevant reports. Run the following command. 
+    vitis_analyzer /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/selMultXkernel.xo.compile_summary 
+INFO: [v++ 60-791] Total elapsed time: 0h 2m 40s
+INFO: [v++ 60-1653] Closing dispatch client.
+Compiling Kernel: loadRbParamKernel
+mkdir -p _x_temp.hw_emu.xilinx_u280_xdma_201920_3
+v++ -c --hls.clock 333000000:loadRbParamKernel -t hw_emu --platform /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm --save-temps --optimize 2 --hls.jobs 8 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/sparse/include/hw/ -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/include/hw/fp64 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/common/include/hw -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/blas/include/hw -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_accLatency=8 -DSPARSE_dataBits=64 -DSPARSE_indexBits=16  -k loadRbParamKernel -I'/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64' --temp_dir _x_temp.hw_emu.xilinx_u280_xdma_201920_3 --report_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3 -o'_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadRbParamKernel.xo' /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64/loadRbParamKernel.cpp
+Option Map File Used: '/proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vitis/2021.1/data/vitis/vpp/optMap.xml'
+
+****** v++ v2021.1 (64-bit)
+  **** SW Build 1879 on 2021-05-26-15:29:55
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+INFO: [v++ 60-1306] Additional information associated with this v++ compile can be found at:
+	Reports: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/loadRbParamKernel
+	Log files: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/logs/loadRbParamKernel
+Running Dispatch Server on port: 35764
+INFO: [v++ 60-1548] Creating build summary session with primary output /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadRbParamKernel.xo.compile_summary, at Fri May 28 10:32:44 2021
+INFO: [v++ 60-1316] Initiating connection to rulecheck server, at Fri May 28 10:32:44 2021
+Running Rule Check Server on port:39485
+INFO: [v++ 60-1315] Creating rulecheck session with output '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/loadRbParamKernel/v++_compile_loadRbParamKernel_guidance.html', at Fri May 28 10:32:46 2021
+INFO: [v++ 60-895]   Target platform: /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm
+INFO: [v++ 60-1578]   This platform contains Xilinx Shell Archive '/proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/hw/xilinx_u280_xdma_201920_3.xsa'
+INFO: [v++ 74-78] Compiler Version string: 2021.1
+INFO: [v++ 60-1302] Platform 'xilinx_u280_xdma_201920_3.xpfm' has been explicitly enabled for this release.
+INFO: [v++ 60-585] Compiling for hardware emulation target
+INFO: [v++ 60-423]   Target device: xilinx_u280_xdma_201920_3
+INFO: [v++ 60-242] Creating kernel: 'loadRbParamKernel'
+INFO: [v++ 60-1616] Creating a HLS clock using hls.clock option: 333 MHz
+
+===>The following messages were generated while  performing high-level synthesis for kernel: loadRbParamKernel Log file: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadRbParamKernel/loadRbParamKernel/vitis_hls.log :
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_309_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_309_1'
+INFO: [v++ 200-789] **** Estimated Fmax: 456.16 MHz
+INFO: [v++ 60-594] Finished kernel compilation
+INFO: [v++ 60-244] Generating system estimate report...
+INFO: [v++ 60-1092] Generated system estimate report: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/loadRbParamKernel/system_estimate_loadRbParamKernel.xtxt
+INFO: [v++ 60-586] Created _x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadRbParamKernel.xo
+INFO: [v++ 60-2343] Use the vitis_analyzer tool to visualize and navigate the relevant reports. Run the following command. 
+    vitis_analyzer /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadRbParamKernel.xo.compile_summary 
+INFO: [v++ 60-791] Total elapsed time: 0h 2m 14s
+INFO: [v++ 60-1653] Closing dispatch client.
+Compiling Kernel: rowAccKernel
+mkdir -p _x_temp.hw_emu.xilinx_u280_xdma_201920_3
+v++ -c --hls.clock 333000000:rowAccKernel -t hw_emu --platform /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm --save-temps --optimize 2 --hls.jobs 8 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/sparse/include/hw/ -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/include/hw/fp64 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/common/include/hw -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/blas/include/hw -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_accLatency=8 -DSPARSE_dataBits=64 -DSPARSE_indexBits=16  -k rowAccKernel -I'/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64' --temp_dir _x_temp.hw_emu.xilinx_u280_xdma_201920_3 --report_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3 -o'_x_temp.hw_emu.xilinx_u280_xdma_201920_3/rowAccKernel.xo' /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64/rowAccKernel.cpp
+Option Map File Used: '/proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vitis/2021.1/data/vitis/vpp/optMap.xml'
+
+****** v++ v2021.1 (64-bit)
+  **** SW Build 1879 on 2021-05-26-15:29:55
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+INFO: [v++ 60-1306] Additional information associated with this v++ compile can be found at:
+	Reports: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/rowAccKernel
+	Log files: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/logs/rowAccKernel
+Running Dispatch Server on port: 46745
+INFO: [v++ 60-1548] Creating build summary session with primary output /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/rowAccKernel.xo.compile_summary, at Fri May 28 10:35:02 2021
+INFO: [v++ 60-1316] Initiating connection to rulecheck server, at Fri May 28 10:35:02 2021
+Running Rule Check Server on port:33172
+INFO: [v++ 60-1315] Creating rulecheck session with output '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/rowAccKernel/v++_compile_rowAccKernel_guidance.html', at Fri May 28 10:35:03 2021
+INFO: [v++ 60-895]   Target platform: /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm
+INFO: [v++ 60-1578]   This platform contains Xilinx Shell Archive '/proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/hw/xilinx_u280_xdma_201920_3.xsa'
+INFO: [v++ 74-78] Compiler Version string: 2021.1
+INFO: [v++ 60-1302] Platform 'xilinx_u280_xdma_201920_3.xpfm' has been explicitly enabled for this release.
+INFO: [v++ 60-585] Compiling for hardware emulation target
+INFO: [v++ 60-423]   Target device: xilinx_u280_xdma_201920_3
+INFO: [v++ 60-242] Creating kernel: 'rowAccKernel'
+INFO: [v++ 60-1616] Creating a HLS clock using hls.clock option: 333 MHz
+
+===>The following messages were generated while  performing high-level synthesis for kernel: rowAccKernel Log file: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/rowAccKernel/rowAccKernel/vitis_hls.log :
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_32_2_VITIS_LOOP_35_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_32_2_VITIS_LOOP_35_3'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_430_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_430_2'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_546_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_546_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_580_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_580_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_584_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_584_3'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_588_4'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_588_4'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_430_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_430_2'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_546_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_546_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_580_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_580_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_584_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_584_3'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_588_4'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_588_4'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_430_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_430_2'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_546_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_546_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_580_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_580_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_584_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_584_3'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_588_4'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_588_4'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_430_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_430_2'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_546_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_546_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_580_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_580_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_584_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_584_3'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_588_4'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_588_4'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_430_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_430_2'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_546_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_546_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_580_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_580_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_584_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_584_3'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_588_4'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_588_4'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_430_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_430_2'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_546_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_546_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_580_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_580_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_584_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_584_3'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_588_4'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_588_4'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_430_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_430_2'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_546_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_546_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_580_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_580_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_584_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_584_3'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_588_4'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_588_4'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_430_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_430_2'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_546_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_546_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_580_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_580_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_584_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_584_3'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_588_4'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_588_4'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_430_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_430_2'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'init_mem'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'init_mem'
+INFO: [v++ 204-61] Pipelining loop 'accumulate'.
+INFO: [v++ 200-1470] Pipelining result : Target II = 8, Final II = 8, Depth = 13, loop 'accumulate'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_469_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 3, loop 'VITIS_LOOP_469_1'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_546_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_546_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_580_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_580_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_584_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_584_3'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_588_4'.
+INFO: [v++ 17-14] Message 'v++ 204-61' appears 100 times and further instances of the messages will be disabled.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_588_4'
+INFO: [v++ 17-14] Message 'v++ 200-1470' appears 100 times and further instances of the messages will be disabled.
+INFO: [v++ 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
+INFO: [v++ 200-789] **** Estimated Fmax: 431.78 MHz
+INFO: [v++ 60-594] Finished kernel compilation
+INFO: [v++ 60-244] Generating system estimate report...
+INFO: [v++ 60-1092] Generated system estimate report: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/rowAccKernel/system_estimate_rowAccKernel.xtxt
+INFO: [v++ 60-586] Created _x_temp.hw_emu.xilinx_u280_xdma_201920_3/rowAccKernel.xo
+INFO: [v++ 60-2343] Use the vitis_analyzer tool to visualize and navigate the relevant reports. Run the following command. 
+    vitis_analyzer /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/rowAccKernel.xo.compile_summary 
+INFO: [v++ 60-791] Total elapsed time: 0h 10m 52s
+INFO: [v++ 60-1653] Closing dispatch client.
+Compiling Kernel: assembleYkernel
+mkdir -p _x_temp.hw_emu.xilinx_u280_xdma_201920_3
+v++ -c --hls.clock 333000000:assembleYkernel -t hw_emu --platform /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm --save-temps --optimize 2 --hls.jobs 8 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/sparse/include/hw/ -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/include/hw/fp64 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/common/include/hw -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/blas/include/hw -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_accLatency=8 -DSPARSE_dataBits=64 -DSPARSE_indexBits=16  -k assembleYkernel -I'/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64' --temp_dir _x_temp.hw_emu.xilinx_u280_xdma_201920_3 --report_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3 -o'_x_temp.hw_emu.xilinx_u280_xdma_201920_3/assembleYkernel.xo' /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64/assembleYkernel.cpp
+Option Map File Used: '/proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vitis/2021.1/data/vitis/vpp/optMap.xml'
+
+****** v++ v2021.1 (64-bit)
+  **** SW Build 1879 on 2021-05-26-15:29:55
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+INFO: [v++ 60-1306] Additional information associated with this v++ compile can be found at:
+	Reports: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/assembleYkernel
+	Log files: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/logs/assembleYkernel
+Running Dispatch Server on port: 35140
+INFO: [v++ 60-1548] Creating build summary session with primary output /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/assembleYkernel.xo.compile_summary, at Fri May 28 10:45:57 2021
+INFO: [v++ 60-1316] Initiating connection to rulecheck server, at Fri May 28 10:45:57 2021
+Running Rule Check Server on port:37338
+INFO: [v++ 60-1315] Creating rulecheck session with output '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/assembleYkernel/v++_compile_assembleYkernel_guidance.html', at Fri May 28 10:45:58 2021
+INFO: [v++ 60-895]   Target platform: /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm
+INFO: [v++ 60-1578]   This platform contains Xilinx Shell Archive '/proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/hw/xilinx_u280_xdma_201920_3.xsa'
+INFO: [v++ 74-78] Compiler Version string: 2021.1
+INFO: [v++ 60-1302] Platform 'xilinx_u280_xdma_201920_3.xpfm' has been explicitly enabled for this release.
+INFO: [v++ 60-585] Compiling for hardware emulation target
+INFO: [v++ 60-423]   Target device: xilinx_u280_xdma_201920_3
+INFO: [v++ 60-242] Creating kernel: 'assembleYkernel'
+INFO: [v++ 60-1616] Creating a HLS clock using hls.clock option: 333 MHz
+
+===>The following messages were generated while  performing high-level synthesis for kernel: assembleYkernel Log file: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/assembleYkernel/assembleYkernel/vitis_hls.log :
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_393_2'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_393_2'
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_404_3'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 2, loop 'VITIS_LOOP_404_3'
+INFO: [v++ 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
+INFO: [v++ 200-789] **** Estimated Fmax: 575.04 MHz
+INFO: [v++ 60-594] Finished kernel compilation
+INFO: [v++ 60-244] Generating system estimate report...
+INFO: [v++ 60-1092] Generated system estimate report: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/assembleYkernel/system_estimate_assembleYkernel.xtxt
+INFO: [v++ 60-586] Created _x_temp.hw_emu.xilinx_u280_xdma_201920_3/assembleYkernel.xo
+INFO: [v++ 60-2343] Use the vitis_analyzer tool to visualize and navigate the relevant reports. Run the following command. 
+    vitis_analyzer /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/assembleYkernel.xo.compile_summary 
+INFO: [v++ 60-791] Total elapsed time: 0h 2m 12s
+INFO: [v++ 60-1653] Closing dispatch client.
+Compiling Kernel: storeYkernel
+mkdir -p _x_temp.hw_emu.xilinx_u280_xdma_201920_3
+v++ -c --hls.clock 333000000:storeYkernel -t hw_emu --platform /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm --save-temps --optimize 2 --hls.jobs 8 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/sparse/include/hw/ -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/include/hw/fp64 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/common/include/hw -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/blas/include/hw -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_accLatency=8 -DSPARSE_dataBits=64 -DSPARSE_indexBits=16  -k storeYkernel -I'/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64' --temp_dir _x_temp.hw_emu.xilinx_u280_xdma_201920_3 --report_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3 -o'_x_temp.hw_emu.xilinx_u280_xdma_201920_3/storeYkernel.xo' /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/src/hw/fp64/storeYkernel.cpp
+Option Map File Used: '/proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vitis/2021.1/data/vitis/vpp/optMap.xml'
+
+****** v++ v2021.1 (64-bit)
+  **** SW Build 1879 on 2021-05-26-15:29:55
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+INFO: [v++ 60-1306] Additional information associated with this v++ compile can be found at:
+	Reports: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/storeYkernel
+	Log files: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/logs/storeYkernel
+Running Dispatch Server on port: 44698
+INFO: [v++ 60-1548] Creating build summary session with primary output /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/storeYkernel.xo.compile_summary, at Fri May 28 10:48:12 2021
+INFO: [v++ 60-1316] Initiating connection to rulecheck server, at Fri May 28 10:48:12 2021
+Running Rule Check Server on port:38986
+INFO: [v++ 60-1315] Creating rulecheck session with output '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/storeYkernel/v++_compile_storeYkernel_guidance.html', at Fri May 28 10:48:14 2021
+INFO: [v++ 60-895]   Target platform: /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm
+INFO: [v++ 60-1578]   This platform contains Xilinx Shell Archive '/proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/hw/xilinx_u280_xdma_201920_3.xsa'
+INFO: [v++ 74-78] Compiler Version string: 2021.1
+INFO: [v++ 60-1302] Platform 'xilinx_u280_xdma_201920_3.xpfm' has been explicitly enabled for this release.
+INFO: [v++ 60-585] Compiling for hardware emulation target
+INFO: [v++ 60-423]   Target device: xilinx_u280_xdma_201920_3
+INFO: [v++ 60-242] Creating kernel: 'storeYkernel'
+INFO: [v++ 60-1616] Creating a HLS clock using hls.clock option: 333 MHz
+
+===>The following messages were generated while  performing high-level synthesis for kernel: storeYkernel Log file: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/storeYkernel/storeYkernel/vitis_hls.log :
+INFO: [v++ 204-61] Pipelining loop 'VITIS_LOOP_37_1'.
+INFO: [v++ 200-1470] Pipelining result : Target II = NA, Final II = 1, Depth = 71, loop 'VITIS_LOOP_37_1'
+INFO: [v++ 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
+INFO: [v++ 200-789] **** Estimated Fmax: 456.16 MHz
+INFO: [v++ 60-594] Finished kernel compilation
+INFO: [v++ 60-244] Generating system estimate report...
+INFO: [v++ 60-1092] Generated system estimate report: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_x.hw_emu.xilinx_u280_xdma_201920_3/storeYkernel/system_estimate_storeYkernel.xtxt
+INFO: [v++ 60-586] Created _x_temp.hw_emu.xilinx_u280_xdma_201920_3/storeYkernel.xo
+INFO: [v++ 60-2343] Use the vitis_analyzer tool to visualize and navigate the relevant reports. Run the following command. 
+    vitis_analyzer /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/storeYkernel.xo.compile_summary 
+INFO: [v++ 60-791] Total elapsed time: 0h 2m 9s
+INFO: [v++ 60-1653] Closing dispatch client.
+mkdir -p build_dir.hw_emu.xilinx_u280_xdma_201920_3
+v++ -l -t hw_emu --platform /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm --save-temps --optimize 2 --hls.jobs 8 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/sparse/include/hw/ -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/include/hw/fp64 -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/common/include/hw -I/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L1/blas/include/hw -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_accLatency=8 -DSPARSE_dataBits=64 -DSPARSE_indexBits=16  --temp_dir _x_temp.hw_emu.xilinx_u280_xdma_201920_3 --report_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_build.hw_emu.xilinx_u280_xdma_201920_3/spmv --vivado.synth.jobs 8 --vivado.impl.jobs 8 --kernel_frequency 333 --config /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/opts.cfg --config /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/conn_u280.cfg -o 'build_dir.hw_emu.xilinx_u280_xdma_201920_3/spmv.xclbin' _x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadNnzKernel.xo _x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadParXkernel.xo _x_temp.hw_emu.xilinx_u280_xdma_201920_3/fwdParParamKernel.xo _x_temp.hw_emu.xilinx_u280_xdma_201920_3/moveXkernel.xo _x_temp.hw_emu.xilinx_u280_xdma_201920_3/selMultXkernel.xo _x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadRbParamKernel.xo _x_temp.hw_emu.xilinx_u280_xdma_201920_3/rowAccKernel.xo _x_temp.hw_emu.xilinx_u280_xdma_201920_3/assembleYkernel.xo _x_temp.hw_emu.xilinx_u280_xdma_201920_3/storeYkernel.xo
+Option Map File Used: '/proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vitis/2021.1/data/vitis/vpp/optMap.xml'
+
+****** v++ v2021.1 (64-bit)
+  **** SW Build 1879 on 2021-05-26-15:29:55
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+INFO: [v++ 60-1306] Additional information associated with this v++ link can be found at:
+	Reports: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_build.hw_emu.xilinx_u280_xdma_201920_3/spmv/link
+	Log files: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/logs/link
+Running Dispatch Server on port: 36881
+INFO: [v++ 60-1548] Creating build summary session with primary output /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/build_dir.hw_emu.xilinx_u280_xdma_201920_3/spmv.xclbin.link_summary, at Fri May 28 10:50:25 2021
+INFO: [v++ 60-1316] Initiating connection to rulecheck server, at Fri May 28 10:50:25 2021
+Running Rule Check Server on port:40728
+INFO: [v++ 60-1315] Creating rulecheck session with output '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_build.hw_emu.xilinx_u280_xdma_201920_3/spmv/link/v++_link_spmv_guidance.html', at Fri May 28 10:50:27 2021
+INFO: [v++ 60-895]   Target platform: /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm
+INFO: [v++ 60-1578]   This platform contains Xilinx Shell Archive '/proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/hw/xilinx_u280_xdma_201920_3.xsa'
+INFO: [v++ 74-78] Compiler Version string: 2021.1
+INFO: [v++ 60-1302] Platform 'xilinx_u280_xdma_201920_3.xpfm' has been explicitly enabled for this release.
+INFO: [v++ 60-629] Linking for hardware emulation target
+INFO: [v++ 60-423]   Target device: xilinx_u280_xdma_201920_3
+INFO: [v++ 60-1332] Run 'run_link' status: Not started
+INFO: [v++ 60-1443] [10:50:46] Run run_link: Step system_link: Started
+INFO: [v++ 60-1453] Command Line: system_link --xo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadNnzKernel.xo --xo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadParXkernel.xo --xo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/fwdParParamKernel.xo --xo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/moveXkernel.xo --xo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/selMultXkernel.xo --xo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadRbParamKernel.xo --xo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/rowAccKernel.xo --xo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/assembleYkernel.xo --xo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/storeYkernel.xo -keep --config /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/syslinkConfig.ini --xpfm /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm --target emu --output_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int --temp_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link
+INFO: [v++ 60-1454] Run Directory: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/run_link
+INFO: [SYSTEM_LINK 60-1316] Initiating connection to rulecheck server, at Fri May 28 10:50:49 2021
+INFO: [SYSTEM_LINK 82-70] Extracting xo v3 file /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadNnzKernel.xo
+INFO: [SYSTEM_LINK 82-70] Extracting xo v3 file /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadParXkernel.xo
+INFO: [SYSTEM_LINK 82-70] Extracting xo v3 file /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/fwdParParamKernel.xo
+INFO: [SYSTEM_LINK 82-70] Extracting xo v3 file /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/moveXkernel.xo
+INFO: [SYSTEM_LINK 82-70] Extracting xo v3 file /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/selMultXkernel.xo
+INFO: [SYSTEM_LINK 82-70] Extracting xo v3 file /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/loadRbParamKernel.xo
+INFO: [SYSTEM_LINK 82-70] Extracting xo v3 file /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/rowAccKernel.xo
+INFO: [SYSTEM_LINK 82-70] Extracting xo v3 file /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/assembleYkernel.xo
+INFO: [SYSTEM_LINK 82-70] Extracting xo v3 file /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/storeYkernel.xo
+INFO: [SYSTEM_LINK 82-53] Creating IP database /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/_sysl/.cdb/xd_ip_db.xml
+INFO: [SYSTEM_LINK 82-38] [10:50:55] build_xd_ip_db started: /proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vitis/2021.1/bin/build_xd_ip_db -ip_search 0  -sds-pf /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/emu/emu.hpfm -clkid 0 -ip /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/iprepo/xilinx_com_hls_loadNnzKernel_1_0,loadNnzKernel -ip /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/iprepo/xilinx_com_hls_loadParXkernel_1_0,loadParXkernel -ip /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/iprepo/xilinx_com_hls_fwdParParamKernel_1_0,fwdParParamKernel -ip /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/iprepo/xilinx_com_hls_moveXkernel_1_0,moveXkernel -ip /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/iprepo/xilinx_com_hls_selMultXkernel_1_0,selMultXkernel -ip /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/iprepo/xilinx_com_hls_loadRbParamKernel_1_0,loadRbParamKernel -ip /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/iprepo/xilinx_com_hls_rowAccKernel_1_0,rowAccKernel -ip /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/iprepo/xilinx_com_hls_assembleYkernel_1_0,assembleYkernel -ip /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/iprepo/xilinx_com_hls_storeYkernel_1_0,storeYkernel -o /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/_sysl/.cdb/xd_ip_db.xml
+INFO: [SYSTEM_LINK 82-37] [10:51:06] build_xd_ip_db finished successfully
+Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 1985.129 ; gain = 0.000 ; free physical = 3697 ; free virtual = 240753
+INFO: [SYSTEM_LINK 82-51] Create system connectivity graph
+INFO: [SYSTEM_LINK 82-102] Applying explicit connections to the system connectivity graph: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/cfgraph/cfgen_cfgraph.xml
+INFO: [SYSTEM_LINK 82-38] [10:51:06] cfgen started: /proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vitis/2021.1/bin/cfgen  -nk loadNnzKernel:1:krnl_loadNnz -nk loadParXkernel:1:krnl_loadParX -nk loadRbParamKernel:1:krnl_loadRbParam -nk fwdParParamKernel:1:krnl_fwdParParam -nk moveXkernel:1:krnl_moveX -nk selMultXkernel:16:krnl_selMultX_0.krnl_selMultX_1.krnl_selMultX_2.krnl_selMultX_3.krnl_selMultX_4.krnl_selMultX_5.krnl_selMultX_6.krnl_selMultX_7.krnl_selMultX_8.krnl_selMultX_9.krnl_selMultX_10.krnl_selMultX_11.krnl_selMultX_12.krnl_selMultX_13.krnl_selMultX_14.krnl_selMultX_15 -nk rowAccKernel:1:krnl_rowAcc -nk assembleYkernel:1:krnl_assembleY -nk storeYkernel:1:krnl_storeY -sc krnl_loadParX.p_paramStr:krnl_fwdParParam.p_inParamStr -sc krnl_loadParX.p_outXstr:krnl_moveX.p_inStr:16 -sc krnl_fwdParParam.p_paramStr0:krnl_selMultX_0.p_paramStr:16 -sc krnl_moveX.p_outStr0:krnl_selMultX_0.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr0:krnl_selMultX_0.p_nnzStr:16 -sc krnl_selMultX_0.p_outDatStr:krnl_rowAcc.p_inDatStr0:16 -sc krnl_fwdParParam.p_paramStr1:krnl_selMultX_1.p_paramStr:16 -sc krnl_moveX.p_outStr1:krnl_selMultX_1.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr1:krnl_selMultX_1.p_nnzStr:16 -sc krnl_selMultX_1.p_outDatStr:krnl_rowAcc.p_inDatStr1:16 -sc krnl_fwdParParam.p_paramStr2:krnl_selMultX_2.p_paramStr:16 -sc krnl_moveX.p_outStr2:krnl_selMultX_2.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr2:krnl_selMultX_2.p_nnzStr:16 -sc krnl_selMultX_2.p_outDatStr:krnl_rowAcc.p_inDatStr2:16 -sc krnl_fwdParParam.p_paramStr3:krnl_selMultX_3.p_paramStr:16 -sc krnl_moveX.p_outStr3:krnl_selMultX_3.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr3:krnl_selMultX_3.p_nnzStr:16 -sc krnl_selMultX_3.p_outDatStr:krnl_rowAcc.p_inDatStr3:16 -sc krnl_fwdParParam.p_paramStr4:krnl_selMultX_4.p_paramStr:16 -sc krnl_moveX.p_outStr4:krnl_selMultX_4.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr4:krnl_selMultX_4.p_nnzStr:16 -sc krnl_selMultX_4.p_outDatStr:krnl_rowAcc.p_inDatStr4:16 -sc krnl_fwdParParam.p_paramStr5:krnl_selMultX_5.p_paramStr:16 -sc krnl_moveX.p_outStr5:krnl_selMultX_5.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr5:krnl_selMultX_5.p_nnzStr:16 -sc krnl_selMultX_5.p_outDatStr:krnl_rowAcc.p_inDatStr5:16 -sc krnl_fwdParParam.p_paramStr6:krnl_selMultX_6.p_paramStr:16 -sc krnl_moveX.p_outStr6:krnl_selMultX_6.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr6:krnl_selMultX_6.p_nnzStr:16 -sc krnl_selMultX_6.p_outDatStr:krnl_rowAcc.p_inDatStr6:16 -sc krnl_fwdParParam.p_paramStr7:krnl_selMultX_7.p_paramStr:16 -sc krnl_moveX.p_outStr7:krnl_selMultX_7.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr7:krnl_selMultX_7.p_nnzStr:16 -sc krnl_selMultX_7.p_outDatStr:krnl_rowAcc.p_inDatStr7:16 -sc krnl_fwdParParam.p_paramStr8:krnl_selMultX_8.p_paramStr:16 -sc krnl_moveX.p_outStr8:krnl_selMultX_8.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr8:krnl_selMultX_8.p_nnzStr:16 -sc krnl_selMultX_8.p_outDatStr:krnl_rowAcc.p_inDatStr8:16 -sc krnl_fwdParParam.p_paramStr9:krnl_selMultX_9.p_paramStr:16 -sc krnl_moveX.p_outStr9:krnl_selMultX_9.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr9:krnl_selMultX_9.p_nnzStr:16 -sc krnl_selMultX_9.p_outDatStr:krnl_rowAcc.p_inDatStr9:16 -sc krnl_fwdParParam.p_paramStr10:krnl_selMultX_10.p_paramStr:16 -sc krnl_moveX.p_outStr10:krnl_selMultX_10.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr10:krnl_selMultX_10.p_nnzStr:16 -sc krnl_selMultX_10.p_outDatStr:krnl_rowAcc.p_inDatStr10:16 -sc krnl_fwdParParam.p_paramStr11:krnl_selMultX_11.p_paramStr:16 -sc krnl_moveX.p_outStr11:krnl_selMultX_11.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr11:krnl_selMultX_11.p_nnzStr:16 -sc krnl_selMultX_11.p_outDatStr:krnl_rowAcc.p_inDatStr11:16 -sc krnl_fwdParParam.p_paramStr12:krnl_selMultX_12.p_paramStr:16 -sc krnl_moveX.p_outStr12:krnl_selMultX_12.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr12:krnl_selMultX_12.p_nnzStr:16 -sc krnl_selMultX_12.p_outDatStr:krnl_rowAcc.p_inDatStr12:16 -sc krnl_fwdParParam.p_paramStr13:krnl_selMultX_13.p_paramStr:16 -sc krnl_moveX.p_outStr13:krnl_selMultX_13.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr13:krnl_selMultX_13.p_nnzStr:16 -sc krnl_selMultX_13.p_outDatStr:krnl_rowAcc.p_inDatStr13:16 -sc krnl_fwdParParam.p_paramStr14:krnl_selMultX_14.p_paramStr:16 -sc krnl_moveX.p_outStr14:krnl_selMultX_14.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr14:krnl_selMultX_14.p_nnzStr:16 -sc krnl_selMultX_14.p_outDatStr:krnl_rowAcc.p_inDatStr14:16 -sc krnl_fwdParParam.p_paramStr15:krnl_selMultX_15.p_paramStr:16 -sc krnl_moveX.p_outStr15:krnl_selMultX_15.p_xStr:4096 -sc krnl_loadNnz.p_nnzStr15:krnl_selMultX_15.p_nnzStr:16 -sc krnl_selMultX_15.p_outDatStr:krnl_rowAcc.p_inDatStr15:16 -sc krnl_selMultX_0.p_idxStr:krnl_rowAcc.p_idxStr0:16 -sc krnl_selMultX_1.p_idxStr:krnl_rowAcc.p_idxStr1:16 -sc krnl_selMultX_2.p_idxStr:krnl_rowAcc.p_idxStr2:16 -sc krnl_selMultX_3.p_idxStr:krnl_rowAcc.p_idxStr3:16 -sc krnl_selMultX_4.p_idxStr:krnl_rowAcc.p_idxStr4:16 -sc krnl_selMultX_5.p_idxStr:krnl_rowAcc.p_idxStr5:16 -sc krnl_selMultX_6.p_idxStr:krnl_rowAcc.p_idxStr6:16 -sc krnl_selMultX_7.p_idxStr:krnl_rowAcc.p_idxStr7:16 -sc krnl_selMultX_8.p_idxStr:krnl_rowAcc.p_idxStr8:16 -sc krnl_selMultX_9.p_idxStr:krnl_rowAcc.p_idxStr9:16 -sc krnl_selMultX_10.p_idxStr:krnl_rowAcc.p_idxStr10:16 -sc krnl_selMultX_11.p_idxStr:krnl_rowAcc.p_idxStr11:16 -sc krnl_selMultX_12.p_idxStr:krnl_rowAcc.p_idxStr12:16 -sc krnl_selMultX_13.p_idxStr:krnl_rowAcc.p_idxStr13:16 -sc krnl_selMultX_14.p_idxStr:krnl_rowAcc.p_idxStr14:16 -sc krnl_selMultX_15.p_idxStr:krnl_rowAcc.p_idxStr15:16 -sc krnl_loadRbParam.p_chRbParamStr:krnl_rowAcc.p_paramStr -sc krnl_rowAcc.p_outDatStr:krnl_assembleY.p_datStr -sc krnl_loadRbParam.p_rbParamStr:krnl_assembleY.p_paramStr -sc krnl_assembleY.p_yStr:krnl_storeY.p_yStr -slr krnl_fwdParParam:SLR0 -slr krnl_moveX:SLR0 -slr krnl_rowAcc:SLR1 -sp krnl_loadNnz.m_axi_p_nnzPtr0:HBM[31] -sp krnl_loadNnz.m_axi_p_nnzPtr1:HBM[30] -sp krnl_loadNnz.m_axi_p_nnzPtr2:HBM[29] -sp krnl_loadNnz.m_axi_p_nnzPtr3:HBM[28] -sp krnl_loadNnz.m_axi_p_nnzPtr4:HBM[27] -sp krnl_loadNnz.m_axi_p_nnzPtr5:HBM[26] -sp krnl_loadNnz.m_axi_p_nnzPtr6:HBM[25] -sp krnl_loadNnz.m_axi_p_nnzPtr7:HBM[24] -sp krnl_loadNnz.m_axi_p_nnzPtr8:HBM[23] -sp krnl_loadNnz.m_axi_p_nnzPtr9:HBM[22] -sp krnl_loadNnz.m_axi_p_nnzPtr10:HBM[21] -sp krnl_loadNnz.m_axi_p_nnzPtr11:HBM[20] -sp krnl_loadNnz.m_axi_p_nnzPtr12:HBM[19] -sp krnl_loadNnz.m_axi_p_nnzPtr13:HBM[18] -sp krnl_loadNnz.m_axi_p_nnzPtr14:HBM[17] -sp krnl_loadNnz.m_axi_p_nnzPtr15:HBM[16] -sp krnl_loadParX.m_axi_p_parParamPtr:PLRAM[0] -sp krnl_loadParX.m_axi_p_xPtr:HBM[15] -sp krnl_loadRbParam.m_axi_p_rbParamPtr:PLRAM[2] -sp krnl_storeY.m_axi_p_yPtr:HBM[14] -dmclkid 0 -r /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/_sysl/.cdb/xd_ip_db.xml -o /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/cfgraph/cfgen_cfgraph.xml
+INFO: [CFGEN 83-0] Kernel Specs: 
+INFO: [CFGEN 83-0]   kernel: loadNnzKernel, num: 1  {krnl_loadNnz}
+INFO: [CFGEN 83-0]   kernel: loadParXkernel, num: 1  {krnl_loadParX}
+INFO: [CFGEN 83-0]   kernel: loadRbParamKernel, num: 1  {krnl_loadRbParam}
+INFO: [CFGEN 83-0]   kernel: fwdParParamKernel, num: 1  {krnl_fwdParParam}
+INFO: [CFGEN 83-0]   kernel: moveXkernel, num: 1  {krnl_moveX}
+INFO: [CFGEN 83-0]   kernel: selMultXkernel, num: 16  {krnl_selMultX_0 krnl_selMultX_1 krnl_selMultX_2 krnl_selMultX_3 krnl_selMultX_4 krnl_selMultX_5 krnl_selMultX_6 krnl_selMultX_7 krnl_selMultX_8 krnl_selMultX_9 krnl_selMultX_10 krnl_selMultX_11 krnl_selMultX_12 krnl_selMultX_13 krnl_selMultX_14 krnl_selMultX_15}
+INFO: [CFGEN 83-0]   kernel: rowAccKernel, num: 1  {krnl_rowAcc}
+INFO: [CFGEN 83-0]   kernel: assembleYkernel, num: 1  {krnl_assembleY}
+INFO: [CFGEN 83-0]   kernel: storeYkernel, num: 1  {krnl_storeY}
+INFO: [CFGEN 83-0] Port Specs: 
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr0, sptag: HBM[31]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr1, sptag: HBM[30]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr2, sptag: HBM[29]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr3, sptag: HBM[28]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr4, sptag: HBM[27]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr5, sptag: HBM[26]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr6, sptag: HBM[25]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr7, sptag: HBM[24]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr8, sptag: HBM[23]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr9, sptag: HBM[22]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr10, sptag: HBM[21]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr11, sptag: HBM[20]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr12, sptag: HBM[19]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr13, sptag: HBM[18]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr14, sptag: HBM[17]
+INFO: [CFGEN 83-0]   kernel: krnl_loadNnz, k_port: m_axi_p_nnzPtr15, sptag: HBM[16]
+INFO: [CFGEN 83-0]   kernel: krnl_loadParX, k_port: m_axi_p_parParamPtr, sptag: PLRAM[0]
+INFO: [CFGEN 83-0]   kernel: krnl_loadParX, k_port: m_axi_p_xPtr, sptag: HBM[15]
+INFO: [CFGEN 83-0]   kernel: krnl_loadRbParam, k_port: m_axi_p_rbParamPtr, sptag: PLRAM[2]
+INFO: [CFGEN 83-0]   kernel: krnl_storeY, k_port: m_axi_p_yPtr, sptag: HBM[14]
+INFO: [CFGEN 83-0] Stream Specs: 
+INFO: [CFGEN 83-0]   krnl_loadParX.p_paramStr => krnl_fwdParParam.p_inParamStr
+INFO: [CFGEN 83-0]   krnl_loadParX.p_outXstr => krnl_moveX.p_inStr
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr0 => krnl_selMultX_0.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr0 => krnl_selMultX_0.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr0 => krnl_selMultX_0.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_0.p_outDatStr => krnl_rowAcc.p_inDatStr0
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr1 => krnl_selMultX_1.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr1 => krnl_selMultX_1.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr1 => krnl_selMultX_1.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_1.p_outDatStr => krnl_rowAcc.p_inDatStr1
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr2 => krnl_selMultX_2.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr2 => krnl_selMultX_2.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr2 => krnl_selMultX_2.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_2.p_outDatStr => krnl_rowAcc.p_inDatStr2
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr3 => krnl_selMultX_3.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr3 => krnl_selMultX_3.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr3 => krnl_selMultX_3.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_3.p_outDatStr => krnl_rowAcc.p_inDatStr3
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr4 => krnl_selMultX_4.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr4 => krnl_selMultX_4.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr4 => krnl_selMultX_4.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_4.p_outDatStr => krnl_rowAcc.p_inDatStr4
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr5 => krnl_selMultX_5.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr5 => krnl_selMultX_5.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr5 => krnl_selMultX_5.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_5.p_outDatStr => krnl_rowAcc.p_inDatStr5
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr6 => krnl_selMultX_6.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr6 => krnl_selMultX_6.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr6 => krnl_selMultX_6.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_6.p_outDatStr => krnl_rowAcc.p_inDatStr6
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr7 => krnl_selMultX_7.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr7 => krnl_selMultX_7.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr7 => krnl_selMultX_7.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_7.p_outDatStr => krnl_rowAcc.p_inDatStr7
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr8 => krnl_selMultX_8.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr8 => krnl_selMultX_8.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr8 => krnl_selMultX_8.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_8.p_outDatStr => krnl_rowAcc.p_inDatStr8
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr9 => krnl_selMultX_9.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr9 => krnl_selMultX_9.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr9 => krnl_selMultX_9.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_9.p_outDatStr => krnl_rowAcc.p_inDatStr9
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr10 => krnl_selMultX_10.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr10 => krnl_selMultX_10.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr10 => krnl_selMultX_10.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_10.p_outDatStr => krnl_rowAcc.p_inDatStr10
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr11 => krnl_selMultX_11.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr11 => krnl_selMultX_11.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr11 => krnl_selMultX_11.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_11.p_outDatStr => krnl_rowAcc.p_inDatStr11
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr12 => krnl_selMultX_12.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr12 => krnl_selMultX_12.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr12 => krnl_selMultX_12.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_12.p_outDatStr => krnl_rowAcc.p_inDatStr12
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr13 => krnl_selMultX_13.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr13 => krnl_selMultX_13.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr13 => krnl_selMultX_13.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_13.p_outDatStr => krnl_rowAcc.p_inDatStr13
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr14 => krnl_selMultX_14.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr14 => krnl_selMultX_14.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr14 => krnl_selMultX_14.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_14.p_outDatStr => krnl_rowAcc.p_inDatStr14
+INFO: [CFGEN 83-0]   krnl_fwdParParam.p_paramStr15 => krnl_selMultX_15.p_paramStr
+INFO: [CFGEN 83-0]   krnl_moveX.p_outStr15 => krnl_selMultX_15.p_xStr
+INFO: [CFGEN 83-0]   krnl_loadNnz.p_nnzStr15 => krnl_selMultX_15.p_nnzStr
+INFO: [CFGEN 83-0]   krnl_selMultX_15.p_outDatStr => krnl_rowAcc.p_inDatStr15
+INFO: [CFGEN 83-0]   krnl_selMultX_0.p_idxStr => krnl_rowAcc.p_idxStr0
+INFO: [CFGEN 83-0]   krnl_selMultX_1.p_idxStr => krnl_rowAcc.p_idxStr1
+INFO: [CFGEN 83-0]   krnl_selMultX_2.p_idxStr => krnl_rowAcc.p_idxStr2
+INFO: [CFGEN 83-0]   krnl_selMultX_3.p_idxStr => krnl_rowAcc.p_idxStr3
+INFO: [CFGEN 83-0]   krnl_selMultX_4.p_idxStr => krnl_rowAcc.p_idxStr4
+INFO: [CFGEN 83-0]   krnl_selMultX_5.p_idxStr => krnl_rowAcc.p_idxStr5
+INFO: [CFGEN 83-0]   krnl_selMultX_6.p_idxStr => krnl_rowAcc.p_idxStr6
+INFO: [CFGEN 83-0]   krnl_selMultX_7.p_idxStr => krnl_rowAcc.p_idxStr7
+INFO: [CFGEN 83-0]   krnl_selMultX_8.p_idxStr => krnl_rowAcc.p_idxStr8
+INFO: [CFGEN 83-0]   krnl_selMultX_9.p_idxStr => krnl_rowAcc.p_idxStr9
+INFO: [CFGEN 83-0]   krnl_selMultX_10.p_idxStr => krnl_rowAcc.p_idxStr10
+INFO: [CFGEN 83-0]   krnl_selMultX_11.p_idxStr => krnl_rowAcc.p_idxStr11
+INFO: [CFGEN 83-0]   krnl_selMultX_12.p_idxStr => krnl_rowAcc.p_idxStr12
+INFO: [CFGEN 83-0]   krnl_selMultX_13.p_idxStr => krnl_rowAcc.p_idxStr13
+INFO: [CFGEN 83-0]   krnl_selMultX_14.p_idxStr => krnl_rowAcc.p_idxStr14
+INFO: [CFGEN 83-0]   krnl_selMultX_15.p_idxStr => krnl_rowAcc.p_idxStr15
+INFO: [CFGEN 83-0]   krnl_loadRbParam.p_chRbParamStr => krnl_rowAcc.p_paramStr
+INFO: [CFGEN 83-0]   krnl_rowAcc.p_outDatStr => krnl_assembleY.p_datStr
+INFO: [CFGEN 83-0]   krnl_loadRbParam.p_rbParamStr => krnl_assembleY.p_paramStr
+INFO: [CFGEN 83-0]   krnl_assembleY.p_yStr => krnl_storeY.p_yStr
+INFO: [CFGEN 83-0] SLR Specs: 
+INFO: [CFGEN 83-0]   instance: krnl_fwdParParam, SLR: SLR0
+INFO: [CFGEN 83-0]   instance: krnl_moveX, SLR: SLR0
+INFO: [CFGEN 83-0]   instance: krnl_rowAcc, SLR: SLR1
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr0_offset to HBM[31] for directive krnl_loadNnz.m_axi_p_nnzPtr0:HBM[31]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr1_offset to HBM[30] for directive krnl_loadNnz.m_axi_p_nnzPtr1:HBM[30]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr2_offset to HBM[29] for directive krnl_loadNnz.m_axi_p_nnzPtr2:HBM[29]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr3_offset to HBM[28] for directive krnl_loadNnz.m_axi_p_nnzPtr3:HBM[28]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr4_offset to HBM[27] for directive krnl_loadNnz.m_axi_p_nnzPtr4:HBM[27]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr5_offset to HBM[26] for directive krnl_loadNnz.m_axi_p_nnzPtr5:HBM[26]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr6_offset to HBM[25] for directive krnl_loadNnz.m_axi_p_nnzPtr6:HBM[25]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr7_offset to HBM[24] for directive krnl_loadNnz.m_axi_p_nnzPtr7:HBM[24]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr8_offset to HBM[23] for directive krnl_loadNnz.m_axi_p_nnzPtr8:HBM[23]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr9_offset to HBM[22] for directive krnl_loadNnz.m_axi_p_nnzPtr9:HBM[22]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr10_offset to HBM[21] for directive krnl_loadNnz.m_axi_p_nnzPtr10:HBM[21]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr11_offset to HBM[20] for directive krnl_loadNnz.m_axi_p_nnzPtr11:HBM[20]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr12_offset to HBM[19] for directive krnl_loadNnz.m_axi_p_nnzPtr12:HBM[19]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr13_offset to HBM[18] for directive krnl_loadNnz.m_axi_p_nnzPtr13:HBM[18]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr14_offset to HBM[17] for directive krnl_loadNnz.m_axi_p_nnzPtr14:HBM[17]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadNnz.p_nnzPtr15_offset to HBM[16] for directive krnl_loadNnz.m_axi_p_nnzPtr15:HBM[16]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadParX.p_parParamPtr_offset to PLRAM[0] for directive krnl_loadParX.m_axi_p_parParamPtr:PLRAM[0]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadParX.p_xPtr_offset to HBM[15] for directive krnl_loadParX.m_axi_p_xPtr:HBM[15]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_loadRbParam.p_rbParamPtr_offset to PLRAM[2] for directive krnl_loadRbParam.m_axi_p_rbParamPtr:PLRAM[2]
+INFO: [CFGEN 83-2228] Creating mapping for argument krnl_storeY.p_yPtr_offset to HBM[14] for directive krnl_storeY.m_axi_p_yPtr:HBM[14]
+INFO: [SYSTEM_LINK 82-37] [10:51:18] cfgen finished successfully
+Time (s): cpu = 00:00:13 ; elapsed = 00:00:13 . Memory (MB): peak = 1985.129 ; gain = 0.000 ; free physical = 3703 ; free virtual = 240759
+INFO: [SYSTEM_LINK 82-52] Create top-level block diagram
+INFO: [SYSTEM_LINK 82-38] [10:51:18] cf2bd started: /proj/xbuilds/SWIP/2021.1_0527_2201/installs/lin64/Vitis/2021.1/bin/cf2bd  --linux --trace_buffer 1024 --input_file /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/cfgraph/cfgen_cfgraph.xml --ip_db /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/_sysl/.cdb/xd_ip_db.xml --cf_name dr --working_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/_sysl/.xsd --temp_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link --output_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int --target_bd emu/emu.bd
+INFO: [CF2BD 82-31] Launching cf2xd: cf2xd -linux -trace-buffer 1024 -i /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/cfgraph/cfgen_cfgraph.xml -r /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/_sysl/.cdb/xd_ip_db.xml -o dr.xml
+INFO: [CF2BD 82-28] cf2xd finished successfully
+INFO: [CF2BD 82-31] Launching cf_xsd: cf_xsd -disable-address-gen -bd emu/emu.bd -dn dr -dp /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/sys_link/_sysl/.xsd
+INFO: [CF2BD 82-28] cf_xsd finished successfully
+INFO: [SYSTEM_LINK 82-37] [10:53:00] cf2bd finished successfully
+Time (s): cpu = 00:01:40 ; elapsed = 00:01:41 . Memory (MB): peak = 1985.129 ; gain = 0.000 ; free physical = 4438 ; free virtual = 241502
+INFO: [v++ 60-1441] [10:53:00] Run run_link: Step system_link: Completed
+Time (s): cpu = 00:02:08 ; elapsed = 00:02:14 . Memory (MB): peak = 2004.797 ; gain = 0.000 ; free physical = 4491 ; free virtual = 241555
+INFO: [v++ 60-1443] [10:53:00] Run run_link: Step cf2sw: Started
+INFO: [v++ 60-1453] Command Line: cf2sw -sdsl /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/sdsl.dat -rtd /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/cf2sw.rtd -nofilter /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/cf2sw_full.rtd -xclbin /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/xclbin_orig.xml -o /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/xclbin_orig.1.xml
+INFO: [v++ 60-1454] Run Directory: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/run_link
+INFO: [v++ 60-1441] [10:54:41] Run run_link: Step cf2sw: Completed
+Time (s): cpu = 00:01:41 ; elapsed = 00:01:41 . Memory (MB): peak = 2004.797 ; gain = 0.000 ; free physical = 4495 ; free virtual = 241561
+INFO: [v++ 60-1443] [10:54:41] Run run_link: Step rtd2_system_diagram: Started
+INFO: [v++ 60-1453] Command Line: rtd2SystemDiagram
+INFO: [v++ 60-1454] Run Directory: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/run_link
+INFO: [v++ 60-1441] [10:54:42] Run run_link: Step rtd2_system_diagram: Completed
+Time (s): cpu = 00:00:00.01 ; elapsed = 00:00:01 . Memory (MB): peak = 2004.797 ; gain = 0.000 ; free physical = 4482 ; free virtual = 241548
+INFO: [v++ 60-1443] [10:54:42] Run run_link: Step vpl: Started
+INFO: [v++ 60-1453] Command Line: vpl -t hw_emu -f /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm --kernel_frequency 333 --remote_ip_cache /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/.ipcache -s --output_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int --log_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/logs/link --report_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_build.hw_emu.xilinx_u280_xdma_201920_3/spmv/link --config /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/vplConfig.ini -k /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/kernel_info.dat --webtalk_flag Vitis --temp_dir /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link --emulation_mode debug_waveform --no-info --iprepo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/xo/ip_repo/xilinx_com_hls_assembleYkernel_1_0 --iprepo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/xo/ip_repo/xilinx_com_hls_loadNnzKernel_1_0 --iprepo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/xo/ip_repo/xilinx_com_hls_storeYkernel_1_0 --iprepo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/xo/ip_repo/xilinx_com_hls_rowAccKernel_1_0 --iprepo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/xo/ip_repo/xilinx_com_hls_loadParXkernel_1_0 --iprepo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/xo/ip_repo/xilinx_com_hls_selMultXkernel_1_0 --iprepo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/xo/ip_repo/xilinx_com_hls_fwdParParamKernel_1_0 --iprepo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/xo/ip_repo/xilinx_com_hls_moveXkernel_1_0 --iprepo /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/xo/ip_repo/xilinx_com_hls_loadRbParamKernel_1_0 --messageDb /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/run_link/vpl.pb /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/dr.bd.tcl
+INFO: [v++ 60-1454] Run Directory: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/run_link
+
+****** vpl v2021.1 (64-bit)
+  **** SW Build 1879 on 2021-05-26-15:29:55
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+INFO: [VPL 60-839] Read in kernel information from file '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/kernel_info.dat'.
+INFO: [VPL 74-78] Compiler Version string: 2021.1
+INFO: [VPL 60-423]   Target device: xilinx_u280_xdma_201920_3
+INFO: [VPL 60-1032] Extracting hardware platform to /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/vivado/vpl/.local/hw_platform
+[10:55:35] Run vpl: Step create_project: Started
+Creating Vivado project.
+[10:55:39] Run vpl: Step create_project: Completed
+[10:55:39] Run vpl: Step create_bd: Started
+[10:57:00] Run vpl: Step create_bd: RUNNING...
+[10:57:55] Run vpl: Step create_bd: Completed
+[10:57:55] Run vpl: Step update_bd: Started
+[10:57:59] Run vpl: Step update_bd: Completed
+[10:57:59] Run vpl: Step generate_target: Started
+[10:59:17] Run vpl: Step generate_target: RUNNING...
+[11:00:36] Run vpl: Step generate_target: RUNNING...
+[11:00:45] Run vpl: Step generate_target: Completed
+[11:00:45] Run vpl: Step config_hw_emu.gen_scripts: Started
+[11:02:01] Run vpl: Step config_hw_emu.gen_scripts: Completed
+[11:02:01] Run vpl: Step config_hw_emu.compile: Started
+[11:03:22] Run vpl: Step config_hw_emu.compile: RUNNING...
+[11:03:22] Run vpl: Step config_hw_emu.compile: Completed
+[11:03:22] Run vpl: Step config_hw_emu.elaborate: Started
+[11:04:45] Run vpl: Step config_hw_emu.elaborate: RUNNING...
+[11:06:09] Run vpl: Step config_hw_emu.elaborate: RUNNING...
+[11:07:29] Run vpl: Step config_hw_emu.elaborate: RUNNING...
+[11:08:17] Run vpl: Step config_hw_emu.elaborate: Completed
+[11:08:20] Run vpl: FINISHED. Run Status: config_hw_emu.elaborate Complete!
+INFO: [v++ 60-1441] [11:08:25] Run run_link: Step vpl: Completed
+Time (s): cpu = 00:00:27 ; elapsed = 00:13:43 . Memory (MB): peak = 2004.797 ; gain = 0.000 ; free physical = 12310 ; free virtual = 241682
+INFO: [v++ 60-1443] [11:08:25] Run run_link: Step rtdgen: Started
+INFO: [v++ 60-1453] Command Line: rtdgen
+INFO: [v++ 60-1454] Run Directory: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/run_link
+INFO: [v++ 60-991] clock name 'kernel2_clk/clk' (clock ID '1') is being mapped to clock name 'KERNEL_CLK' in the xclbin
+INFO: [v++ 60-991] clock name 'kernel_clk/clk' (clock ID '0') is being mapped to clock name 'DATA_CLK' in the xclbin
+INFO: [v++ 60-991] clock name 'clk_out1_pfm_top_clkwiz_hbm_aclk_0' (clock ID '') is being mapped to clock name 'clk_out1_pfm_top_clkwiz_hbm_aclk_0' in the xclbin
+INFO: [v++ 60-1230] The compiler selected the following frequencies for the runtime controllable kernel clock(s) and scalable system clock(s): System (SYSTEM) clock: clk_out1_pfm_top_clkwiz_hbm_aclk_0 = 450, Kernel (KERNEL) clock: kernel2_clk/clk = 500, Kernel (DATA) clock: kernel_clk/clk = 333
+INFO: [v++ 60-1453] Command Line: cf2sw -a /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/address_map.xml -sdsl /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/sdsl.dat -xclbin /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/xclbin_orig.xml -rtd /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/spmv.rtd -o /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/spmv.xml
+INFO: [v++ 60-1652] Cf2sw returned exit code: 0
+WARNING: [v++ 60-1455] Debuggable symbols are not generated successfully, clean up /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/consolidated.cf
+INFO: [v++ 60-1441] [11:10:16] Run run_link: Step rtdgen: Completed
+Time (s): cpu = 00:01:50 ; elapsed = 00:01:52 . Memory (MB): peak = 2004.797 ; gain = 0.000 ; free physical = 11266 ; free virtual = 241375
+INFO: [v++ 60-1443] [11:10:16] Run run_link: Step xclbinutil: Started
+INFO: [v++ 60-1453] Command Line: xclbinutil --add-section BITSTREAM:RAW:/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/behav.xse --force --target hw_emu --key-value SYS:dfx_enable:false --add-section :JSON:/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/spmv.rtd --append-section :JSON:/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/appendSection.rtd --add-section CLOCK_FREQ_TOPOLOGY:JSON:/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/spmv_xml.rtd --add-section BUILD_METADATA:JSON:/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/spmv_build.rtd --add-section EMBEDDED_METADATA:RAW:/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/spmv.xml --add-section SYSTEM_METADATA:RAW:/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/systemDiagramModelSlrBaseAddress.json --output /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/build_dir.hw_emu.xilinx_u280_xdma_201920_3/spmv.xclbin
+INFO: [v++ 60-1454] Run Directory: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/run_link
+XRT Build Version: 2.11.614 (2021.1)
+       Build Date: 2021-05-27 09:00:35
+          Hash ID: fef780015177dbe783752c191d21b1a0cb114726
+Creating a default 'in-memory' xclbin image.
+
+Section: 'BITSTREAM'(0) was successfully added.
+Size   : 139477691 bytes
+Format : RAW
+File   : '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/behav.xse'
+
+Section: 'MEM_TOPOLOGY'(6) was successfully added.
+Format : JSON
+File   : 'mem_topology'
+
+Section: 'IP_LAYOUT'(8) was successfully added.
+Format : JSON
+File   : 'ip_layout'
+
+Section: 'CONNECTIVITY'(7) was successfully added.
+Format : JSON
+File   : 'connectivity'
+
+Section: 'CLOCK_FREQ_TOPOLOGY'(11) was successfully added.
+Size   : 410 bytes
+Format : JSON
+File   : '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/spmv_xml.rtd'
+
+Section: 'BUILD_METADATA'(14) was successfully added.
+Size   : 48073 bytes
+Format : JSON
+File   : '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/spmv_build.rtd'
+
+Section: 'EMBEDDED_METADATA'(2) was successfully added.
+Size   : 303034 bytes
+Format : RAW
+File   : '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/spmv.xml'
+
+Section: 'SYSTEM_METADATA'(22) was successfully added.
+Size   : 141939 bytes
+Format : RAW
+File   : '/wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/int/systemDiagramModelSlrBaseAddress.json'
+
+Section: 'IP_LAYOUT'(8) was successfully appended to.
+Format : JSON
+File   : 'ip_layout'
+Successfully wrote (140116247 bytes) to the output file: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/build_dir.hw_emu.xilinx_u280_xdma_201920_3/spmv.xclbin
+Leaving xclbinutil.
+INFO: [v++ 60-1441] [11:10:17] Run run_link: Step xclbinutil: Completed
+Time (s): cpu = 00:00:00.15 ; elapsed = 00:00:00.77 . Memory (MB): peak = 2004.797 ; gain = 0.000 ; free physical = 11123 ; free virtual = 241367
+INFO: [v++ 60-1443] [11:10:17] Run run_link: Step xclbinutilinfo: Started
+INFO: [v++ 60-1453] Command Line: xclbinutil --quiet --force --info /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/build_dir.hw_emu.xilinx_u280_xdma_201920_3/spmv.xclbin.info --input /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/build_dir.hw_emu.xilinx_u280_xdma_201920_3/spmv.xclbin
+INFO: [v++ 60-1454] Run Directory: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/run_link
+INFO: [v++ 60-1441] [11:10:19] Run run_link: Step xclbinutilinfo: Completed
+Time (s): cpu = 00:00:02 ; elapsed = 00:00:02 . Memory (MB): peak = 2004.797 ; gain = 0.000 ; free physical = 11114 ; free virtual = 241360
+INFO: [v++ 60-1443] [11:10:19] Run run_link: Step generate_sc_driver: Started
+INFO: [v++ 60-1453] Command Line: 
+INFO: [v++ 60-1454] Run Directory: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/link/run_link
+INFO: [v++ 60-1441] [11:10:19] Run run_link: Step generate_sc_driver: Completed
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.01 . Memory (MB): peak = 2004.797 ; gain = 0.000 ; free physical = 11114 ; free virtual = 241360
+WARNING: [v++ 60-2338] Parameter compiler.enableSlrComputeUnitDrc was set to true, but only supported for hardware link flow.
+INFO: [v++ 60-244] Generating system estimate report...
+INFO: [v++ 60-1092] Generated system estimate report: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_build.hw_emu.xilinx_u280_xdma_201920_3/spmv/link/system_estimate_spmv.xtxt
+INFO: [v++ 60-586] Created build_dir.hw_emu.xilinx_u280_xdma_201920_3/spmv.xclbin
+INFO: [v++ 60-1307] Run completed. Additional information can be found in:
+	Guidance: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/reports/_build.hw_emu.xilinx_u280_xdma_201920_3/spmv/link/v++_link_spmv_guidance.html
+	Steps Log File: /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/_x_temp.hw_emu.xilinx_u280_xdma_201920_3/logs/link/link.steps.log
+
+INFO: [v++ 60-2343] Use the vitis_analyzer tool to visualize and navigate the relevant reports. Run the following command. 
+    vitis_analyzer /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/build_dir.hw_emu.xilinx_u280_xdma_201920_3/spmv.xclbin.link_summary 
+INFO: [v++ 60-791] Total elapsed time: 0h 20m 6s
+INFO: [v++ 60-1653] Closing dispatch client.
+emconfigutil --platform /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm --od build_dir.hw_emu.xilinx_u280_xdma_201920_3
+
+****** configutil v2021.1 (64-bit)
+  **** SW Build 1879 on 2021-05-26-15:29:55
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+INFO: [ConfigUtil 60-895]   Target platform: /proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm
+INFO: [ConfigUtil 60-1578]   This platform contains Xilinx Shell Archive '/proj/xbuilds/2021.1_qualified_latest/internal_platforms/xilinx_u280_xdma_201920_3/hw/xilinx_u280_xdma_201920_3.xsa'
+INFO: [ConfigUtil 60-1032]  
+emulation configuration file `emconfig.json` is created in build_dir.hw_emu.xilinx_u280_xdma_201920_3 directory 
+cp -rf build_dir.hw_emu.xilinx_u280_xdma_201920_3/emconfig.json .
+XCL_EMULATION_MODE=hw_emu build_dir.hw_emu.xilinx_u280_xdma_201920_3/host.exe build_dir.hw_emu.xilinx_u280_xdma_201920_3/spmv.xclbin /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/sig_dat /wrk/xsjhdnobkup3/lingl/FaaSApps/HPC/L2/sparse/tests/fp64/spmv/vec_dat  nasa2910
+INFO: Matrix nasa2910 original m n nnz; padded m n nnz
+                                2910  2910  174296  2910  2912  297696  
+INFO: padding overhead is 170.799%
+Found Platform
+Platform Name: Xilinx
+INFO: Importing build_dir.hw_emu.xilinx_u280_xdma_201920_3/spmv.xclbin
+Loading: 'build_dir.hw_emu.xilinx_u280_xdma_201920_3/spmv.xclbin'
+Loading: 'build_dir.hw_emu.xilinx_u280_xdma_201920_3/spmv.xclbin'
+INFO: [HW-EMU 01] Hardware emulation runs simulation underneath. Using a large data set will result in long simulation times. It is recommended that a small dataset is used for faster execution. The flow uses approximate models for Global memories and interconnect and hence the performance data generated is approximate.
+configuring dataflow mode with ert polling
+scheduler config ert(1), dataflow(1), slots(64), cudma(0), cuisr(0), cdma(0), cus(24)
+INFO: HW runtime is 760.115 second.
+INFO: Test pass!
+INFO: [HW-EMU 06-0] Waiting for the simulator process to exit
+INFO: [HW-EMU 06-1] All the simulator processes exited successfully

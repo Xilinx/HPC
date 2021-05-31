@@ -1,7 +1,7 @@
 {
     "gui": false,
     "name": "Xilinx FCN Kernel", 
-    "description": "Xilinx HPC FCN Test", 
+    "description": "Xilinx HPC GEMV based FCN Test", 
     "flow": "vitis", 
     "platform_type": "pcie", 
     "platform_whitelist": [
@@ -48,12 +48,13 @@
                 "LIB_DIR/L2/common/src/sw/xcl2.cpp"
             ], 
             "includepaths": [
-                "LIB_DIR/mlp/externals/", 
                 "LIB_DIR/mlp/include/", 
+                "LIB_DIR/mlp/externals/", 
                 "LIB_DIR/mlp/include/sw/", 
                 "LIB_DIR/L1/hpc/include/",
+                "LIB_DIR/L2/common/include/", 
                 "LIB_DIR/L2/common/include/sw", 
-                "LIB_DIR/utils/include/sw" 
+                "LIB_DIR/utils/include/sw"
             ], 
             "symbols": [
                 "HW_CLK=3.6e-9",

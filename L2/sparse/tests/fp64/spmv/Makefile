@@ -43,24 +43,24 @@ help::
 TARGET ?= sw_emu
 
 # ################### Setting up default value of DEVICE ##############################
-DEVICE ?= xilinx_u50_gen3x16_xdma_201920_3
+DEVICE ?= xilinx_u280_xdma_201920_3
 
 # ###################### Setting up default value of HOST_ARCH ####################### 
 HOST_ARCH ?= x86
 
 # #################### Checking if DEVICE in blacklist #############################
-ifeq ($(findstring vck, $(DEVICE)), vck)
+ifeq ($(findstring vck190, $(DEVICE)), vck190)
 $(error [ERROR]: This project is not supported for $(DEVICE).)
 endif
 
 # #################### Checking if DEVICE in whitelist ############################
-ifneq ($(findstring u50, $(DEVICE)), u50)
-$(warning [WARNING]: This project has not been tested for $(DEVICE). It may or may not work.)
+ifneq ($(findstring u280, $(DEVICE)), u280)
+$(error [ERROR]: This project is not supported for $(DEVICE).)
 endif
 
 # ######################## Setting up Project Variables #################################
 MK_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
-XF_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/mlp/*}')
+XF_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/L2/*}')
 CUR_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
 XFLIB_DIR = $(XF_PROJ_ROOT)
 
@@ -77,18 +77,14 @@ export XCL_BINDIR = $(XCLBIN_DIR)
 
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
-HOST_SRCS += $(XFLIB_DIR)/mlp/src/sw/c++/mlpTest.cpp
+HOST_SRCS += $(XFLIB_DIR)/L2/sparse/tests/fp64/spmv/main.cpp
 HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp
 
-CXXFLAGS += -DHW_CLK=3.6e-9 -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_numChannels=8 -DHPC_vecChannels=4 -DHPC_maxInstrs=1000 -DHPC_parEntries=8
-CXXFLAGS += -I$(XFLIB_DIR)/mlp/include/
-CXXFLAGS += -I$(XFLIB_DIR)/mlp/externals/
-CXXFLAGS += -I$(XFLIB_DIR)/mlp/include/sw/
-CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
-CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/
+CXXFLAGS += -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256
+CXXFLAGS += -I$(XFLIB_DIR)/L2/include
+CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
-LDFLAGS += -fopenmp 
 
 ifeq ($(TARGET),sw_emu)
 CXXFLAGS += -D SW_EMU_TEST
@@ -101,7 +97,7 @@ endif
 # ######################### Host compiler global settings ############################
 CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_HLS)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
-CXXFLAGS += -fmessage-length=0 
+CXXFLAGS += -fmessage-length=0 -g -O0
 CXXFLAGS += -I$(CUR_DIR)/src/ 
 
 ifeq ($(HOST_ARCH), x86)
@@ -112,44 +108,55 @@ endif
 
 EXE_NAME := host.exe
 EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
-HOST_ARGS := $(BUILD_DIR)/mlp.xclbin
+HOST_ARGS := $(BUILD_DIR)/spmv.xclbin $(CUR_DIR)/sig_dat $(CUR_DIR)/vec_dat  nasa2910
 
 # ##################### Kernel compiler global settings ##########################
 VPP_FLAGS += -t $(TARGET) --platform $(XPLATFORM) --save-temps --optimize 2
 VPP_FLAGS += --hls.jobs 8
 VPP_LDFLAGS += --vivado.synth.jobs 8 --vivado.impl.jobs 8
-VPP_FLAGS += -I$(XFLIB_DIR)/mlp/include/
-VPP_FLAGS += -I$(XFLIB_DIR)/mlp/include/hw/
-VPP_FLAGS += -I$(XFLIB_DIR)/L1/hpc/include/hw/mlp/
-VPP_FLAGS += -I$(XFLIB_DIR)/L1/blas/include/
-VPP_FLAGS += -I$(XFLIB_DIR)/L1/blas/include/hw/
-VPP_FLAGS += -I$(XFLIB_DIR)/L1/blas/include/hw/xf_blas
-VPP_FLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
-VPP_FLAGS += -I$(XFLIB_DIR)/L1/hpc/include/hw
+VPP_FLAGS += -I$(XFLIB_DIR)/L1/sparse/include/hw/
+VPP_FLAGS += -I$(XFLIB_DIR)/L2/sparse/include/hw/fp64
 VPP_FLAGS += -I$(XFLIB_DIR)/L2/common/include/hw
+VPP_FLAGS += -I$(XFLIB_DIR)/L1/blas/include/hw
 
-krnl_fcn_VPP_FLAGS += --hls.clock 333000000:krnl_fcn
-VPP_LDFLAGS_mlp += --kernel_frequency 333
+loadNnzKernel_VPP_FLAGS += --hls.clock 333000000:loadNnzKernel
+loadParXkernel_VPP_FLAGS += --hls.clock 333000000:loadParXkernel
+fwdParParamKernel_VPP_FLAGS += --hls.clock 333000000:fwdParParamKernel
+moveXkernel_VPP_FLAGS += --hls.clock 333000000:moveXkernel
+selMultXkernel_VPP_FLAGS += --hls.clock 333000000:selMultXkernel
+loadRbParamKernel_VPP_FLAGS += --hls.clock 333000000:loadRbParamKernel
+rowAccKernel_VPP_FLAGS += --hls.clock 333000000:rowAccKernel
+assembleYkernel_VPP_FLAGS += --hls.clock 333000000:assembleYkernel
+storeYkernel_VPP_FLAGS += --hls.clock 333000000:storeYkernel
+VPP_LDFLAGS_spmv += --kernel_frequency 333
 
-VPP_FLAGS += -DHPC_instrBytes=64 -DHPC_dataType=float -DHPC_maxInstrs=1000 -DHPC_numActFuncs=1 -DHPC_maxVecSize=4096 -DHPC_bufferSize=16384 -DHPC_numChannels=8 -DHPC_vecChannels=4 -DHPC_parEntries=8 
+VPP_FLAGS += -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_accLatency=8 -DSPARSE_dataBits=64 -DSPARSE_indexBits=16 
 
 # Kernel linker flags
-VPP_LDFLAGS_mlp_temp := --config $(CUR_DIR)/opts.cfg
+VPP_LDFLAGS_spmv_temp := --config $(CUR_DIR)/opts.cfg
 
-ifneq (,$(shell echo $(XPLATFORM) | awk '/u50/'))
-VPP_LDFLAGS_mlp_temp += --config $(CUR_DIR)/conn_u50.cfg
+ifneq (,$(shell echo $(XPLATFORM) | awk '/u280/'))
+VPP_LDFLAGS_spmv_temp += --config $(CUR_DIR)/conn_u280.cfg
 endif
-VPP_LDFLAGS_mlp += $(VPP_LDFLAGS_mlp_temp)
+VPP_LDFLAGS_spmv += $(VPP_LDFLAGS_spmv_temp)
 
 # Kernel args
 
 # ############################ Declaring Binary Containers ##########################
 
-BINARY_CONTAINERS += $(BUILD_DIR)/mlp.xclbin
-BINARY_CONTAINER_mlp_OBJS += $(TEMP_DIR)/krnl_fcn.xo
+BINARY_CONTAINERS += $(BUILD_DIR)/spmv.xclbin
+BINARY_CONTAINER_spmv_OBJS += $(TEMP_DIR)/loadNnzKernel.xo
+BINARY_CONTAINER_spmv_OBJS += $(TEMP_DIR)/loadParXkernel.xo
+BINARY_CONTAINER_spmv_OBJS += $(TEMP_DIR)/fwdParParamKernel.xo
+BINARY_CONTAINER_spmv_OBJS += $(TEMP_DIR)/moveXkernel.xo
+BINARY_CONTAINER_spmv_OBJS += $(TEMP_DIR)/selMultXkernel.xo
+BINARY_CONTAINER_spmv_OBJS += $(TEMP_DIR)/loadRbParamKernel.xo
+BINARY_CONTAINER_spmv_OBJS += $(TEMP_DIR)/rowAccKernel.xo
+BINARY_CONTAINER_spmv_OBJS += $(TEMP_DIR)/assembleYkernel.xo
+BINARY_CONTAINER_spmv_OBJS += $(TEMP_DIR)/storeYkernel.xo
 
 # ######################### Setting Targets of Makefile ################################
--include ./params.mk
+
 .PHONY: all clean cleanall docs emconfig
 ifeq ($(HOST_ARCH), x86)
 all:  check_version check_vpp check_platform check_xrt $(EXE_FILE) $(BINARY_CONTAINERS) emconfig
@@ -175,20 +182,52 @@ endif
 build: xclbin
 
 # ################ Setting Rules for Binary Containers (Building Kernels) ################
-$(TEMP_DIR)/krnl_fcn.xo: $(XFLIB_DIR)/mlp/src/hw/fcnKernel.cpp
-	$(ECHO) "Compiling Kernel: krnl_fcn"
+$(TEMP_DIR)/loadNnzKernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/loadNnzKernel.cpp
+	$(ECHO) "Compiling Kernel: loadNnzKernel"
 	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_fcn_VPP_FLAGS) $(VPP_FLAGS) -k krnl_fcn -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' $^
+	$(VPP) -c $(loadNnzKernel_VPP_FLAGS) $(VPP_FLAGS) -k loadNnzKernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' $^
+$(TEMP_DIR)/loadParXkernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/loadParXkernel.cpp
+	$(ECHO) "Compiling Kernel: loadParXkernel"
+	mkdir -p $(TEMP_DIR)
+	$(VPP) -c $(loadParXkernel_VPP_FLAGS) $(VPP_FLAGS) -k loadParXkernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' $^
+$(TEMP_DIR)/fwdParParamKernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/fwdParParamKernel.cpp
+	$(ECHO) "Compiling Kernel: fwdParParamKernel"
+	mkdir -p $(TEMP_DIR)
+	$(VPP) -c $(fwdParParamKernel_VPP_FLAGS) $(VPP_FLAGS) -k fwdParParamKernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' $^
+$(TEMP_DIR)/moveXkernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/moveXkernel.cpp
+	$(ECHO) "Compiling Kernel: moveXkernel"
+	mkdir -p $(TEMP_DIR)
+	$(VPP) -c $(moveXkernel_VPP_FLAGS) $(VPP_FLAGS) -k moveXkernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' $^
+$(TEMP_DIR)/selMultXkernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/selMultXkernel.cpp
+	$(ECHO) "Compiling Kernel: selMultXkernel"
+	mkdir -p $(TEMP_DIR)
+	$(VPP) -c $(selMultXkernel_VPP_FLAGS) $(VPP_FLAGS) -k selMultXkernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' $^
+$(TEMP_DIR)/loadRbParamKernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/loadRbParamKernel.cpp
+	$(ECHO) "Compiling Kernel: loadRbParamKernel"
+	mkdir -p $(TEMP_DIR)
+	$(VPP) -c $(loadRbParamKernel_VPP_FLAGS) $(VPP_FLAGS) -k loadRbParamKernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' $^
+$(TEMP_DIR)/rowAccKernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/rowAccKernel.cpp
+	$(ECHO) "Compiling Kernel: rowAccKernel"
+	mkdir -p $(TEMP_DIR)
+	$(VPP) -c $(rowAccKernel_VPP_FLAGS) $(VPP_FLAGS) -k rowAccKernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' $^
+$(TEMP_DIR)/assembleYkernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/assembleYkernel.cpp
+	$(ECHO) "Compiling Kernel: assembleYkernel"
+	mkdir -p $(TEMP_DIR)
+	$(VPP) -c $(assembleYkernel_VPP_FLAGS) $(VPP_FLAGS) -k assembleYkernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' $^
+$(TEMP_DIR)/storeYkernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/storeYkernel.cpp
+	$(ECHO) "Compiling Kernel: storeYkernel"
+	mkdir -p $(TEMP_DIR)
+	$(VPP) -c $(storeYkernel_VPP_FLAGS) $(VPP_FLAGS) -k storeYkernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' $^
 
-ifneq (,$(shell echo $(XPLATFORM) | awk '/u50/'))
+ifneq (,$(shell echo $(XPLATFORM) | awk '/u280/'))
 
-$(BUILD_DIR)/mlp.xclbin: $(BINARY_CONTAINER_mlp_OBJS)
+$(BUILD_DIR)/spmv.xclbin: $(BINARY_CONTAINER_spmv_OBJS)
 	mkdir -p $(BUILD_DIR)
-	$(VPP) -l $(VPP_FLAGS) --temp_dir $(TEMP_DIR) --report_dir $(BUILD_REPORT_DIR)/mlp $(VPP_LDFLAGS) $(VPP_LDFLAGS_mlp) -o '$@' $(+)
+	$(VPP) -l $(VPP_FLAGS) --temp_dir $(TEMP_DIR) --report_dir $(BUILD_REPORT_DIR)/spmv $(VPP_LDFLAGS) $(VPP_LDFLAGS_spmv) -o '$@' $(+)
 else 
-$(BUILD_DIR)/mlp.xclbin: $(BINARY_CONTAINER_mlp_OBJS)
+$(BUILD_DIR)/spmv.xclbin: $(BINARY_CONTAINER_spmv_OBJS)
 	mkdir -p $(BUILD_DIR)
-	$(VPP) -l $(VPP_FLAGS) --temp_dir $(TEMP_DIR) --report_dir $(BUILD_REPORT_DIR)/mlp $(VPP_LDFLAGS) $(VPP_LDFLAGS_mlp) -o '$@' $(+)
+	$(VPP) -l $(VPP_FLAGS) --temp_dir $(TEMP_DIR) --report_dir $(BUILD_REPORT_DIR)/spmv $(VPP_LDFLAGS) $(VPP_LDFLAGS_spmv) -o '$@' $(+)
 endif
 
 
@@ -210,11 +249,9 @@ $(EMCONFIG_DIR)/emconfig.json:
 # ###############Setting Essential Checks And Running Rules For Vitis Flow #############
 run: all
 ifeq ($(TARGET),$(filter $(TARGET),sw_emu hw_emu))
-	XCL_EMULATION_MODE=$(TARGET) make data_gen
 	$(CP) $(EMCONFIG_DIR)/emconfig.json .
 	XCL_EMULATION_MODE=$(TARGET) $(EXE_FILE) $(HOST_ARGS)
 else
-	make data_gen
 	$(EXE_FILE) $(HOST_ARGS)
 endif
 
