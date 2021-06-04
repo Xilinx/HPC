@@ -24,15 +24,7 @@
 
 using namespace std;
 
-size_t getBinBytes(const string filename) {
-    ifstream file(filename, ios::binary);
-    file.unsetf(ios::skipws);
-    streampos fileSize;
-    file.seekg(0, ios::end);
-    fileSize = file.tellg();
-    file.close();
-    return fileSize;
-}
+size_t getBinBytes(const string filename);
 
 template <typename T>
 vector<T> readBin(const string filename) {
@@ -126,5 +118,9 @@ bool writeBin(const string filename, const streampos writeSize, vector<T, A>& ve
     else
         return false;
 }
+
+void readBin(string name, void* mat, unsigned int totalSize);
+
+void saveBin(string name, void* mat, unsigned int totalSize);
 
 #endif
