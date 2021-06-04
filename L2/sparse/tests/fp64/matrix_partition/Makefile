@@ -17,7 +17,7 @@
 
 
 pyGenMat=genMat.py
-SRCS=../../../src/sw/c++/gen_signature.cpp ../../../../../utils/src/sw/binFiles.cpp ./main.cpp
+SRCS=../../../src/sw/c++/gen_signature.cpp ./main.cpp
 TARGET=gen_signature.exe
 
 sig_path=./sig_dat/
