@@ -21,14 +21,15 @@ using namespace std;
 int main(int argc, char** argv) {
     int arg = 0;
     string dataPath = argv[++arg];
-    CooMat l_mat = loadMat(dataPath);
-    MatPartition l_matPar = partitionMat(l_mat);
+    CooMatInfo l_matInfo = loadMatInfo(dataPath);
+    SpmPar l_spmPar;
+    CooMat l_mat = l_spmPar.allocMat(l_matInfo.m_m, l_matInfo.m_n, l_matInfo.m_nnz);
+    loadMat(dataPath, l_matInfo, l_mat);
+    MatPartition l_matPar = l_spmPar.partitionMat();
     storeMatPar(dataPath, l_matPar);
-    printf("INFO: matrix %s partiton done.\n", l_mat.m_name.c_str());
+    printf("INFO: matrix %s partiton done.\n", l_matInfo.m_name.c_str());
     printf("      Original m, n, nnzs = %d, %d, %d\n", l_matPar.m_m, l_matPar.m_n, l_matPar.m_nnz);
     printf("      After padding m, n, nnzs = %d, %d, %d\n", l_matPar.m_mPad, l_matPar.m_nPad, l_matPar.m_nnzPad);
     printf("      Padding overhead is %f\n", (double)(l_matPar.m_nnzPad - l_matPar.m_nnz) / l_matPar.m_nnz);
-    freeMat(l_mat);
-    freeMatPar(l_matPar);
     return EXIT_SUCCESS;
 }

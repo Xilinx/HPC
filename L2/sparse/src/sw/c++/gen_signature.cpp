@@ -25,33 +25,32 @@
 
 using namespace std;
 
-MatPartition partitionMat(CooMat &p_mat) {
-    Signature l_sig(SPARSE_parEntries, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits);
-    MatPartition l_res = l_sig.gen_sig(p_mat);
-    return l_res;
-}
 
-CooMat loadMat(string path) {
+CooMatInfo loadMatInfo(string path) {
     ifstream l_info(path + "infos.txt");
     vector<string> infos;
     for (string line; getline(l_info, line);) {
         infos.push_back(line);
     }
-    CooMat l_mat;
-    l_mat.m_name = infos[0];
-    l_mat.m_m = stoi(infos[1]);
-    l_mat.m_n = stoi(infos[2]);
-    l_mat.m_nnz = stoi(infos[3]);
-    uint32_t l_idxBytes = sizeof(uint32_t)*l_mat.m_nnz;
-    uint32_t l_datBytes = sizeof(double)*l_mat.m_nnz;
-    l_mat.m_rowIdxPtr = malloc(l_idxBytes);
-    l_mat.m_colIdxPtr = malloc(l_idxBytes);
-    l_mat.m_datPtr = malloc(l_datBytes);
-    readBin(path+"row.bin", l_mat.m_rowIdxPtr, l_idxBytes);
-    readBin(path+"col.bin", l_mat.m_colIdxPtr, l_idxBytes);
-    readBin(path+"data.bin", l_mat.m_datPtr, l_datBytes);
-    return l_mat;
+    CooMatInfo l_matInfo;
+    l_matInfo.m_name = infos[0];
+    l_matInfo.m_m = stoi(infos[1]);
+    l_matInfo.m_n = stoi(infos[2]);
+    l_matInfo.m_nnz = stoi(infos[3]);
+    return l_matInfo;
 } 
+
+void loadMat(string path, CooMatInfo& p_matInfo, CooMat& p_mat) {
+    uint32_t l_idxBytes = sizeof(uint32_t)*p_matInfo.m_nnz;
+    uint32_t l_datBytes = sizeof(double)*p_matInfo.m_nnz;
+    string l_rowIdxFileName = path+"row.bin";
+    string l_colIdxFileName = path+"col.bin";
+    string l_datFileName = path+"data.bin";
+    readBin(l_rowIdxFileName, p_mat.m_rowIdxPtr, l_idxBytes);
+    readBin(l_colIdxFileName, p_mat.m_colIdxPtr, l_idxBytes);
+    readBin(l_datFileName, p_mat.m_datPtr, l_datBytes);
+    
+}
 
 void storeMatPar(string path, MatPartition& p_matPar) {
     string l_rbParamFileName(path + "/rbParam.dat");
@@ -76,20 +75,4 @@ void storeMatPar(string path, MatPartition& p_matPar) {
     ofstream outFile(l_infoFileName, ios::binary);
     outFile.write((char*)&int32Arr[0], sizeof(int) * 6);
     outFile.close();
-}
-
-void freeMat(CooMat& p_mat) {
-    free(p_mat.m_rowIdxPtr);
-    free(p_mat.m_colIdxPtr);
-    free(p_mat.m_datPtr);
-}
-
-void freeMatPar(MatPartition& p_matPar) {
-    free(p_matPar.m_rbParamPtr);
-    free(p_matPar.m_parParamPtr);
-    free(p_matPar.m_nnzValSize);
-    for (unsigned int i=0; i<SPARSE_hbmChannels; ++i) {
-        free(p_matPar.m_nnzValPtr[i]);
-    }
-    free(p_matPar.m_nnzValPtr);
 }

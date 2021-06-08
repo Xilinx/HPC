@@ -22,6 +22,20 @@
 #include <cmath>
 #include <exception>
 
+template <typename T>
+struct aligned_allocator {
+    using value_type = T;
+    T* allocate(std::size_t num) {
+        void* ptr = nullptr;
+        if (posix_memalign(&ptr, 4096, num * sizeof(T))) throw std::bad_alloc();
+        return reinterpret_cast<T*>(ptr);
+    }
+    void deallocate(T* p, std::size_t num) { free(p); }
+};
+
+inline bool isLessEqual(uint32_t x, uint32_t y) {
+    return x <= y;
+}
 // provide same functionality as numpy.isclose
 template <typename T>
 bool isClose(float p_tolRel, float p_tolAbs, T p_vRef, T p_v, bool& p_exactMatch) {
@@ -35,13 +49,14 @@ bool compare(T x, T ref) {
     return x == ref;
 }
 
-template <>
-bool compare<double>(double x, double ref) {
+template<>
+inline bool compare<double>(double x, double ref) {
     bool l_exactMatch;
     return isClose<float>(1e-4, 3e-6, x, ref, l_exactMatch);
 }
-template <>
-bool compare<float>(float x, float ref) {
+
+template<>
+inline bool compare<float>(float x, float ref) {
     bool l_exactMatch;
     return isClose<float>(1e-3, 3e-5, x, ref, l_exactMatch);
 }
