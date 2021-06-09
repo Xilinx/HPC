@@ -23,7 +23,7 @@
 #include <exception>
 
 template <typename T>
-struct aligned_allocator {
+struct alignedAllocator {
     using value_type = T;
     T* allocate(std::size_t num) {
         void* ptr = nullptr;
