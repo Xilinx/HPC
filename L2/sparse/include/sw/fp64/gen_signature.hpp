@@ -26,11 +26,18 @@ CooMatInfo loadMatInfo(string path);
 void loadMat(string path, CooMatInfo& p_matInfo, CooMat& p_mat);
 void storeMatPar(string path, MatPartition& p_matPar);
 
+template<unsigned int t_ParEntries,
+         unsigned int t_AccLatency,
+         unsigned int t_HbmChannels,
+         unsigned int t_MaxRows,
+         unsigned int t_MaxCols,
+         unsigned int t_HbmMemBits>
 class SpmPar {
     public:
         SpmPar() {
-            m_sig.init(SPARSE_parEntries, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits);
+            m_sig.init(t_ParEntries, t_AccLatency, t_HbmChannels, t_MaxRows, t_MaxCols, t_HbmMemBits);
         }
+
         CooMat allocMat(uint32_t p_m, uint32_t p_n, uint32_t p_nnz) {
             CooMat l_mat;
             m_spm.init(p_m, p_n, p_nnz);
@@ -39,6 +46,7 @@ class SpmPar {
             l_mat.m_datPtr = (void*)(m_spm.m_data_list.data());
             return l_mat;
         }
+
         MatPartition partitionMat() {
             m_spm.updateMinIdx();
             MatPartition l_res = m_sig.gen_sig(m_spm);
@@ -48,5 +56,6 @@ class SpmPar {
         SparseMatrix m_spm;
         Signature m_sig;
 };
+
 
 #endif

@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
     int arg = 0;
     string dataPath = argv[++arg];
     CooMatInfo l_matInfo = loadMatInfo(dataPath);
-    SpmPar l_spmPar;
+    SpmPar<SPARSE_parEntries, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> l_spmPar;
     CooMat l_mat = l_spmPar.allocMat(l_matInfo.m_m, l_matInfo.m_n, l_matInfo.m_nnz);
     loadMat(dataPath, l_matInfo, l_mat);
     MatPartition l_matPar = l_spmPar.partitionMat();

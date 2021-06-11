@@ -74,8 +74,10 @@ export XCL_BINDIR = $(XCLBIN_DIR)
 
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
-HOST_SRCS += $(XFLIB_DIR)/pcg/src/sw/c++/test_cgSolver_spmv_jacobi.cpp
+HOST_SRCS += $(CUR_DIR)//main.cpp
+HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xFPGA.cpp
 HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp
+HOST_SRCS += $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp
 
 CXXFLAGS += -DHW_CLK=4e-9 -DCG_numTasks=1 -DCG_dataType=double -DCG_numChannels=16 -DCG_parEntries=4 -DCG_instrBytes=64 -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256
 CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
