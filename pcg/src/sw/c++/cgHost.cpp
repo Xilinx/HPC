@@ -26,16 +26,17 @@ void CGKernelControl::setMem(void* p_instr, size_t p_instrBytes) {
     // Setting Kernel Arguments
     OCL_CHECK(err, err = m_kernel.setArg(0, m_buffer_instr));
     // Copy input data to device global memory
-    OCL_CHECK(err,
-              err = m_fpga->getCommandQueue().enqueueMigrateMemObjects({m_buffer_instr}, 0)); /* 0 means from host*/
+    vector<cl::Memory> l_buffers;
+    l_buffers.push_back(m_buffer_instr);
+    sendBuffer(l_buffers);
 }
 
 void CGKernelControl::getMem() {
     cl_int err;
     // Copy Result from Device Global Memory to Host Local Memory
-    OCL_CHECK(err,
-              err = m_fpga->getCommandQueue().enqueueMigrateMemObjects({m_buffer_instr}, CL_MIGRATE_MEM_OBJECT_HOST));
-    m_fpga->finish();
+    vector<cl::Memory> l_buffers;
+    l_buffers.push_back(m_buffer_instr);
+    getBuffer(l_buffers);
 }
 
 CGKernelStoreApk::CGKernelStoreApk(FPGA* p_fpga) : Kernel(p_fpga) {}
@@ -50,8 +51,9 @@ void CGKernelStoreApk::setMem(void* p_pk, size_t p_pkSize, void* p_Apk, size_t p
     OCL_CHECK(err, err = m_kernel.setArg(2, m_buffer_Apk));
 
     // Copy input data to device global memory
-    OCL_CHECK(err, err = m_fpga->getCommandQueue().enqueueMigrateMemObjects({m_buffer_pk}, 0)); /* 0 means from host*/
-    m_fpga->finish();
+    vector<cl::Memory> l_buffers;
+    l_buffers.push_back(m_buffer_pk);
+    sendBuffer(l_buffers);
 }
 
 CGKernelUpdatePk::CGKernelUpdatePk(FPGA* p_fpga) : Kernel(p_fpga) {}
@@ -68,15 +70,17 @@ void CGKernelUpdatePk::setMem(void* p_pk, size_t p_pkSize, void* p_zk, size_t p_
     OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_zk));
 
     // Copy input data to device global memory
-    OCL_CHECK(err, err = m_fpga->getCommandQueue().enqueueMigrateMemObjects({m_buffer_zk, m_buffer_pk},
-                                                                            0)); /* 0 means from host*/
-    m_fpga->finish();
+    vector<cl::Memory> l_buffers;
+    l_buffers.push_back(m_buffer_zk);
+    l_buffers.push_back(m_buffer_pk);
+    sendBuffer(l_buffers);
 }
 void CGKernelUpdatePk::getMem() {
     cl_int err;
     // Copy Result from Device Global Memory to Host Local Memory
-    OCL_CHECK(err, err = m_fpga->getCommandQueue().enqueueMigrateMemObjects({m_buffer_pk}, CL_MIGRATE_MEM_OBJECT_HOST));
-    m_fpga->finish();
+    vector<cl::Memory> l_buffers;
+    l_buffers.push_back(m_buffer_pk);
+    getBuffer(l_buffers);
 }
 
 CGKernelUpdateRkJacobi::CGKernelUpdateRkJacobi(FPGA* p_fpga) : Kernel(p_fpga) {}
@@ -181,7 +185,7 @@ void KernelLoadNnz::setMem(vector<void*>& p_sigBuf, vector<size_t>& p_sigBufByte
     m_buffers.resize(l_numChannels);
     vector<cl::Memory> l_buffers;
     for (unsigned int i = 0; i < l_numChannels; ++i) {
-        m_buffers[i] = createDeviceBuffer(CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, p_sigBuf[i], p_sigBufBytes[i]);
+        m_buffers[i] = createDeviceBuffer(CL_MEM_READ_ONLY, p_sigBuf[i], p_sigBufBytes[i]);
         l_buffers.push_back(m_buffers[i]);
         OCL_CHECK(err, err = m_kernel.setArg(i, m_buffers[i]));
     }
@@ -193,10 +197,10 @@ KernelLoadCol::KernelLoadCol(FPGA* p_fpga) : Kernel(p_fpga) {}
 void KernelLoadCol::setMem(void* p_paramBuf, size_t p_paramBufSize, void* p_xBuf, size_t p_xBufSize) {
     cl_int err;
     vector<cl::Memory> l_buffers;
-    m_buffers[0] = createDeviceBuffer(CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, p_paramBuf, p_paramBufSize);
+    m_buffers[0] = createDeviceBuffer(CL_MEM_READ_ONLY, p_paramBuf, p_paramBufSize);
     OCL_CHECK(err, err = m_kernel.setArg(0, m_buffers[0]));
     l_buffers.push_back(m_buffers[0]);
-    m_buffers[1] = createDeviceBuffer(CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, p_xBuf, p_xBufSize);
+    m_buffers[1] = createDeviceBuffer(CL_MEM_READ_ONLY, p_xBuf, p_xBufSize);
     OCL_CHECK(err, err = m_kernel.setArg(1, m_buffers[1]));
     l_buffers.push_back(m_buffers[1]);
     // Copy input data to device global memory
@@ -206,7 +210,7 @@ void KernelLoadCol::setMem(void* p_paramBuf, size_t p_paramBufSize, void* p_xBuf
 KernelLoadRbParam::KernelLoadRbParam(FPGA* p_fpga) : Kernel(p_fpga) {}
 void KernelLoadRbParam::setMem(void* p_buf, size_t p_bufSize) {
     cl_int err;
-    m_buffer = createDeviceBuffer(CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, p_buf, p_bufSize);
+    m_buffer = createDeviceBuffer(CL_MEM_READ_ONLY, p_buf, p_bufSize);
     OCL_CHECK(err, err = m_kernel.setArg(0, m_buffer));
     // Copy input data to device global memory
     vector<cl::Memory> l_buffers;
@@ -218,9 +222,9 @@ xCgHost::xCgHost(){};
 void xCgHost::init(int p_devId, string& p_xclbinName) {
     m_card.init(p_devId, p_xclbinName);
     m_krnCtl.fpga(&m_card);
+    m_krnLoadArbParam.fpga(&m_card);
     m_krnLoadAval.fpga(&m_card);
     m_krnLoadPkApar.fpga(&m_card);
-    m_krnLoadArbParam.fpga(&m_card);
     m_krnStoreApk.fpga(&m_card);
     m_krnUpdatePk.fpga(&m_card);
     m_krnUpdateRkJacobi.fpga(&m_card);
@@ -265,13 +269,13 @@ void xCgHost::sendInstr(void* p_instr, size_t p_instrSize) {
 }
 void xCgHost::run() {
     m_krnCtl.enqueueTask();
+    m_krnLoadArbParam.enqueueTask();
     m_krnLoadAval.enqueueTask();
     m_krnLoadPkApar.enqueueTask();
-    m_krnLoadArbParam.enqueueTask();
     m_krnStoreApk.enqueueTask();
     m_krnUpdatePk.enqueueTask();
-    m_krnUpdateRkJacobi.enqueueTask();
     m_krnUpdateXk.enqueueTask();
+    m_krnUpdateRkJacobi.enqueueTask();
 }
 void xCgHost::getDat() {
     m_krnCtl.getMem();
@@ -280,11 +284,11 @@ void xCgHost::getDat() {
 }
 void xCgHost::finish() {
     m_krnCtl.finish();
+    m_krnLoadArbParam.finish();
     m_krnLoadAval.finish();
     m_krnLoadPkApar.finish();
-    m_krnLoadArbParam.finish();
     m_krnStoreApk.finish();
     m_krnUpdatePk.finish();
-    m_krnUpdateRkJacobi.finish();
     m_krnUpdateXk.finish();
+    m_krnUpdateRkJacobi.finish();
 }

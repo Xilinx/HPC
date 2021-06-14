@@ -38,8 +38,10 @@
         "host_exe": "host.exe", 
         "compiler": {
             "sources": [
-                "LIB_DIR/pcg/src/sw/c++/test_cgSolver_spmv_jacobi.cpp", 
-                "LIB_DIR/L2/common/src/sw/xcl2.cpp"
+                "PROJECT/main.cpp",
+                "LIB_DIR/L2/common/src/sw/xFPGA.cpp", 
+                "LIB_DIR/L2/common/src/sw/xcl2.cpp",
+                "LIB_DIR/pcg/src/sw/c++/cgHost.cpp"
             ], 
             "includepaths": [
                 "LIB_DIR/L1/hpc/include/",
@@ -62,7 +64,7 @@
                 "SPARSE_hbmChannels=16",
                 "SPARSE_hbmMemBits=256"
             ], 
-            "options": "-g -O0"
+            "options": "-O3"
         }
     }, 
     "v++": {

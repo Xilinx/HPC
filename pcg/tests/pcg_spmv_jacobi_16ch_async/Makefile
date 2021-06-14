@@ -74,8 +74,10 @@ export XCL_BINDIR = $(XCLBIN_DIR)
 
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
-HOST_SRCS += $(XFLIB_DIR)/pcg/src/sw/c++/test_cgSolver_spmv_jacobi.cpp
+HOST_SRCS += $(CUR_DIR)//main.cpp
+HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xFPGA.cpp
 HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp
+HOST_SRCS += $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp
 
 CXXFLAGS += -DHW_CLK=4e-9 -DCG_numTasks=1 -DCG_dataType=double -DCG_numChannels=16 -DCG_parEntries=4 -DCG_instrBytes=64 -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256
 CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
@@ -96,7 +98,7 @@ endif
 # ######################### Host compiler global settings ############################
 CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
-CXXFLAGS += -fmessage-length=0 -g -O0
+CXXFLAGS += -fmessage-length=0 -O3
 CXXFLAGS += -I$(CUR_DIR)/src/ 
 
 ifeq ($(HOST_ARCH), x86)
