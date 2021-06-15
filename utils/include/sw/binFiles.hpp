@@ -129,7 +129,7 @@ bool writeBin(const string filename, const streampos writeSize, vector<T, A>& ve
 }
 
 inline
-void readBin(string& name, void* mat, unsigned int totalSize) {
+void readBin(string name, void* mat, unsigned int totalSize) {
     ifstream inFile;
     inFile.open(name, ifstream::binary);
     if (inFile.is_open()) {

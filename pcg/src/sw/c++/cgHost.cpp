@@ -19,7 +19,7 @@
 using namespace std;
 
 CGKernelControl::CGKernelControl(FPGA* p_fpga) : Kernel(p_fpga) {}
-void CGKernelControl::setMem(void* p_instr, size_t p_instrBytes) {
+void CGKernelControl::setMem(void* p_instr, unsigned int p_instrBytes) {
     cl_int err;
     // Running the kernel
     m_buffer_instr = createDeviceBuffer(CL_MEM_READ_WRITE, p_instr, p_instrBytes);
@@ -40,7 +40,7 @@ void CGKernelControl::getMem() {
 }
 
 CGKernelStoreApk::CGKernelStoreApk(FPGA* p_fpga) : Kernel(p_fpga) {}
-void CGKernelStoreApk::setMem(void* p_pk, size_t p_pkSize, void* p_Apk, size_t p_ApkSize) {
+void CGKernelStoreApk::setMem(void* p_pk, unsigned int p_pkSize, void* p_Apk, unsigned int p_ApkSize) {
     cl_int err;
     // Running the kernel
     m_buffer_pk = createDeviceBuffer(CL_MEM_READ_WRITE, p_pk, p_pkSize);
@@ -57,7 +57,7 @@ void CGKernelStoreApk::setMem(void* p_pk, size_t p_pkSize, void* p_Apk, size_t p
 }
 
 CGKernelUpdatePk::CGKernelUpdatePk(FPGA* p_fpga) : Kernel(p_fpga) {}
-void CGKernelUpdatePk::setMem(void* p_pk, size_t p_pkSize, void* p_zk, size_t p_zkSize) {
+void CGKernelUpdatePk::setMem(void* p_pk, unsigned int p_pkSize, void* p_zk, unsigned int p_zkSize) {
     cl_int err;
     // Running the kernel
     m_buffer_pk = createDeviceBuffer(CL_MEM_READ_WRITE, p_pk, p_pkSize);
@@ -85,13 +85,13 @@ void CGKernelUpdatePk::getMem() {
 
 CGKernelUpdateRkJacobi::CGKernelUpdateRkJacobi(FPGA* p_fpga) : Kernel(p_fpga) {}
 void CGKernelUpdateRkJacobi::setMem(void* p_rk,
-                                    size_t p_rkSize,
+                                    unsigned int p_rkSize,
                                     void* p_zk,
-                                    size_t p_zkSize,
+                                    unsigned int p_zkSize,
                                     void* p_jacobi,
-                                    size_t p_jacobiSize,
+                                    unsigned int p_jacobiSize,
                                     void* p_Apk,
-                                    size_t p_ApkSize) {
+                                    unsigned int p_ApkSize) {
     cl_int err;
     vector<cl::Memory> l_buffers;
     // Running the kernel
@@ -125,7 +125,7 @@ void CGKernelUpdateRkJacobi::getMem() {
 }
 
 CGKernelUpdateRk::CGKernelUpdateRk(FPGA* p_fpga) : Kernel(p_fpga) {}
-void CGKernelUpdateRk::setMem(void* p_rk, size_t p_rkSize, void* p_Apk, size_t p_ApkSize) {
+void CGKernelUpdateRk::setMem(void* p_rk, unsigned int p_rkSize, void* p_Apk, unsigned int p_ApkSize) {
     cl_int err;
     vector<cl::Memory> l_buffers;
     // Running the kernel
@@ -152,7 +152,7 @@ void CGKernelUpdateRk::getMem() {
 }
 
 CGKernelUpdateXk::CGKernelUpdateXk(FPGA* p_fpga) : Kernel(p_fpga) {}
-void CGKernelUpdateXk::setMem(void* p_xk, size_t p_xkSize, void* p_pk, size_t p_pkSize) {
+void CGKernelUpdateXk::setMem(void* p_xk, unsigned int p_xkSize, void* p_pk, unsigned int p_pkSize) {
     cl_int err;
     vector<cl::Memory> l_buffers;
     // Running the kernel
@@ -179,7 +179,7 @@ void CGKernelUpdateXk::getMem() {
 }
 
 KernelLoadNnz::KernelLoadNnz(FPGA* p_fpga) : Kernel(p_fpga) {}
-void KernelLoadNnz::setMem(vector<void*>& p_sigBuf, vector<size_t>& p_sigBufBytes) {
+void KernelLoadNnz::setMem(vector<void*>& p_sigBuf, vector<unsigned int>& p_sigBufBytes) {
     cl_int err;
     unsigned int l_numChannels = p_sigBuf.size();
     m_buffers.resize(l_numChannels);
@@ -194,7 +194,7 @@ void KernelLoadNnz::setMem(vector<void*>& p_sigBuf, vector<size_t>& p_sigBufByte
 }
 
 KernelLoadCol::KernelLoadCol(FPGA* p_fpga) : Kernel(p_fpga) {}
-void KernelLoadCol::setMem(void* p_paramBuf, size_t p_paramBufSize, void* p_xBuf, size_t p_xBufSize) {
+void KernelLoadCol::setMem(void* p_paramBuf, unsigned int p_paramBufSize, void* p_xBuf, unsigned int p_xBufSize) {
     cl_int err;
     vector<cl::Memory> l_buffers;
     m_buffers[0] = createDeviceBuffer(CL_MEM_READ_ONLY, p_paramBuf, p_paramBufSize);
@@ -208,7 +208,7 @@ void KernelLoadCol::setMem(void* p_paramBuf, size_t p_paramBufSize, void* p_xBuf
 }
 
 KernelLoadRbParam::KernelLoadRbParam(FPGA* p_fpga) : Kernel(p_fpga) {}
-void KernelLoadRbParam::setMem(void* p_buf, size_t p_bufSize) {
+void KernelLoadRbParam::setMem(void* p_buf, unsigned int p_bufSize) {
     cl_int err;
     m_buffer = createDeviceBuffer(CL_MEM_READ_ONLY, p_buf, p_bufSize);
     OCL_CHECK(err, err = m_kernel.setArg(0, m_buffer));
@@ -239,23 +239,23 @@ void xCgHost::init(int p_devId, string& p_xclbinName) {
     m_krnUpdateXk.getCU("krnl_update_xk");
 }
 void xCgHost::sendDat(vector<void*>& p_nnzVal,
-                      vector<size_t>& p_nnzValSize,
+                      vector<unsigned int>& p_nnzValSize,
                       void* p_parParam,
-                      size_t p_parParamSize,
+                      unsigned int p_parParamSize,
                       void* p_pk,
-                      size_t p_pkSize,
+                      unsigned int p_pkSize,
                       void* p_rbParam,
-                      size_t p_rbParamSize,
+                      unsigned int p_rbParamSize,
                       void* p_Apk,
-                      size_t p_ApkSize,
+                      unsigned int p_ApkSize,
                       void* p_zk,
-                      size_t p_zkSize,
+                      unsigned int p_zkSize,
                       void* p_rk,
-                      size_t p_rkSize,
+                      unsigned int p_rkSize,
                       void* p_jacobi,
-                      size_t p_jacobiSize,
+                      unsigned int p_jacobiSize,
                       void* p_xk,
-                      size_t p_xkSize) {
+                      unsigned int p_xkSize) {
     m_krnLoadAval.setMem(p_nnzVal, p_nnzValSize);
     m_krnLoadPkApar.setMem(p_parParam, p_parParamSize, p_pk, p_pkSize);
     m_krnLoadArbParam.setMem(p_rbParam, p_rbParamSize);
@@ -264,7 +264,7 @@ void xCgHost::sendDat(vector<void*>& p_nnzVal,
     m_krnUpdateRkJacobi.setMem(p_rk, p_rkSize, p_zk, p_zkSize, p_jacobi, p_jacobiSize, p_Apk, p_ApkSize);
     m_krnUpdateXk.setMem(p_xk, p_xkSize, p_pk, p_pkSize);
 }
-void xCgHost::sendInstr(void* p_instr, size_t p_instrSize) {
+void xCgHost::sendInstr(void* p_instr, unsigned int p_instrSize) {
     m_krnCtl.setMem(p_instr, p_instrSize);
 }
 void xCgHost::run() {

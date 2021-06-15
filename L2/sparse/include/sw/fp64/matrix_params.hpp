@@ -125,7 +125,7 @@ class SparseMatrix {
         return l_data;
     }
 
-    bool sort_by_row() {
+    void sort_by_row() {
         vector<uint32_t> idx(m_nnz);
         iota(idx.begin(), idx.end(), 0);
 
@@ -148,7 +148,7 @@ class SparseMatrix {
         free(l_data_list);
     }
 
-    bool sort_by_col() {
+    void sort_by_col() {
         vector<uint32_t> idx(m_nnz);
         iota(idx.begin(), idx.end(), 0);
         stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_row_list[i1] < m_row_list[i2]; });

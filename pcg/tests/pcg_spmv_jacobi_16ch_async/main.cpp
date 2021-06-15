@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     host_buffer_t<uint8_t> h_instr(l_instrSize);
     vector<host_buffer_t<uint8_t> > h_nnzVal(CG_numChannels);
     vector<void*> h_nnzValPtr(CG_numChannels);
-    vector<size_t> h_nnzValSize(CG_numChannels);
+    vector<unsigned int> h_nnzValSize(CG_numChannels);
     host_buffer_t<uint8_t> h_parParam, h_rbParam;
     host_buffer_t<CG_dataType> h_diagA(l_vecSize);
     host_buffer_t<CG_dataType> h_x(l_vecSize);
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
         h_Apk[i] = 0;
     }
 
-    size_t l_bytes = getBinBytes(l_sigFilePath + "/parParam.dat");
+    unsigned int l_bytes = getBinBytes(l_sigFilePath + "/parParam.dat");
     readBin<uint8_t, aligned_allocator<uint8_t> >(l_sigFilePath + "/parParam.dat", l_bytes, h_parParam);
 
     l_bytes = getBinBytes(l_sigFilePath + "/rbParam.dat");

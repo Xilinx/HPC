@@ -23,7 +23,7 @@ using namespace std;
 class CGKernelControl : public Kernel {
    public:
     CGKernelControl(FPGA* p_fpga = nullptr);
-    void setMem(void* p_instr, size_t p_instrBytes);
+    void setMem(void* p_instr, unsigned int p_instrBytes);
     void getMem();
 
    private:
@@ -33,7 +33,7 @@ class CGKernelControl : public Kernel {
 class CGKernelStoreApk : public Kernel {
    public:
     CGKernelStoreApk(FPGA* p_fpga = nullptr);
-    void setMem(void* p_pk, size_t p_pkSize, void* p_Apk, size_t p_ApkSize);
+    void setMem(void* p_pk, unsigned int p_pkSize, void* p_Apk, unsigned int p_ApkSize);
 
    private:
     cl::Buffer m_buffer_pk, m_buffer_Apk;
@@ -42,7 +42,7 @@ class CGKernelStoreApk : public Kernel {
 class CGKernelUpdatePk : public Kernel {
    public:
     CGKernelUpdatePk(FPGA* p_fpga = nullptr);
-    void setMem(void* p_pk, size_t p_pkSize, void* p_zk, size_t p_zkSize);
+    void setMem(void* p_pk, unsigned int p_pkSize, void* p_zk, unsigned int p_zkSize);
     void getMem();
 
    private:
@@ -52,13 +52,13 @@ class CGKernelUpdateRkJacobi : public Kernel {
    public:
     CGKernelUpdateRkJacobi(FPGA* p_fpga = nullptr);
     void setMem(void* p_rk,
-                size_t p_rkSize,
+                unsigned int p_rkSize,
                 void* p_zk,
-                size_t p_zkSize,
+                unsigned int p_zkSize,
                 void* p_jacobi,
-                size_t p_jacobiSize,
+                unsigned int p_jacobiSize,
                 void* p_Apk,
-                size_t p_ApkSize);
+                unsigned int p_ApkSize);
     void getMem();
 
    private:
@@ -67,7 +67,7 @@ class CGKernelUpdateRkJacobi : public Kernel {
 class CGKernelUpdateRk : public Kernel {
    public:
     CGKernelUpdateRk(FPGA* p_fpga = nullptr);
-    void setMem(void* p_rk, size_t p_rkSize, void* p_Apk, size_t p_ApkSize);
+    void setMem(void* p_rk, unsigned int p_rkSize, void* p_Apk, unsigned int p_ApkSize);
     void getMem();
 
    private:
@@ -76,7 +76,7 @@ class CGKernelUpdateRk : public Kernel {
 class CGKernelUpdateXk : public Kernel {
    public:
     CGKernelUpdateXk(FPGA* p_fpga = nullptr);
-    void setMem(void* p_xk, size_t p_xkSize, void* p_pk, size_t p_pkSize);
+    void setMem(void* p_xk, unsigned int p_xkSize, void* p_pk, unsigned int p_pkSize);
     void getMem();
 
    private:
@@ -86,7 +86,7 @@ class CGKernelUpdateXk : public Kernel {
 class KernelLoadNnz : public Kernel {
    public:
     KernelLoadNnz(FPGA* p_fpga = nullptr);
-    void setMem(vector<void*>& p_sigBuf, vector<size_t>& p_sigBufBytes);
+    void setMem(vector<void*>& p_sigBuf, vector<unsigned int>& p_sigBufBytes);
 
    private:
     vector<cl::Buffer> m_buffers;
@@ -94,7 +94,7 @@ class KernelLoadNnz : public Kernel {
 class KernelLoadCol : public Kernel {
    public:
     KernelLoadCol(FPGA* p_fpga = nullptr);
-    void setMem(void* p_paramBuf, size_t p_paramBufSize, void* p_xBuf, size_t p_xBufSize);
+    void setMem(void* p_paramBuf, unsigned int p_paramBufSize, void* p_xBuf, unsigned int p_xBufSize);
 
    private:
     cl::Buffer m_buffers[2];
@@ -102,7 +102,7 @@ class KernelLoadCol : public Kernel {
 class KernelLoadRbParam : public Kernel {
    public:
     KernelLoadRbParam(FPGA* p_fpga = nullptr);
-    void setMem(void* p_buf, size_t p_bufSize);
+    void setMem(void* p_buf, unsigned int p_bufSize);
 
    private:
     cl::Buffer m_buffer;
@@ -113,24 +113,24 @@ class xCgHost {
     xCgHost();
     void init(int p_devId, string& p_xclbinName);
     void sendDat(vector<void*>& p_nnzVal,
-                 vector<size_t>& p_nnzValSize,
+                 vector<unsigned int>& p_nnzValSize,
                  void* p_parParam,
-                 size_t p_parParamSize,
+                 unsigned int p_parParamSize,
                  void* p_pk,
-                 size_t p_pkSize,
+                 unsigned int p_pkSize,
                  void* p_rbParam,
-                 size_t p_rbParamSize,
+                 unsigned int p_rbParamSize,
                  void* p_Apk,
-                 size_t p_ApkSize,
+                 unsigned int p_ApkSize,
                  void* p_zk,
-                 size_t p_zkSize,
+                 unsigned int p_zkSize,
                  void* p_rk,
-                 size_t p_rkSize,
+                 unsigned int p_rkSize,
                  void* p_jacobi,
-                 size_t p_jacobiSize,
+                 unsigned int p_jacobiSize,
                  void* p_xk,
-                 size_t p_xkSize);
-    void sendInstr(void* p_instr, size_t p_instrSize);
+                 unsigned int p_xkSize);
+    void sendInstr(void* p_instr, unsigned int p_instrSize);
     void run();
     void getDat();
     void finish();
