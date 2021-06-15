@@ -29,6 +29,9 @@
 
 using namespace std;
 
+template <typename T>
+using host_buffer_t = vector<T, aligned_allocator<T> >;
+
 int main(int argc, char** argv) {
     if (argc < 6 || argc > 8) {
         cout << "Usage: " << argv[0] << " <XCLBIN File> <Max Iteration> <Tolerence> <data_path> "
@@ -46,7 +49,27 @@ int main(int argc, char** argv) {
     string l_datPath = argv[l_idx++];
     string l_mtxName = argv[l_idx++];
     string l_datFilePath = l_datPath + "/" + l_mtxName;
+
+    int l_instrSize = CG_instrBytes * (1 + l_maxIter);
+
+    CooMatInfo l_matInfo = loadMatInfo(l_datFilePath + "/");
+    host_buffer_t<CG_dataType> h_x(l_matInfo.m_m);
+
+    assert(l_matInfo.m_m == l_matInfo.m_n);
+    PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> l_pcg;
+
+    CooMat l_mat = l_pcg.allocMat(l_matInfo.m_m, l_matInfo.m_n, l_matInfo.m_nnz);
+    loadMat(l_datFilePath + "/", l_matInfo, l_mat);
+    l_pcg.partitionMat();
+
+    l_pcg.allocVec(l_matInfo.m_m);
+    CgInputVec l_inVecs = l_pcg.getInputVec();
     
+    readBin(l_datFilePath + "/A_diag.mat", l_inVecs.h_diag, l_inVecs.vecBytes);
+    readBin(l_datFilePath + "/b.mat", l_inVecs.h_b, l_inVecs.vecBytes);
+
+    l_pcg.initVec();
+
     int l_deviceId = 0;
     bool l_debug = false;
     if (argc > l_idx) {
@@ -59,34 +82,19 @@ int main(int argc, char** argv) {
 
     if (argc > l_idx) l_deviceId = atoi(argv[l_idx++]);
 
-    CooMatInfo l_matInfo = loadMatInfo(l_datFilePath + "/");
-    assert(l_matInfo.m_m == l_matInfo.m_n);
-    PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> l_pcg;
-
-    CooMat l_mat = l_pcg.allocMat(l_matInfo.m_m, l_matInfo.m_n, l_matInfo.m_nnz);
-    loadMat(l_datFilePath + "/", l_matInfo, l_mat);
-    l_pcg.partitionMat();
-    l_pcg.allocVec(l_matInfo.m_m);
-    CgInputVec l_inVecs = l_pcg.getInputVec();
-    
-    readBin(l_datFilePath + "/A_diag.mat", l_inVecs.h_diag, l_inVecs.vecBytes);
-    readBin(l_datFilePath + "/b.mat", l_inVecs.h_b, l_inVecs.vecBytes);
-
-    l_pcg.initVec();
     l_pcg.initDev(l_deviceId, binaryFile);
     l_pcg.setDat();
     l_pcg.setInstr(l_maxIter, l_tol);
     auto l_start = chrono::high_resolution_clock::now();
     l_pcg.run();
     CgVector l_resVec = l_pcg.getRes();
-    void* l_xk = l_resVec.h_xk;
-    void* l_rk = l_resVec.h_rk;
     auto l_finish = chrono::high_resolution_clock::now();
     chrono::duration<double> l_elapsed = l_finish - l_start;
     double l_runTime = l_elapsed.count();
-    
-    CgInstr l_instr = l_pcg.getInstr();
 
+    CgInstr l_instr = l_pcg.getInstr();
+    void* l_xk = l_resVec.h_xk;
+    void* l_rk = l_resVec.h_rk;
     xf::hpc::MemInstr<CG_instrBytes> l_memInstr;
     xf::hpc::cg::CGSolverInstr<CG_dataType> l_cgInstr;
     int lastIter = 0;
@@ -102,7 +110,6 @@ int main(int argc, char** argv) {
         }
         finalClock = l_cgInstr.getClock();
     }
-    
     vector<uint32_t> l_info = l_pcg.getMatInfo();
     cout << "HW execution time is: " << finalClock * HW_CLK << "s." << endl;
     float l_padRatio = (float)(l_info[5]) / (float)(l_info[2]);
@@ -113,8 +120,8 @@ int main(int argc, char** argv) {
     }
 
     int err = 0;
-    vector<CG_dataType> h_x(l_matInfo.m_m);
-    readBin(l_datFilePath + "/x.mat", h_x.data(), h_x.size() * sizeof(CG_dataType));
+    readBin(l_datFilePath + "/x.mat", l_matInfo.m_m * sizeof(CG_dataType), h_x);
+    //compare(h_x.size(), h_x.data(), h_xk.data(), err, l_debug);
     compare<CG_dataType>(l_matInfo.m_m, h_x.data(), (CG_dataType*)(l_xk), err, l_debug);
     cout << "matrix name, original rows/cols, original NNZs, padded rows/cols, padded NNZs, padding ";
     cout << "ratio, num of iterations, total run time[sec], time[ms]/run, num_mismatches";

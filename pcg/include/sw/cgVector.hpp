@@ -79,9 +79,9 @@ class GenCgVector {
             m_rk[i] = m_b[i];
             m_jacobi[i] = 1.0 / m_diagA[i];
             m_zk[i] = m_jacobi[i] * m_rk[i];
-            m_pk[i] = m_zk[i];
             m_dot += m_b[i] * m_b[i];
             m_rz += m_rk[i] * m_zk[i];
+            m_pk[i] = m_zk[i];
         }
     }
     CgVector getVec() {
@@ -117,7 +117,7 @@ class GenCgVector {
 template <typename t_DataType, unsigned int t_ParEntries, unsigned int t_InstrBytes>
 class GenCgInstr {
    public:
-    GenCgInstr() = default;
+    GenCgInstr() {};
     void setInstr(unsigned int p_maxIter, unsigned int p_dimAligned, t_DataType p_dot, t_DataType p_tol, t_DataType p_rz) {
         unsigned int l_instrSize = t_InstrBytes * (1 + p_maxIter);
         m_instr.resize(l_instrSize);
@@ -133,7 +133,7 @@ class GenCgInstr {
 
     CgInstr getInstrPtr() {
         CgInstr l_res;
-        l_res.h_instrBytes = m_instr.size() * sizeof(t_DataType);
+        l_res.h_instrBytes = m_instr.size();
         l_res.h_instr = (void*)(m_instr.data());
         return l_res;
     }

@@ -57,6 +57,7 @@ class PCG {
         t_DataType l_dot = m_genCgVec.getDot();
         t_DataType l_rz = m_genCgVec.getRz();
         m_genInstr.setInstr(p_maxIter, m_genCgVec.getDimAligned(), l_dot, p_tol, l_rz);
+        m_genInstr.updateInstr();
         CgInstr l_cgInstr = m_genInstr.getInstrPtr();
         m_host.sendInstr(l_cgInstr.h_instr, l_cgInstr.h_instrBytes);
     }
@@ -80,6 +81,10 @@ class PCG {
         l_info[5] = m_matPar.m_nnzPad; 
         return l_info;
     }
+    MatPartition getMatPar() {return m_matPar;}
+    t_DataType getDot() {return m_genCgVec.getDot();}
+    t_DataType getRz() {return m_genCgVec.getRz();}
+    CgVector getVec() {return m_genCgVec.getVec();}
 
    private:
     SpmPar<t_ParEntries, t_AccLatency, t_HbmChannels, t_MaxRows, t_MaxCols, t_HbmMemBits> m_spmPar;
