@@ -10,11 +10,16 @@
  */
 /* -------------------------------------------------------------------------- */
 
+#include <algorithm>
+#include <vector>
+ #include <cassert>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include <sys/time.h>
+#include "pcg.hpp"
+#include "utils.hpp"
 
 #ifdef AUTODOUBLE
 typedef long long FortranMindex; 
@@ -103,7 +108,46 @@ extern "C" void fpga_JPCG(FortranInteger pn,
                  FortranReal* x,
                  FortranInteger* pniter,
                  FortranReal* prelres,
-                 FortranReal* pflops);
+                 FortranReal* pflops){
+    std::cout << "running fpga_JPCG..." << std::endl;
+    PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> l_pcg;
+    CooMat l_mat = l_pcg.allocMat(pn, pn, pnz);
+    memcpy(reinterpret_cast<uint8_t*>(l_mat.m_rowIdxPtr), reinterpret_cast<uint8_t*>(rowInd), pnz*sizeof(FortranInteger));
+    memcpy(reinterpret_cast<uint8_t*>(l_mat.m_colIdxPtr), reinterpret_cast<uint8_t*>(colInd), pnz*sizeof(FortranInteger));
+    memcpy(reinterpret_cast<uint8_t*>(l_mat.m_datPtr), reinterpret_cast<uint8_t*>(matA), pnz*sizeof(FortranReal));
+    l_pcg.allocVec(pn);
+    CgInputVec l_inVecs = l_pcg.getInputVec();
+    memcpy(reinterpret_cast<uint8_t*>(l_inVecs.h_b), reinterpret_cast<uint8_t*>(b), pn*sizeof(FortranReal));
+    memcpy(reinterpret_cast<uint8_t*>(l_inVecs.h_diag), reinterpret_cast<uint8_t*>(matJ), pn*sizeof(FortranReal));
+    
+    l_pcg.partitionMat();
+    l_pcg.initVec();
+    l_pcg.initDev(1, "/home/lingl/backup/cgSolver.xclbin");
+    l_pcg.setDat();
+    l_pcg.setInstr(pmaxit, *ptol);
+    l_pcg.run();
+    CgVector l_resVec = l_pcg.getRes();
+    CgInstr l_instr = l_pcg.getInstr();
+    void* l_xk = l_resVec.h_xk;
+    xf::hpc::MemInstr<CG_instrBytes> l_memInstr;
+    xf::hpc::cg::CGSolverInstr<CG_dataType> l_cgInstr;
+    int lastIter = 0;
+    uint64_t finalClock = 0;
+    CG_dataType l_res = 0;
+    for (int i = 0; i < pmaxit; i++) {
+        lastIter = i;
+        l_cgInstr.load((uint8_t*)(l_instr.h_instr) + (i + 1) * CG_instrBytes, l_memInstr);
+        if (l_cgInstr.getMaxIter() == 0) {
+            break;
+        }
+        finalClock = l_cgInstr.getClock();
+        l_res = l_cgInstr.getRes();
+    }
+    *prelres = l_res;
+    *pniter = lastIter + 1;
+    memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_xk), pn*sizeof(FortranReal));
+    *pflops = *pniter * 3 * pnz;
+}
 /* -------------------------------------------------------------------------- */
 /* Conjugate Gradients with diagonal preconditioner */
 extern "C" void userLE_JPCG(FortranInteger* pn,
@@ -140,7 +184,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     p = (FortranReal*) malloc(n * sizeof(FortranReal));
     q = (FortranReal*) malloc(n * sizeof(FortranReal));
 
-#if defined FORMAT_COO || defined FPGA
+#if defined FORMAT_COO || defined USE_FPGA
     FortranInteger nnz = nz * 2 - n;
     FortranReal* matA, *matJ;
     FortranInteger* rowInd;
@@ -152,7 +196,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     getCOO(n, nnz, colptr, rowind, values, matJ, matA, rowInd, colInd);
 #endif
 
-#ifdef FPGA
+#ifdef USE_FPGA
     fpga_JPCG(n, nnz, rowInd, colInd, matA, matJ, maxit, ptol, b, x, pniter, prelres, pflops);
 #else
     /* Initial solution is zero, residual is the RHS */

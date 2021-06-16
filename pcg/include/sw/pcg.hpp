@@ -39,7 +39,7 @@ class PCG {
     CgInputVec getInputVec() {return m_genCgVec.getInputVec();}
     void partitionMat() { m_matPar =  m_spmPar.partitionMat(); }
     void initVec() {m_genCgVec.init();}
-    void initDev(int p_devId, string& p_xclbinName) { 
+    void initDev(int p_devId, string p_xclbinName) { 
         m_host.init(p_devId, p_xclbinName);}
     void setDat() {
         CgVector l_cgVec = m_genCgVec.getVec();

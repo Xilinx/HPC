@@ -6,18 +6,33 @@
 #
 #
 MK_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+XF_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/pcg/*}')
 CUR_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
+XFLIB_DIR = $(XF_PROJ_ROOT)
 TEMP_DIR := $(CUR_DIR)/_x_temp
 BUILD_DIR := $(CUR_DIR)/build_output
 FC=mpiifort
 CC=mpigxx
 #
-FF=-O2 -safe_cray_ptr -assume byterecl,buffered_io,protect_parens -warn nousage -zero -ftz -fp-model precise -mP2OPT_hpo_dist_factor=21 -diag-disable 10212,10010 -traceback -fpp -qopenmp -qopenmp-lib compat -pad -DFORMAT_COO -DLINUX -DIFORT -DNET_SECURITY -DADDR64 -DINTEL -DXEON64 -DFCC80 -DTIMER=cycle_time -DSSE2 -DOVERRIDE -DOPENMP -DHYBRID -DMPP -DMPICH -DAUTODOUBLE -DNEWIO -DMKL18 -DHAVE_BLAS_LAPACK -DHAVE_I8R8_LIBRARY -DMF3_SYM -DNEW_UNITS -DEXTENDED -DBATTERY -DDUALCESE -DUSE_R123 -DLSTCODE  -DBIGID -DENABLE_HASH3 -DFFTW -DROTORDYN -DMUMPS -DLSGPART -DMF3_SYM  -DMCMS -DUSES_CXX -DTS_CPPSTD_98 -DPFEM -DMUMPSVER=stable -DUSES_CPP  -DPTHREADS -i8 -r8 -fimf-arch-consistency=true -qno-opt-dynamic-align -xSSE2 -align array16byte -fPIC
+FF=-O2 -safe_cray_ptr -assume byterecl,buffered_io,protect_parens -warn nousage -zero -ftz -fp-model precise -mP2OPT_hpo_dist_factor=21 -diag-disable 10212,10010 -traceback -fpp -qopenmp -qopenmp-lib compat -pad -DLINUX -DIFORT -DNET_SECURITY -DADDR64 -DINTEL -DXEON64 -DFCC80 -DTIMER=cycle_time -DSSE2 -DOVERRIDE -DOPENMP -DHYBRID -DMPP -DMPICH -DAUTODOUBLE -DNEWIO -DMKL18 -DHAVE_BLAS_LAPACK -DHAVE_I8R8_LIBRARY -DMF3_SYM -DNEW_UNITS -DEXTENDED -DBATTERY -DDUALCESE -DUSE_R123 -DLSTCODE  -DBIGID -DENABLE_HASH3 -DFFTW -DROTORDYN -DMUMPS -DLSGPART -DMF3_SYM  -DMCMS -DUSES_CXX -DTS_CPPSTD_98 -DPFEM -DMUMPSVER=stable -DUSES_CPP  -DPTHREADS -i8 -r8 -fimf-arch-consistency=true -qno-opt-dynamic-align -xSSE2 -align array16byte -fPIC
+
+CXXFLAGS += -DHW_CLK=4e-9 -DCG_numTasks=1 -DCG_dataType=double -DCG_numChannels=16 -DCG_parEntries=4 -DCG_instrBytes=64 -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_accLatency=8 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256
+CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/include
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/include/sw
+CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
+CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
+CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
+CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11  -Wno-unknown-pragmas -Wno-unused-label
+CXXFLAGS += -fmessage-length=0
+
+LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
+LDFLAGS += -L$(XILINX_VIVADO)/lnx64/tools/fpo_v7_0 -Wl,--as-needed -lgmp -lmpfr -lIp_floating_point_v7_0_bitacc_cmodel
 #
 LD=mpiifort -sox -fpp -qopenmp -static-intel
 #
 LF=  -lrt -lstdc++ -lpthread -lstdc++ -lpthread
-CF=  -O3 -DAUTODOUBLE -DUNSCORE -DFORMAT_COO -Wall
+CF=  -O3 -DFORMAT_COO -DUSE_FPGA -DAUTODOUBLE -DUNSCORE -DFORMAT_COO -Wall
 #
 LMATH= \
 libmkl_scalapack_ilp64.a libmkl_intel_ilp64.a \
@@ -55,6 +70,10 @@ OBJS += $(TEMP_DIR)/orderByMetis.o
 OBJS += $(TEMP_DIR)/mod_impl_matrices.o
 OBJS += $(TEMP_DIR)/userLE_JPCG.o
 OBJS += $(TEMP_DIR)/JPCG.o
+OBJS += $(TEMP_DIR)/gen_signature.o
+OBJS += $(TEMP_DIR)/xFPGA.o
+OBJS += $(TEMP_DIR)/xcl2.o
+OBJS += $(TEMP_DIR)/cgHost.o
 
 $(TEMP_DIR):
 	mkdir -p $(TEMP_DIR)
@@ -69,7 +88,7 @@ $(TEMP_DIR):
 $(BUILD_DIR)/mppdyna: $(TEMP_DIR) $(OBJS)
 	set PATH=$(TEMP_DIR):$(PATH)
 	cd $(TEMP_DIR) && \
-	$(LD) -o $(BUILD_DIR)/mppdyna $(OBJS) $(LIBS) $(LMATH) $(LF)
+	$(LD) -o $(BUILD_DIR)/mppdyna $(LDFLAGS) $(OBJS) $(LIBS) $(LMATH) $(LF)
 	cd ..
 
 run: $(BUILD_DIR)/mppdyna
@@ -82,8 +101,16 @@ clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf *.mod
 
+$(TEMP_DIR)/gen_signature.o:
+	$(CC) -c $(CF) $(CXXFLAGS) $(XFLIB_DIR)/L2/sparse/src/sw/c++/gen_signature.cpp  -o '$@'
+$(TEMP_DIR)/xFPGA.o:
+	$(CC) -c $(CF) $(CXXFLAGS) $(XFLIB_DIR)/L2/common/src/sw/xFPGA.cpp -o '$@'
+$(TEMP_DIR)/xcl2.o:
+	$(CC) -c $(CF) $(CXXFLAGS) $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp -o '$@'
+$(TEMP_DIR)/cgHost.o:
+	$(CC) -c $(CF) $(CXXFLAGS) $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp -o '$@'
 $(TEMP_DIR)/JPCG.o:
-	$(CC) -c $(CF) -I. -I$(TEMP_DIR) ../../usermat/JPCG.cpp -o '$@'
+	$(CC) -c $(CF) $(CXXFLAGS) ../../usermat/JPCG.cpp -o '$@'
 $(TEMP_DIR)/userLE_JPCG.o:
 	$(FC) -c $(FF) -I$(TEMP_DIR) $(TEMP_DIR)/userLE_JPCG.F90 -o '$@'
 $(TEMP_DIR)/init_dyn21.o: $(TEMP_DIR)/init_dyn21.f $(TEMP_DIR)/nhisparm.inc
