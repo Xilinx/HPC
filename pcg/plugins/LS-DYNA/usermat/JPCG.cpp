@@ -85,11 +85,11 @@ void coo_spmv(Integer n,
               Real beta,
               Real* y);
 
-template<typename Integer, typename Real>
-void getCOO(Integer n,
-            Integer nz,
-            Integer* colptr,
-            Integer* rowind,
+template<typename FInt, typename Integer, typename Real>
+void getCOO(FInt n,
+            FInt nz,
+            FInt* colptr,
+            FInt* rowind,
             Real* values,
             Real* matJ,
             Real* matA,
@@ -98,8 +98,8 @@ void getCOO(Integer n,
 
 extern "C" void fpga_JPCG(FortranInteger pn,
                  FortranInteger pnz,
-                 FortranInteger* rowInd,
-                 FortranInteger* colInd,
+                 uint32_t* rowInd,
+                 uint32_t* colInd,
                  FortranReal* matA,
                  FortranReal* matJ,
                  FortranInteger pmaxit,
@@ -112,8 +112,8 @@ extern "C" void fpga_JPCG(FortranInteger pn,
     std::cout << "running fpga_JPCG..." << std::endl;
     PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> l_pcg;
     CooMat l_mat = l_pcg.allocMat(pn, pn, pnz);
-    memcpy(reinterpret_cast<uint8_t*>(l_mat.m_rowIdxPtr), reinterpret_cast<uint8_t*>(rowInd), pnz*sizeof(FortranInteger));
-    memcpy(reinterpret_cast<uint8_t*>(l_mat.m_colIdxPtr), reinterpret_cast<uint8_t*>(colInd), pnz*sizeof(FortranInteger));
+    memcpy(reinterpret_cast<char*>(l_mat.m_rowIdxPtr), reinterpret_cast<char*>(rowInd), pnz*sizeof(uint32_t));
+    memcpy(reinterpret_cast<uint8_t*>(l_mat.m_colIdxPtr), reinterpret_cast<uint8_t*>(colInd), pnz*sizeof(uint32_t));
     memcpy(reinterpret_cast<uint8_t*>(l_mat.m_datPtr), reinterpret_cast<uint8_t*>(matA), pnz*sizeof(FortranReal));
     l_pcg.allocVec(pn);
     CgInputVec l_inVecs = l_pcg.getInputVec();
@@ -187,12 +187,12 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
 #if defined FORMAT_COO || defined USE_FPGA
     FortranInteger nnz = nz * 2 - n;
     FortranReal* matA, *matJ;
-    FortranInteger* rowInd;
-    FortranInteger* colInd;
+    uint32_t* rowInd;
+    uint32_t* colInd;
     matJ = (FortranReal*) malloc(n * sizeof(FortranReal));
     matA = (FortranReal*) malloc(nnz * sizeof(FortranReal));
-    rowInd = (FortranInteger*) malloc(nnz * sizeof(FortranInteger));
-    colInd = (FortranInteger*) malloc(nnz * sizeof(FortranInteger));
+    rowInd = (uint32_t*) malloc(nnz * sizeof(uint32_t));
+    colInd = (uint32_t*) malloc(nnz * sizeof(uint32_t));
     getCOO(n, nnz, colptr, rowind, values, matJ, matA, rowInd, colInd);
 #endif
 
@@ -289,11 +289,11 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     return;
 }
 
-template<typename Integer, typename Real>
-void getCOO(Integer n,
-            Integer nz,
-            Integer* colptr,
-            Integer* rowind,
+template<typename FInt, typename Integer, typename Real>
+void getCOO(FInt n,
+            FInt nz,
+            FInt* colptr,
+            FInt* rowind,
             Real* values,
             Real* matJ,
             Real* matA,

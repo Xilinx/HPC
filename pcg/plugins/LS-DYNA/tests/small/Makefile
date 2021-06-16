@@ -27,12 +27,12 @@ CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11  -Wno-
 CXXFLAGS += -fmessage-length=0
 
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
-LDFLAGS += -L$(XILINX_VIVADO)/lnx64/tools/fpo_v7_0 -Wl,--as-needed -lgmp -lmpfr -lIp_floating_point_v7_0_bitacc_cmodel
+#LDFLAGS += -L$(XILINX_VIVADO)/lnx64/tools/fpo_v7_0 -Wl,--as-needed -lgmp -lmpfr -lIp_floating_point_v7_0_bitacc_cmodel
 #
 LD=mpiifort -sox -fpp -qopenmp -static-intel
 #
 LF=  -lrt -lstdc++ -lpthread -lstdc++ -lpthread
-CF=  -O3 -DFORMAT_COO -DUSE_FPGA -DAUTODOUBLE -DUNSCORE -DFORMAT_COO -Wall
+CF=  -O3 $(CXXFLAGS) -DFORMAT_COO -DUSE_FPGA -DAUTODOUBLE -DUNSCORE -DFORMAT_COO -Wall
 #
 LMATH= \
 libmkl_scalapack_ilp64.a libmkl_intel_ilp64.a \
@@ -102,15 +102,15 @@ clean:
 	rm -rf *.mod
 
 $(TEMP_DIR)/gen_signature.o:
-	$(CC) -c $(CF) $(CXXFLAGS) $(XFLIB_DIR)/L2/sparse/src/sw/c++/gen_signature.cpp  -o '$@'
+	$(CC) -c $(CF)  $(XFLIB_DIR)/L2/sparse/src/sw/c++/gen_signature.cpp  -o '$@'
 $(TEMP_DIR)/xFPGA.o:
-	$(CC) -c $(CF) $(CXXFLAGS) $(XFLIB_DIR)/L2/common/src/sw/xFPGA.cpp -o '$@'
+	$(CC) -c $(CF)  $(XFLIB_DIR)/L2/common/src/sw/xFPGA.cpp -o '$@'
 $(TEMP_DIR)/xcl2.o:
-	$(CC) -c $(CF) $(CXXFLAGS) $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp -o '$@'
+	$(CC) -c $(CF)  $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp -o '$@'
 $(TEMP_DIR)/cgHost.o:
-	$(CC) -c $(CF) $(CXXFLAGS) $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp -o '$@'
+	$(CC) -c $(CF)  $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp -o '$@'
 $(TEMP_DIR)/JPCG.o:
-	$(CC) -c $(CF) $(CXXFLAGS) ../../usermat/JPCG.cpp -o '$@'
+	$(CC) -c $(CF)  ../../usermat/JPCG.cpp -o '$@'
 $(TEMP_DIR)/userLE_JPCG.o:
 	$(FC) -c $(FF) -I$(TEMP_DIR) $(TEMP_DIR)/userLE_JPCG.F90 -o '$@'
 $(TEMP_DIR)/init_dyn21.o: $(TEMP_DIR)/init_dyn21.f $(TEMP_DIR)/nhisparm.inc
