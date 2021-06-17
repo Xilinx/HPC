@@ -20,9 +20,9 @@
 namespace xf {
 namespace hpc {
 namespace mlp {
-
+namespace cpu {
 template <typename T>
-T softmax(uint32_t p_batch, uint32_t p_inSize, T* data) {
+void softmax(uint32_t p_batch, uint32_t p_inSize, T* data) {
     for (int b = 0; b < p_batch; b++) {
         T sum = 0;
         T* ex = new T[p_inSize];
@@ -59,11 +59,13 @@ template <typename T>
 void funcBatchAct(uint32_t batch, uint32_t dim, T* x, ActFunc_t act) {
     switch (act) {
         case ActFunc_t::RELU:
+#pragma omp parallel for
             for (int i = 0; i < batch * dim; i++) {
                 x[i] = relu(x[i]);
             }
             break;
         case ActFunc_t::SIGMOID:
+#pragma omp parallel for
             for (int i = 0; i < batch * dim; i++) {
                 x[i] = sigmoid(x[i]);
             }
@@ -75,6 +77,7 @@ void funcBatchAct(uint32_t batch, uint32_t dim, T* x, ActFunc_t act) {
             return;
             break;
     }
+}
 }
 }
 }
