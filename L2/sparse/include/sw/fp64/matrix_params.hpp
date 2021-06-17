@@ -319,7 +319,7 @@ class RowBlockParam {
 
    public:
     uint32_t m_memBytes, m_channels = 0;
-    vector<uint8_t> m_buf;
+    vector<uint8_t, alignedAllocator<uint8_t> > m_buf;
 };
 
 class ParParam {
@@ -424,7 +424,7 @@ class ParParam {
     }
 
    public:
-    vector<uint8_t> m_buf;
+    vector<uint8_t, alignedAllocator<uint8_t> > m_buf;
 };
 
 class NnzStore {
@@ -516,7 +516,7 @@ class NnzStore {
 
    public:
     uint32_t m_memBytes, m_parEntries, m_accLatency, m_channels;
-    vector<vector<uint8_t> > m_buf;
+    vector<vector<uint8_t, alignedAllocator<uint8_t> > > m_buf;
 };
 
 struct CooMat {
