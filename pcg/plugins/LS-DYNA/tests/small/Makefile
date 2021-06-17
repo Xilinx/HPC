@@ -34,15 +34,77 @@ LD=mpiifort -sox -fpp -qopenmp -static-intel
 LF=  -lrt -lstdc++ -lpthread -lstdc++ -lpthread
 CF=  -O3 $(CXXFLAGS) -DAUTODOUBLE -DUNSCORE -DFORMAT_COO -DUSE_FPGA -Wall
 #
-LMATH= \
-$(LS_DYNA_PATH)/usermat/libmkl_scalapack_ilp64.a $(LS_DYNA_PATH)/usermat/libmkl_intel_ilp64.a \
-$(LS_DYNA_PATH)/usermat/libmkl_sequential.a $(LS_DYNA_PATH)/usermat/libmkl_core.a $(LS_DYNA_PATH)/usermat/libmkl_blacs_intelmpi_ilp64.a \
-$(LS_DYNA_PATH)/usermat/libmkl_scalapack_ilp64.a $(LS_DYNA_PATH)/usermat/libmkl_intel_ilp64.a \
-$(LS_DYNA_PATH)/usermat/libmkl_sequential.a $(LS_DYNA_PATH)/usermat/libmkl_core.a $(LS_DYNA_PATH)/usermat/libmkl_blacs_intelmpi_ilp64.a \
-$(LS_DYNA_PATH)/usermat/libmkl_scalapack_ilp64.a $(LS_DYNA_PATH)/usermat/libmkl_intel_ilp64.a \
-$(LS_DYNA_PATH)/usermat/libmkl_sequential.a $(LS_DYNA_PATH)/usermat/libmkl_core.a $(LS_DYNA_PATH)/usermat/libmkl_blacs_intelmpi_ilp64.a
+LMATH=$(LS_DYNA_PATH)/usermat/libmkl_scalapack_ilp64.a 
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_intel_ilp64.a 
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_sequential.a 
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_core.a 
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_blacs_intelmpi_ilp64.a
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_scalapack_ilp64.a 
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_intel_ilp64.a
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_sequential.a 
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_core.a 
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_blacs_intelmpi_ilp64.a
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_scalapack_ilp64.a 
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_intel_ilp64.a
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_sequential.a 
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_core.a 
+LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_blacs_intelmpi_ilp64.a
 #
-LIBS=$(LS_DYNA_PATH)/usermat/libdyna.a $(LS_DYNA_PATH)/usermat/liblsmpp.a $(LS_DYNA_PATH)/usermat/libmpp_lanczos.a $(LS_DYNA_PATH)/usermat/libbcsext4.a $(LS_DYNA_PATH)/usermat/liblsda.a $(LS_DYNA_PATH)/usermat/liblsdb.a $(LS_DYNA_PATH)/usermat/liblssecurity.a  $(LS_DYNA_PATH)/usermat/liblcpack.a $(LS_DYNA_PATH)/usermat/libmf2.a $(LS_DYNA_PATH)/usermat/libspooles.a $(LS_DYNA_PATH)/usermat/liblcpack.a $(LS_DYNA_PATH)/usermat/libspooles.a $(LS_DYNA_PATH)/usermat/libcparse.a $(LS_DYNA_PATH)/usermat/liblsm.a $(LS_DYNA_PATH)/usermat/liblscrypt.a $(LS_DYNA_PATH)/usermat/libresurf.a $(LS_DYNA_PATH)/usermat/liblsmppdes.a $(LS_DYNA_PATH)/usermat/libdsa.a $(LS_DYNA_PATH)/usermat/liblsmc.a $(LS_DYNA_PATH)/usermat/libbalance.a $(LS_DYNA_PATH)/usermat/libsfg.a   $(LS_DYNA_PATH)/usermat/libzmumps.a $(LS_DYNA_PATH)/usermat/libdmumps.a $(LS_DYNA_PATH)/usermat/libmumps_common.a    $(LS_DYNA_PATH)/usermat/libmetis.a $(LS_DYNA_PATH)/usermat/libim_rotor_dynamics.a  $(LS_DYNA_PATH)/usermat/libmcms.a   $(LS_DYNA_PATH)/usermat/liblsmpp.a $(LS_DYNA_PATH)/usermat/liblso.a $(LS_DYNA_PATH)/usermat/libunits.a  $(LS_DYNA_PATH)/usermat/libem.a $(LS_DYNA_PATH)/usermat/libfemster_wrap.a $(LS_DYNA_PATH)/usermat/libfemster_wrap2d.a $(LS_DYNA_PATH)/usermat/libfemster_wrap1d.a $(LS_DYNA_PATH)/usermat/libfemster.a $(LS_DYNA_PATH)/usermat/libfemster2d.a $(LS_DYNA_PATH)/usermat/libfemster1d.a $(LS_DYNA_PATH)/usermat/libpfem.a $(LS_DYNA_PATH)/usermat/libcese.a $(LS_DYNA_PATH)/usermat/libchemistry.a $(LS_DYNA_PATH)/usermat/libem_tailsit.a $(LS_DYNA_PATH)/usermat/libparticles.a $(LS_DYNA_PATH)/usermat/libeosfl2.a  $(LS_DYNA_PATH)/usermat/libpfem.a $(LS_DYNA_PATH)/usermat/libmoving.a $(LS_DYNA_PATH)/usermat/libdualcese.a $(LS_DYNA_PATH)/usermat/libbattery.a $(LS_DYNA_PATH)/usermat/liblsmpp.a $(LS_DYNA_PATH)/usermat/libmetis.a $(LS_DYNA_PATH)/usermat/libfftw3.a $(LS_DYNA_PATH)/usermat/libfftw3_omp.a  $(LS_DYNA_PATH)/usermat/libansysl.a   $(LS_DYNA_PATH)/usermat/libdyna.a $(LS_DYNA_PATH)/usermat/libmetis.a $(LS_DYNA_PATH)/usermat/libspooles.a
+LIBS=$(LS_DYNA_PATH)/usermat/libdyna.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/liblsmpp.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libmpp_lanczos.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libbcsext4.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/liblsda.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/liblsdb.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/liblssecurity.a  
+LIBS+=$(LS_DYNA_PATH)/usermat/liblcpack.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libmf2.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libspooles.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/liblcpack.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libspooles.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libcparse.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/liblsm.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/liblscrypt.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libresurf.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/liblsmppdes.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libdsa.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/liblsmc.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libbalance.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libsfg.a   
+LIBS+=$(LS_DYNA_PATH)/usermat/libzmumps.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libdmumps.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libmumps_common.a    
+LIBS+=$(LS_DYNA_PATH)/usermat/libmetis.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libim_rotor_dynamics.a  
+LIBS+=$(LS_DYNA_PATH)/usermat/libmcms.a   
+LIBS+=$(LS_DYNA_PATH)/usermat/liblsmpp.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/liblso.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libunits.a  
+LIBS+=$(LS_DYNA_PATH)/usermat/libem.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libfemster_wrap.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libfemster_wrap2d.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libfemster_wrap1d.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libfemster.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libfemster2d.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libfemster1d.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libpfem.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libcese.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libchemistry.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libem_tailsit.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libparticles.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libeosfl2.a  
+LIBS+=$(LS_DYNA_PATH)/usermat/libpfem.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libmoving.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libdualcese.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libbattery.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/liblsmpp.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libmetis.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libfftw3.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libfftw3_omp.a  
+LIBS+=$(LS_DYNA_PATH)/usermat/libansysl.a   
+LIBS+=$(LS_DYNA_PATH)/usermat/libdyna.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libmetis.a 
+LIBS+=$(LS_DYNA_PATH)/usermat/libspooles.a
 #
 
 OBJS += $(LS_DYNA_PATH)/usermat/init_once.o
@@ -52,7 +114,6 @@ OBJS += $(LS_DYNA_PATH)/usermat/sec.o
 OBJS += $(LS_DYNA_PATH)/usermat/adummy_graph.o
 OBJS += $(LS_DYNA_PATH)/usermat/orderByMetis.o
 OBJS += $(LS_DYNA_PATH)/usermat/mod_impl_matrices.o
-
 OBJS += $(BUILD_DIR)/init_dyn21.o
 OBJS += $(BUILD_DIR)/dyn21.o
 OBJS += $(BUILD_DIR)/dyn21umat.o
