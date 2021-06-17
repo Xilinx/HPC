@@ -17,10 +17,23 @@
 #define _UTILS_HPP_
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <vector>
 #include <cmath>
 #include <exception>
+
+typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimePointType;
+
+inline void showTimeData(string p_Task, TimePointType& t1, TimePointType& t2, double* p_TimeMsOut = 0) {
+    t2 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> l_durationSec = t2 - t1;
+    double l_timeMs = l_durationSec.count() * 1e3;
+    if (p_TimeMsOut) {
+        *p_TimeMsOut = l_timeMs;
+    }
+    std::cout << p_Task << "  " << std::fixed << std::setprecision(6) << l_timeMs << " msec\n";
+}
 
 template <typename T>
 struct alignedAllocator {

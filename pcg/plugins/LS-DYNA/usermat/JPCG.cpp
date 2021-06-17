@@ -12,7 +12,8 @@
 
 #include <algorithm>
 #include <vector>
- #include <cassert>
+#include <cassert>
+#include <chrono>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -110,23 +111,31 @@ extern "C" void fpga_JPCG(FortranInteger pn,
                  FortranReal* prelres,
                  FortranReal* pflops){
     std::cout << "running fpga_JPCG..." << std::endl;
+    TimePointType l_timer[7];
     PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> l_pcg;
     CooMat l_mat = l_pcg.allocMat(pn, pn, pnz);
+    l_pcg.allocVec(pn);
+    CgInputVec l_inVecs = l_pcg.getInputVec();
+    l_timer[0] = std::chrono::high_resolution_clock::now();
     memcpy(reinterpret_cast<char*>(l_mat.m_rowIdxPtr), reinterpret_cast<char*>(rowInd), pnz*sizeof(uint32_t));
     memcpy(reinterpret_cast<uint8_t*>(l_mat.m_colIdxPtr), reinterpret_cast<uint8_t*>(colInd), pnz*sizeof(uint32_t));
     memcpy(reinterpret_cast<uint8_t*>(l_mat.m_datPtr), reinterpret_cast<uint8_t*>(matA), pnz*sizeof(FortranReal));
-    l_pcg.allocVec(pn);
-    CgInputVec l_inVecs = l_pcg.getInputVec();
     memcpy(reinterpret_cast<uint8_t*>(l_inVecs.h_b), reinterpret_cast<uint8_t*>(b), pn*sizeof(FortranReal));
     memcpy(reinterpret_cast<uint8_t*>(l_inVecs.h_diag), reinterpret_cast<uint8_t*>(matJ), pn*sizeof(FortranReal));
+    showTimeData("Input data copying time: ", l_timer[0], l_timer[1]);
     
     l_pcg.partitionMat();
+    showTimeData("Matrix partition time: ", l_timer[1], l_timer[2]);
     l_pcg.initVec();
+    showTimeData("Vector initialization time: ", l_timer[2], l_timer[3]);
     l_pcg.initDev(1, "/home/lingl/backup/cgSolver.xclbin");
+    showTimeData("FPGA configuration time: ", l_timer[3], l_timer[4]);
     l_pcg.setDat();
     l_pcg.setInstr(pmaxit, *ptol);
+    showTimeData("Host to device data transfer time: ", l_timer[4], l_timer[5]);
     l_pcg.run();
     CgVector l_resVec = l_pcg.getRes();
+    showTimeData("PCG run time: ", l_timer[5], l_timer[6]);
     CgInstr l_instr = l_pcg.getInstr();
     void* l_xk = l_resVec.h_xk;
     xf::hpc::MemInstr<CG_instrBytes> l_memInstr;
