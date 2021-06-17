@@ -101,40 +101,10 @@ $(BUILD_DIR)/cgHost.o:
 	$(CC) -c $(CF)  $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp -o '$@'
 $(BUILD_DIR)/JPCG.o:
 	$(CC) -c $(CF) -I. -I$(LS_DYNA_PATH) ../../usermat/JPCG.cpp -o '$@'
-$(BUILD_DIR)/userLE_JPCG.o:
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/userLE_JPCG.F90 -o '$@'
-$(BUILD_DIR)/init_dyn21.o: $(LS_DYNA_PATH)/usermat/init_dyn21.f $(LS_DYNA_PATH)/usermat/nhisparm.inc
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/init_dyn21.f -o '$@'
-$(BUILD_DIR)/userinterface.o: $(LS_DYNA_PATH)/usermat/userinterface.f90
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/userinterface.f90 -o '$@'
-$(BUILD_DIR)/dyn21.o: $(LS_DYNA_PATH)/usermat/dyn21.f $(LS_DYNA_PATH)/usermat/nhisparm.inc $(BUILD_DIR)/userinterface.o
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dyn21.f -o '$@'
-$(BUILD_DIR)/dyn21umat.o: $(LS_DYNA_PATH)/usermat/dyn21umat.f $(LS_DYNA_PATH)/usermat/nhisparm.inc $(BUILD_DIR)/userinterface.o
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dyn21umat.f -o '$@'
-$(BUILD_DIR)/dyn21umats.o: $(LS_DYNA_PATH)/usermat/dyn21umats.f $(LS_DYNA_PATH)/usermat/nhisparm.inc $(BUILD_DIR)/userinterface.o
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dyn21umats.f -o '$@'
-$(BUILD_DIR)/dyn21umatv.o: $(LS_DYNA_PATH)/usermat/dyn21umatv.f $(LS_DYNA_PATH)/usermat/nhisparm.inc $(BUILD_DIR)/userinterface.o
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dyn21umatv.f -o '$@'
-$(BUILD_DIR)/dyn21umatc.o: $(LS_DYNA_PATH)/usermat/dyn21umatc.f $(LS_DYNA_PATH)/usermat/nhisparm.inc $(BUILD_DIR)/userinterface.o
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dyn21umatc.f -o '$@'
-$(BUILD_DIR)/dyn21tumat.o: $(LS_DYNA_PATH)/usermat/dyn21tumat.f $(LS_DYNA_PATH)/usermat/nhisparm.inc $(BUILD_DIR)/userinterface.o
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dyn21tumat.f -o '$@'
-$(BUILD_DIR)/dyn21utan.o: $(LS_DYNA_PATH)/usermat/dyn21utan.f $(LS_DYNA_PATH)/usermat/nhisparm.inc $(BUILD_DIR)/userinterface.o
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dyn21utan.f -o '$@'
-$(BUILD_DIR)/dyn21ueos.o: $(LS_DYNA_PATH)/usermat/dyn21ueos.f $(LS_DYNA_PATH)/usermat/nhisparm.inc $(BUILD_DIR)/userinterface.o
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dyn21ueos.f -o '$@'
-$(BUILD_DIR)/dyn21cnt.o: $(LS_DYNA_PATH)/usermat/dyn21cnt.f $(LS_DYNA_PATH)/usermat/nhisparm.inc $(BUILD_DIR)/userinterface.o
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dyn21cnt.f -o '$@'
-$(BUILD_DIR)/dyn21ushl.o: $(LS_DYNA_PATH)/usermat/dyn21ushl.f $(LS_DYNA_PATH)/usermat/nhisparm.inc $(BUILD_DIR)/userinterface.o
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dyn21ushl.f -o '$@'
-$(BUILD_DIR)/dyn21usld.o: $(LS_DYNA_PATH)/usermat/dyn21usld.f $(LS_DYNA_PATH)/usermat/nhisparm.inc $(BUILD_DIR)/userinterface.o
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dyn21usld.f -o '$@'
-$(BUILD_DIR)/dyn21em.o: $(LS_DYNA_PATH)/usermat/dyn21em.f
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dyn21em.f -o '$@'
-$(BUILD_DIR)/dyn21icfd.o: $(LS_DYNA_PATH)/usermat/dyn21icfd.f
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dyn21icfd.f -o '$@'
-$(BUILD_DIR)/couple2other_user.o: $(LS_DYNA_PATH)/usermat/couple2other_user.f 
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/couple2other_user.f -o '$@'
-$(BUILD_DIR)/dynrfn_user.o: $(LS_DYNA_PATH)/usermat/dynrfn_user.f 
-	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $(LS_DYNA_PATH)/usermat/dynrfn_user.f -o '$@'
 
+$(BUILD_DIR)/userLE_JPCG.o: $(LS_DYNA_PATH)/usermat/userLE_JPCG.F90
+	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $^ -o '$@'
+$(BUILD_DIR)/userinterface.o: $(LS_DYNA_PATH)/usermat/userinterface.f90
+	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $^ -o '$@'
+$(BUILD_DIR)/%.o: $(LS_DYNA_PATH)/usermat/%.f $(BUILD_DIR)/userinterface.o
+	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $^ -o '$@'
