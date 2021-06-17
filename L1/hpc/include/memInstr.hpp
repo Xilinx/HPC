@@ -52,35 +52,6 @@ void b2v(T& p_val, const uint8_t* p_ch) {
 }
 
 template <>
-void v2b<bool>(const bool p_val, uint8_t* p_ch) {
-    p_ch[0] = p_val ? 1 : 0;
-}
-template <>
-void b2v<bool>(bool& p_val, const uint8_t* p_ch) {
-    uint32_t l_val = p_ch[0];
-    p_val = l_val == 0 ? false : true;
-}
-
-template <>
-void v2b<float>(const float p_val, uint8_t* p_ch) {
-    constexpr uint32_t t_Mult = sizeof(float);
-    uint32_t l_val = *reinterpret_cast<const uint32_t*>(&p_val);
-    for (unsigned int i = 0; i < t_Mult; ++i) {
-        p_ch[i] = l_val >> (i * 8);
-    }
-}
-template <>
-void b2v<float>(float& p_val, const uint8_t* p_ch) {
-    constexpr uint32_t t_Mult = sizeof(float);
-    uint32_t l_val = 0;
-    for (unsigned int i = 0; i < t_Mult; ++i) {
-        l_val = l_val << 8;
-        l_val += p_ch[t_Mult - 1 - i];
-    }
-    p_val = *reinterpret_cast<float*>(&l_val);
-}
-
-template <>
 void v2b<double>(const double p_val, uint8_t* p_ch) {
     constexpr uint64_t t_Mult = sizeof(double);
     uint64_t l_val = *reinterpret_cast<const uint64_t*>(&p_val);
@@ -112,7 +83,7 @@ class MemInstr {
     }
 
     void init() {
-        for (int i = 0; i < t_InstrBytes; i++)
+        for (unsigned int i = 0; i < t_InstrBytes; i++)
 #pragma HLS PIPELINE
             m_Instr[i] = 0;
     }

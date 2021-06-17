@@ -162,8 +162,6 @@ class Signature {
 
     SparseMatrix pad_par(SparseMatrix p_parSpm) {
         uint32_t l_nnzs = p_parSpm.getNnz();
-        uint32_t l_rows = p_parSpm.getM();
-        uint32_t l_parNnzs = 0;
 
         vector<uint32_t> l_row;
         vector<uint32_t> l_col;
@@ -302,8 +300,6 @@ class Signature {
         for (uint32_t rbId = 0; rbId < l_totalRbs; rbId++) {
             vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(rbId, 0);
             uint32_t l_sRbRowId = l_rbInfo[0];
-            uint32_t l_minRbColId = l_rbInfo[1];
-            uint32_t l_rbCols = l_rbInfo[2];
             uint32_t l_rbNumPars = l_rbInfo[3];
             uint32_t l_chRbMinRowId[m_channels];
             memset(l_chRbMinRowId, 0, m_channels * sizeof(uint32_t));

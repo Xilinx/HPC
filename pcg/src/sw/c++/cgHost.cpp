@@ -32,7 +32,6 @@ void CGKernelControl::setMem(void* p_instr, unsigned int p_instrBytes) {
 }
 
 void CGKernelControl::getMem() {
-    cl_int err;
     // Copy Result from Device Global Memory to Host Local Memory
     vector<cl::Memory> l_buffers;
     l_buffers.push_back(m_buffer_instr);
@@ -76,7 +75,6 @@ void CGKernelUpdatePk::setMem(void* p_pk, unsigned int p_pkSize, void* p_zk, uns
     sendBuffer(l_buffers);
 }
 void CGKernelUpdatePk::getMem() {
-    cl_int err;
     // Copy Result from Device Global Memory to Host Local Memory
     vector<cl::Memory> l_buffers;
     l_buffers.push_back(m_buffer_pk);
