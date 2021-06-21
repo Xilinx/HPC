@@ -10,7 +10,8 @@ XF_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/pcg
 CUR_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
 XFLIB_DIR = $(XF_PROJ_ROOT)
 TEMP_DIR := $(CUR_DIR)/_x_temp
-BUILD_DIR := $(CUR_DIR)/build_output
+TARGET?=csc
+BUILD_DIR := $(CUR_DIR)/build_output.$(TARGET)
 FC=mpiifort
 CC=mpigxx
 #
@@ -32,7 +33,15 @@ LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-na
 LD=mpiifort -sox -fpp -qopenmp -static-intel
 #
 LF=  -lrt -lstdc++ -lpthread -lstdc++ -lpthread
-CF=  -O3 $(CXXFLAGS) -DAUTODOUBLE -DUNSCORE -DFORMAT_COO -DUSE_FPGA -Wall
+CF=  -O3 $(CXXFLAGS) -DAUTODOUBLE -DUNSCORE -Wall
+
+ifeq ($(TARGET), coo)
+	CF += -DFORMAT_COO
+else
+ifeq ($(TARGET), coo_fpga)
+	CF += -DFORMAT_COO -DUSE_FPGA
+endif
+endif
 #
 LMATH=$(LS_DYNA_PATH)/usermat/libmkl_scalapack_ilp64.a 
 LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_intel_ilp64.a 
@@ -137,35 +146,41 @@ OBJS += $(BUILD_DIR)/xFPGA.o
 OBJS += $(BUILD_DIR)/xcl2.o
 OBJS += $(BUILD_DIR)/cgHost.o
 
-${BUILD_DIR}:
-	mkdir -p ${BUILD_DIR}
-	
-$(BUILD_DIR)/mppdyna: ${BUILD_DIR} $(OBJS)
-	$(LD) -o $(BUILD_DIR)/mppdyna $(LDFLAGS) $(OBJS) $(LIBS) $(LMATH) $(LF)
+EXE := $(BUILD_DIR)/mppdyna
 
-run: $(BUILD_DIR)/mppdyna
+$(EXE): $(OBJS)
+	$(LD) -o $@ $(LDFLAGS) $(OBJS) $(LIBS) $(LMATH) $(LF)
+
+run: $(EXE)
 	cd $(BUILD_DIR) && \
-	./mppdyna i=$(LS_DYNA_PATH)/run/small_tbc/small_tbc.k memory=1G ncpu=1 impcon=1
+	$(EXE) i=$(LS_DYNA_PATH)/run/small_tbc/small_tbc.k memory=1G ncpu=1 impcon=1
 	cd ..
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf build_output*
 	rm -rf *.mod
 
+$(BUILD_DIR)/JPCG.o:
+	mkdir -p ${BUILD_DIR}
+	$(CC) -c $(CF) -I. -I$(LS_DYNA_PATH) ../../usermat/JPCG.cpp -o '$@'
 $(BUILD_DIR)/gen_signature.o:
+	mkdir -p ${BUILD_DIR}
 	$(CC) -c $(CF)  $(XFLIB_DIR)/L2/sparse/src/sw/c++/gen_signature.cpp  -o '$@'
 $(BUILD_DIR)/xFPGA.o:
+	mkdir -p ${BUILD_DIR}
 	$(CC) -c $(CF)  $(XFLIB_DIR)/L2/common/src/sw/xFPGA.cpp -o '$@'
 $(BUILD_DIR)/xcl2.o:
+	mkdir -p ${BUILD_DIR}
 	$(CC) -c $(CF)  $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp -o '$@'
 $(BUILD_DIR)/cgHost.o:
+	mkdir -p ${BUILD_DIR}
 	$(CC) -c $(CF)  $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp -o '$@'
-$(BUILD_DIR)/JPCG.o:
-	$(CC) -c $(CF) -I. -I$(LS_DYNA_PATH) ../../usermat/JPCG.cpp -o '$@'
 
 $(BUILD_DIR)/userLE_JPCG.o: $(LS_DYNA_PATH)/usermat/userLE_JPCG.F90
+	mkdir -p ${BUILD_DIR}
 	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $^ -o '$@'
 $(BUILD_DIR)/userinterface.o: $(LS_DYNA_PATH)/usermat/userinterface.f90
+	mkdir -p ${BUILD_DIR}
 	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $^ -o '$@'
 $(BUILD_DIR)/%.o: $(LS_DYNA_PATH)/usermat/%.f $(BUILD_DIR)/userinterface.o
 	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $^ -o '$@'
