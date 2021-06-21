@@ -38,7 +38,7 @@ CF=  -O3 $(CXXFLAGS) -DAUTODOUBLE -DUNSCORE -Wall
 ifeq ($(TARGET), coo)
 	CF += -DFORMAT_COO
 else
-ifeq ($(TARGET), coo_fpga)
+ifeq ($(TARGET), fpga)
 	CF += -DFORMAT_COO -DUSE_FPGA
 endif
 endif
