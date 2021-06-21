@@ -169,6 +169,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
                  FortranInteger* pniter,
                  FortranReal* prelres,
                  FortranReal* pflops) {
+    TimePointType l_start = std::chrono::high_resolution_clock::now();
     FortranInteger n, nz, maxit;
     FortranInteger niter;
     FortranInteger i;
@@ -182,10 +183,9 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     nz = *pnz;
     maxit = *pmaxit;
     tol = *ptol;
-
+    FortranInteger nnz = nz * 2 - n;
 
 #if defined FORMAT_COO || defined USE_FPGA
-    FortranInteger nnz = nz * 2 - n;
     FortranReal* matA;
     uint32_t* rowInd;
     uint32_t* colInd;
@@ -282,18 +282,45 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     free(colInd);
 #endif
 
+    auto l_stop = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> l_durationSec = l_stop - l_start;
+    double l_timeMs = l_durationSec.count() * 1e3;
+    static bool header = true;
+
+    ofstream fs;
+    if(header) {
+        fs.open("benchmark.csv");
+        fs << "Dim" << ","
+            << "NNZ" << ","
+            << "Niter" << ","
+            << "Relres" << ","
+            <<"MFLOPs" << ","
+            << "Time [ms]" << ","
+            << "GFLOPS" << endl;
+        header = false;
+    } else 
+        fs.open("benchmark.csv", std::ofstream::app);
+
+    fs << n << ","
+        << nnz << ","
+        << *pniter << ","
+        << *prelres << ","
+        << *pflops/1e6 << ","
+        << l_timeMs << ","
+        << *pflops/1e6/l_timeMs << endl;
+    fs.close();
     return;
 }
 
 template<typename FInt, typename Integer, typename Real>
 void getCOO(FInt n,
-            FInt nz,
-            FInt* colptr,
-            FInt* rowind,
-            Real* values,
-            Real* matA,
-            Integer* rowInd,
-            Integer* colInd) {
+        FInt nz,
+        FInt* colptr,
+        FInt* rowind,
+        Real* values,
+        Real* matA,
+        Integer* rowInd,
+        Integer* colInd) {
     Integer index = 0;
     for (Integer j = 0; j < n; j++) {
         for (Integer k = colptr[j] - 1; k < colptr[j + 1] - 1; k++) {
@@ -315,14 +342,14 @@ void getCOO(FInt n,
 
 template<typename FInt, typename Integer, typename Real>
 void coo_spmv(FInt n,
-              FInt nz,
-              Integer* rowInd,
-              Integer* colInd,
-              Real* mat,
-              Real alpha,
-              Real* x,
-              Real beta,
-              Real* y) {
+        FInt nz,
+        Integer* rowInd,
+        Integer* colInd,
+        Real* mat,
+        Real alpha,
+        Real* x,
+        Real beta,
+        Real* y) {
     for (Integer i = 0; i < n; i++) y[i] *= beta;
 
     for (Integer i = 0; i < nz; i++) {
@@ -337,14 +364,14 @@ void coo_spmv(FInt n,
 /* -------------------------------------------------------------------------- */
 /* Sparse matrix-vector multiply, y <- beta * y + alpha * A * x  */
 void userLE_spmv(FortranInteger n,
-                 FortranInteger nz,
-                 FortranInteger* colptr,
-                 FortranInteger* rowind,
-                 FortranReal* values,
-                 FortranReal alpha,
-                 FortranReal* x,
-                 FortranReal beta,
-                 FortranReal* y) {
+        FortranInteger nz,
+        FortranInteger* colptr,
+        FortranInteger* rowind,
+        FortranReal* values,
+        FortranReal alpha,
+        FortranReal* x,
+        FortranReal beta,
+        FortranReal* y) {
     FortranInteger i, j, k;
 
     for (i = 0; i < n; i++) y[i] *= beta;
