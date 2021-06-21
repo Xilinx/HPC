@@ -96,7 +96,7 @@ void getCOO(FInt n,
             Integer* rowInd,
             Integer* colInd);
 
-extern "C" void fpga_JPCG(FortranInteger pn,
+double fpga_JPCG(FortranInteger pn,
                  FortranInteger pnz,
                  uint32_t* rowInd,
                  uint32_t* colInd,
@@ -135,6 +135,7 @@ extern "C" void fpga_JPCG(FortranInteger pn,
     l_pcg.run();
     CgVector l_resVec = l_pcg.getRes();
     showTimeData("PCG run time: ", l_timer[5], l_timer[6]);
+    chrono::duration<double> d = l_timer[6] - l_timer[5];
     CgInstr l_instr = l_pcg.getInstr();
     void* l_xk = l_resVec.h_xk;
     xf::hpc::MemInstr<CG_instrBytes> l_memInstr;
@@ -152,7 +153,8 @@ extern "C" void fpga_JPCG(FortranInteger pn,
     *prelres = sqrt(l_res / l_pcg.getDot());
     *pniter = lastIter;
     memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_xk), pn*sizeof(FortranReal));
-    *pflops = lastIter * (3 * pnz + 17 * pn) + 3 * pn;
+    *pflops = lastIter * (3 * pnz + 18 * pn) - 4 * pn;
+    return d.count() * 1e3;
 }
 /* -------------------------------------------------------------------------- */
 /* Conjugate Gradients with diagonal preconditioner */
@@ -194,9 +196,8 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     colInd = (uint32_t*) malloc(nnz * sizeof(uint32_t));
     getCOO(n, nnz, colptr, rowind, values, matA, rowInd, colInd);
 #endif
-
 #ifdef USE_FPGA
-    fpga_JPCG(n, nnz, rowInd, colInd, matA, dprec, maxit, tol, b, x, pniter, prelres, pflops);
+    double l_hwTime = fpga_JPCG(n, nnz, rowInd, colInd, matA, dprec, maxit, tol, b, x, pniter, prelres, pflops);
 #else
     FortranReal *r, *z, *p, *q;
     /* Allocate local storage */
@@ -294,8 +295,11 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
             << "NNZ" << ","
             << "Niter" << ","
             << "Relres" << ","
-            <<"MFLOPs" << ","
-            << "Time [ms]" << ","
+            <<"MFLOP" << ","
+#ifdef USE_FPGA
+            << "HW Time [ms]" << ","
+#endif
+            << "API Time [ms]" << ","
             << "GFLOPS" << endl;
         header = false;
     } else 
@@ -306,6 +310,9 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
         << *pniter << ","
         << *prelres << ","
         << *pflops/1e6 << ","
+#ifdef USE_FPGA
+        << l_hwTime << ","
+#endif
         << l_timeMs << ","
         << *pflops/1e6/l_timeMs << endl;
     fs.close();
