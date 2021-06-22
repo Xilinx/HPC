@@ -137,7 +137,7 @@ class MLPKernel : public Kernel {
         }
 
         if (kernels[0]->mlp->m_Layers.back().m_ActFunc == ActFunc_t::SOFTMAX)
-            softmax(p_batch, kernels[0]->mlp->m_Dims.back(), h_v);
+            cpu::softmax(p_batch, kernels[0]->mlp->m_Dims.back(), h_v);
         return t_sec;
     }
 
@@ -260,7 +260,7 @@ class MLPKernel : public Kernel {
         finish();
     }
 
-    void perf(){
+    void perf() {
         uint64_t l_last = 0;
         for (int i = 0; i < mlp->m_NumLayers; i++) {
             xf::hpc::mlp::FcnInstr<t_InstrBytes> fcnInstr;
@@ -276,7 +276,7 @@ class MLPKernel : public Kernel {
                         m_NumChannels / l_clock
                  << "%." << endl;
         }
-        cout << "HW measured execution time " << l_last * HW_CLK << " seconds, ";
+        cout << "HW measured execution time is:\t" << l_last * HW_CLK << " seconds." << endl;
     }
 
     void setRunArgs() {

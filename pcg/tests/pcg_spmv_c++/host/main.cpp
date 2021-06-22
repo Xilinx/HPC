@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    uint32_t l_idx = 1;
+    int l_idx = 1;
 
     string binaryFile = argv[l_idx++];
 
@@ -48,28 +48,6 @@ int main(int argc, char** argv) {
     CG_dataType l_tol = atof(argv[l_idx++]);
     string l_datPath = argv[l_idx++];
     string l_mtxName = argv[l_idx++];
-    string l_datFilePath = l_datPath + "/" + l_mtxName;
-
-    int l_instrSize = CG_instrBytes * (1 + l_maxIter);
-
-    CooMatInfo l_matInfo = loadMatInfo(l_datFilePath + "/");
-    host_buffer_t<CG_dataType> h_x(l_matInfo.m_m);
-
-    assert(l_matInfo.m_m == l_matInfo.m_n);
-    PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> l_pcg;
-
-    CooMat l_mat = l_pcg.allocMat(l_matInfo.m_m, l_matInfo.m_n, l_matInfo.m_nnz);
-    loadMat(l_datFilePath + "/", l_matInfo, l_mat);
-    l_pcg.partitionMat();
-
-    l_pcg.allocVec(l_matInfo.m_m);
-    CgInputVec l_inVecs = l_pcg.getInputVec();
-    
-    readBin(l_datFilePath + "/A_diag.mat", l_inVecs.h_diag, l_inVecs.vecBytes);
-    readBin(l_datFilePath + "/b.mat", l_inVecs.h_b, l_inVecs.vecBytes);
-
-    l_pcg.initVec();
-
     int l_deviceId = 0;
     bool l_debug = false;
     if (argc > l_idx) {
@@ -79,19 +57,38 @@ int main(int argc, char** argv) {
         else
             l_deviceId = stoi(l_option);
     }
-
     if (argc > l_idx) l_deviceId = atoi(argv[l_idx++]);
 
+    string l_datFilePath = l_datPath + "/" + l_mtxName;
+
+    CooMatInfo l_matInfo = loadMatInfo(l_datFilePath + "/");
+    assert(l_matInfo.m_m == l_matInfo.m_n);
+    host_buffer_t<CG_dataType> h_x(l_matInfo.m_m);
+    TimePointType l_timer[8];
+    PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> l_pcg;
+
+    CooMat l_mat = l_pcg.allocMat(l_matInfo.m_m, l_matInfo.m_n, l_matInfo.m_nnz);
+    l_pcg.allocVec(l_matInfo.m_m);
+    CgInputVec l_inVecs = l_pcg.getInputVec();
+    
+    loadMat(l_datFilePath + "/", l_matInfo, l_mat);
+    readBin(l_datFilePath + "/A_diag.mat", l_inVecs.h_diag, l_inVecs.vecBytes);
+    readBin(l_datFilePath + "/b.mat", l_inVecs.h_b, l_inVecs.vecBytes);
+
+    l_timer[0] = chrono::high_resolution_clock::now();
+    l_pcg.partitionMat();
+    showTimeData("Matrix partition time: ", l_timer[0], l_timer[1]);
+    l_pcg.initVec();
+    showTimeData("Vector initialization time: ", l_timer[1], l_timer[2]);
     l_pcg.initDev(l_deviceId, binaryFile);
+    showTimeData("FPGA configuration time: ", l_timer[2], l_timer[3]);
     l_pcg.setDat();
     l_pcg.setInstr(l_maxIter, l_tol);
-    auto l_start = chrono::high_resolution_clock::now();
+    showTimeData("Host to device data transfer time: ", l_timer[3], l_timer[4]);
+    double l_runTime = 1;
     l_pcg.run();
     CgVector l_resVec = l_pcg.getRes();
-    auto l_finish = chrono::high_resolution_clock::now();
-    chrono::duration<double> l_elapsed = l_finish - l_start;
-    double l_runTime = l_elapsed.count();
-
+    showTimeData("PCG run time: ", l_timer[4], l_timer[5], &l_runTime);
     CgInstr l_instr = l_pcg.getInstr();
     void* l_xk = l_resVec.h_xk;
     void* l_rk = l_resVec.h_rk;
@@ -128,7 +125,7 @@ int main(int argc, char** argv) {
     cout << endl;
     cout << "DATA_CSV:," << l_mtxName << "," << l_info[0] << "," << l_info[2];
     cout << "," << l_info[4] << "," << l_info[5] << "," << l_padRatio;
-    cout << "," << lastIter + 1 << "," << l_runTime << "," << (float)l_runTime * 1000 / (lastIter + 1);
+    cout << "," << lastIter + 1 << "," << l_runTime << "," << (float)l_runTime / (lastIter + 1);
     cout << "," << err << endl;
     if (err == 0) {
         cout << "Test pass!" << endl;

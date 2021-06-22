@@ -45,7 +45,7 @@ export LD_LIBRARY_PATH := $(XILINX_VIVADO)/tps/lnx64/gcc-6.2.0/lib64
 else
 export LD_LIBRARY_PATH := $(XILINX_VIVADO)/tps/lnx64/gcc-6.2.0/lib64:$(LD_LIBRARY_PATH)
 endif
-CFLAGS	= -g -O0 -std=c++14 -I../../../include/sw/fp64 -I../../../../../utils/include/sw 
+CFLAGS	= -O3 -std=c++14 -I../../../include/sw/fp64 -I../../../../../utils/include/sw -lpthread 
 CFLAGS += ${MACROS}
 
 

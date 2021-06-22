@@ -62,11 +62,11 @@ int main(int argc, char** argv) {
     for (int i = 0; i < l_options.numDevices; i++) l_mlp.loadModel(0, i);
 
     auto startTime = chrono::high_resolution_clock::now();
-    l_mlp.inferenceOnAll(h_x, h_vf);
+    double t_exe = l_mlp.inferenceOnAll(h_x, h_vf);
     auto finishTime = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed = finishTime - startTime;
     double t_sec = elapsed.count();
-    cout << "SW measured FPGA execution time is:\t" << t_sec << " s." << endl;
+    cout << "SW measured FPGA execution time is:\t" << t_sec << '\t' << t_exe << " s." << endl;
 
     auto models = l_mlp.getModels();
     startTime = chrono::high_resolution_clock::now();

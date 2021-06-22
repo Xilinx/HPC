@@ -27,6 +27,7 @@
 #include <numeric>
 #include <vector>
 #include <assert.h>
+#include <thread>
 #include "binFiles.hpp"
 #include "utils.hpp"
 
@@ -125,12 +126,64 @@ class SparseMatrix {
         return l_data;
     }
 
+    void partialSort(uint32_t p_sId, unsigned int p_size, vector<uint32_t>& p_list, vector<uint32_t>& p_idx) {
+        p_idx.resize(p_size);
+        iota(p_idx.begin(), p_idx.end(), p_sId);
+        stable_sort(p_idx.begin(), p_idx.end(), [&](uint32_t i1, uint32_t i2) { return p_list[i1] < p_list[i2]; });
+    }
+    
+    void mergeIdx(unsigned int p_size, vector<uint32_t> p_idxArr[2], vector<uint32_t>& p_list, vector<uint32_t>& p_idx) {
+        vector<unsigned int> l_ids(2, 0);
+        for (auto i=0; i<p_size; ++i) {
+            if (l_ids[0] < p_idxArr[0].size()) {
+                if ((l_ids[1] < p_idxArr[1].size()) && (p_list[p_idxArr[1][l_ids[1]]] < p_list[p_idxArr[0][l_ids[0]]])) {
+                    p_idx[i] = p_idxArr[1][l_ids[1]];
+                    l_ids[1]++;
+                }
+                else {
+                    p_idx[i] = p_idxArr[0][l_ids[0]];
+                    l_ids[0]++;
+                }
+            }
+            else {
+                p_idx[i] = p_idxArr[1][l_ids[1]];
+                l_ids[1]++;
+            }
+        }
+    }
+
     void sort_by_row() {
         vector<uint32_t> idx(m_nnz);
+        //iota(idx.begin(), idx.end(), 0);
+        //stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_row_list[i1] < m_row_list[i2]; });
+        vector<uint32_t> l_idxArr[2];
+        thread t1(&SparseMatrix::partialSort, this, 0, m_nnz/2, ref(m_row_list), ref(l_idxArr[0]));
+        thread t2(&SparseMatrix::partialSort, this, m_nnz/2, m_nnz - m_nnz/2, ref(m_row_list), ref(l_idxArr[1]));
+        t1.join();
+        t2.join();
+        mergeIdx(m_nnz, l_idxArr, m_row_list, idx); 
+        // then sort each part using this index
+        uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
+        uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
+        double* l_data_list = (double*)malloc(m_nnz * sizeof(double));
+        for (uint32_t i = 0; i < m_nnz; i++) {
+            l_row_list[i] = m_row_list[idx[i]];
+            l_col_list[i] = m_col_list[idx[i]];
+            l_data_list[i] = m_data_list[idx[i]];
+        }
+        memcpy(&m_row_list[0], l_row_list, m_nnz * sizeof(uint32_t));
+        memcpy(&m_col_list[0], l_col_list, m_nnz * sizeof(uint32_t));
+        memcpy(&m_data_list[0], l_data_list, m_nnz * sizeof(double));
+        free(l_row_list);
+        free(l_col_list);
+        free(l_data_list);
+    }
+    void complete_sort_by_row() {
+        vector<uint32_t> idx(m_nnz);
         iota(idx.begin(), idx.end(), 0);
-
-        stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_col_list[i1] < m_col_list[i2]; });
-        stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_row_list[i1] < m_row_list[i2]; });
+        //stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_col_list[i1] < m_col_list[i2]; });
+        stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { 
+            return (m_row_list[i1] < m_row_list[i2])? true: (m_row_list[i1] == m_row_list[i2])? m_col_list[i1] <= m_col_list[i2]: false; });
         // then sort each part using this index
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
@@ -150,9 +203,14 @@ class SparseMatrix {
 
     void sort_by_col() {
         vector<uint32_t> idx(m_nnz);
-        iota(idx.begin(), idx.end(), 0);
-        stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_row_list[i1] < m_row_list[i2]; });
-        stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_col_list[i1] < m_col_list[i2]; });
+        //iota(idx.begin(), idx.end(), 0);
+        //stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_col_list[i1] < m_col_list[i2]; });
+        vector<uint32_t> l_idxArr[2];
+        thread t1(&SparseMatrix::partialSort, this, 0, m_nnz/2, ref(m_col_list), ref(l_idxArr[0]));
+        thread t2(&SparseMatrix::partialSort, this, m_nnz/2, m_nnz - m_nnz/2, ref(m_col_list), ref(l_idxArr[1]));
+        t1.join();
+        t2.join();
+        mergeIdx(m_nnz, l_idxArr, m_col_list, idx); 
         // then sort each part using this index
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
@@ -319,7 +377,7 @@ class RowBlockParam {
 
    public:
     uint32_t m_memBytes, m_channels = 0;
-    vector<uint8_t> m_buf;
+    vector<uint8_t, alignedAllocator<uint8_t> > m_buf;
 };
 
 class ParParam {
@@ -424,7 +482,7 @@ class ParParam {
     }
 
    public:
-    vector<uint8_t> m_buf;
+    vector<uint8_t, alignedAllocator<uint8_t> > m_buf;
 };
 
 class NnzStore {
@@ -516,7 +574,7 @@ class NnzStore {
 
    public:
     uint32_t m_memBytes, m_parEntries, m_accLatency, m_channels;
-    vector<vector<uint8_t> > m_buf;
+    vector<vector<uint8_t, alignedAllocator<uint8_t> > > m_buf;
 };
 
 struct CooMat {

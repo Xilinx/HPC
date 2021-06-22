@@ -22,9 +22,8 @@
 #include <cstdlib>
 #include "fcnInstr.hpp"
 #include "binFiles.hpp"
-#include "fpga.hpp"
 #include "activations.hpp"
-#ifdef MKLROOT
+#ifdef MKL
 #include <mkl.h>
 #endif
 using namespace std;
@@ -38,17 +37,13 @@ class FCN {
    public:
     int m_InputSize;
     int m_OutputSize;
-    host_buffer_t<T> m_Weight;
-    host_buffer_t<T> m_Bias;
+    vector<T> m_Weight;
+    vector<T> m_Bias;
     ActFunc_t m_ActFunc;
-    bool m_Allocated = false;
 
    public:
     FCN() { m_ActFunc = ActFunc_t::LINEAR; }
-    ~FCN() {
-        if (m_Allocated) {
-        }
-    }
+    ~FCN() {}
     void setDim(int m_InputSize, int m_OutputSize) {
         this->m_InputSize = m_InputSize;
         this->m_OutputSize = m_OutputSize;
@@ -66,7 +61,7 @@ class FCN {
         copy(weight, weight + m_InputSize * m_OutputSize, m_Weight.begin());
         copy(bias, bias + m_OutputSize, m_Bias.begin());
     }
-    void setData(host_buffer_t<T>& weight, host_buffer_t<T>& bias) {
+    void setData(vector<T>& weight, vector<T>& bias) {
         m_Bias.resize(m_OutputSize);
         m_Weight.resize(m_InputSize * m_OutputSize);
         copy(weight.begin(), weight.end(), m_Weight.begin());
@@ -74,8 +69,8 @@ class FCN {
     }
 
     void inference(uint32_t batch, T* vecIn, T* vecOut) {
-#ifdef MKLROOT
-        copyBias(batch, m_OutputSize, vecOut, m_Bias.data());
+#ifdef MKL
+        cpu::copyBias(batch, m_OutputSize, vecOut, m_Bias.data());
         cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasTrans, batch, m_OutputSize, m_InputSize, 1.0f, vecIn, m_InputSize,
                     m_Weight.data(), m_InputSize, 1.0f, vecOut, m_OutputSize);
 #else
@@ -88,7 +83,7 @@ class FCN {
             }
         }
 #endif
-        funcBatchAct(batch, m_OutputSize, vecOut, m_ActFunc);
+        cpu::funcBatchAct(batch, m_OutputSize, vecOut, m_ActFunc);
     }
 };
 

@@ -22,6 +22,7 @@
 #include <cmath>
 #include <fstream>
 #include <assert.h>
+#include <thread>
 #include <unordered_map>
 #include "utils.hpp"
 
@@ -116,54 +117,59 @@ class Signature {
         }
     }
 
-    void gen_pars(vector<SparseMatrix>& p_rbSpms, vector<SparseMatrix>& p_parSpms) {
-        uint32_t l_totalPars = 0;
-        uint32_t l_totalRbs = p_rbSpms.size();
-        for (uint32_t i = 0; i < l_totalRbs; i++) {
-            SparseMatrix l_rbSpm = p_rbSpms[i];
-            vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(i, 1);
-
-            assert(l_rbSpm.getNnz() == l_rbInfo[1]);
-            assert(l_rbSpm.getM() == l_rbInfo[0]);
-            assert(l_rbSpm.getM() <= m_maxRows);
-            uint32_t l_rbPars = 0;
-            l_rbSpm.sort_by_col();
-            uint32_t l_minColId = (l_rbSpm.getMinColId() / m_parEntries) * m_parEntries;
-            uint32_t l_sId = 0, l_eId = 0;
-            while (l_eId < l_rbSpm.getNnz()) {
-                if (l_rbSpm.getCol(l_rbSpm.getNnz() - 1) < l_minColId + m_maxCols) {
-                    l_eId = l_rbSpm.getNnz();
-                } else {
-                    vector<uint32_t> l_tmp = l_rbSpm.getCols();
-                    auto l_up = upper_bound(l_tmp.begin(), l_tmp.end(), l_minColId + m_maxCols, isLessEqual);
-                    l_eId = l_up - l_tmp.begin();
-                }
-                if (l_eId > l_sId) {
-                    vector<uint32_t> l_row = l_rbSpm.getSubRows(l_sId, l_eId);
-                    vector<uint32_t> l_col = l_rbSpm.getSubCols(l_sId, l_eId);
-                    vector<double> l_data = l_rbSpm.getSubDatas(l_sId, l_eId);
-                    uint32_t l_m = 0, l_n = 0, l_nnz = 0, l_spmMinRowId = 0, l_spmMinColId = 0;
-                    SparseMatrix l_parSpm =
-                        add_spm(l_row, l_col, l_data, l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId);
-                    p_parSpms.push_back(l_parSpm);
-                    assert(l_m <= m_maxRows);
-                    assert(l_n <= m_maxCols);
-                    l_sId = l_eId;
-                    l_rbPars += 1;
-                    if (l_eId < l_rbSpm.getNnz()) {
-                        l_minColId = (l_rbSpm.getCol(l_eId) / m_parEntries) * m_parEntries;
-                    }
+    void genPars4Rb(unsigned int p_rbId, SparseMatrix& p_rbSpm, vector<SparseMatrix>& p_parSpms) {
+        vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(p_rbId, 1);
+        assert(p_rbSpm.getNnz() == l_rbInfo[1]);
+        assert(p_rbSpm.getM() == l_rbInfo[0]);
+        assert(p_rbSpm.getM() <= m_maxRows);
+        uint32_t l_rbPars = 0;
+        p_rbSpm.sort_by_col();
+        uint32_t l_minColId = (p_rbSpm.getMinColId() / m_parEntries) * m_parEntries;
+        uint32_t l_sId = 0, l_eId = 0;
+        while (l_eId < p_rbSpm.getNnz()) {
+            if (p_rbSpm.getCol(p_rbSpm.getNnz() - 1) < l_minColId + m_maxCols) {
+                l_eId = p_rbSpm.getNnz();
+            } else {
+                vector<uint32_t> l_tmp = p_rbSpm.getCols();
+                auto l_up = upper_bound(l_tmp.begin(), l_tmp.end(), l_minColId + m_maxCols, isLessEqual);
+                l_eId = l_up - l_tmp.begin();
+            }
+            if (l_eId > l_sId) {
+                vector<uint32_t> l_row = p_rbSpm.getSubRows(l_sId, l_eId);
+                vector<uint32_t> l_col = p_rbSpm.getSubCols(l_sId, l_eId);
+                vector<double> l_data = p_rbSpm.getSubDatas(l_sId, l_eId);
+                uint32_t l_m = 0, l_n = 0, l_nnz = 0, l_spmMinRowId = 0, l_spmMinColId = 0;
+                SparseMatrix l_parSpm =
+                    add_spm(l_row, l_col, l_data, l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId);
+                p_parSpms.push_back(l_parSpm);
+                assert(l_m <= m_maxRows);
+                assert(l_n <= m_maxCols);
+                l_sId = l_eId;
+                l_rbPars += 1;
+                if (l_eId < p_rbSpm.getNnz()) {
+                    l_minColId = (p_rbSpm.getCol(l_eId) / m_parEntries) * m_parEntries;
                 }
             }
-            m_rbParam.set_numPars(i, l_rbPars);
-            l_totalPars += l_rbPars;
+        }
+        m_rbParam.set_numPars(p_rbId, l_rbPars);
+    }
+    void gen_pars(vector<SparseMatrix>& p_rbSpms, vector<SparseMatrix>& p_parSpms) {
+        uint32_t l_totalRbs = p_rbSpms.size();
+        vector<vector<SparseMatrix> > l_parSpms(l_totalRbs);
+        vector<thread> l_threads(l_totalRbs);
+        for (auto i = 0; i < l_totalRbs; ++i) {
+            l_threads[i] = thread(&Signature::genPars4Rb, this, i, ref(p_rbSpms[i]), ref(l_parSpms[i]));
+        }
+        for (auto &th: l_threads) {
+            th.join();
+        }
+        for (auto i=0; i < l_totalRbs; ++i) {
+            p_parSpms.insert(p_parSpms.end(), l_parSpms[i].begin(), l_parSpms[i].end());
         }
     }
 
-    SparseMatrix pad_par(SparseMatrix p_parSpm) {
+    void pad_par(SparseMatrix& p_parSpm, SparseMatrix& p_paddedParSpm) {
         uint32_t l_nnzs = p_parSpm.getNnz();
-        uint32_t l_rows = p_parSpm.getM();
-        uint32_t l_parNnzs = 0;
 
         vector<uint32_t> l_row;
         vector<uint32_t> l_col;
@@ -188,12 +194,11 @@ class Signature {
                 if (l_modId == 0) {
                     l_colIdBase = (l_colId / m_parEntries) * m_parEntries;
                 }
+                l_row.push_back(l_rowId);
                 if (l_colId != (l_colIdBase + l_modId)) {
-                    l_row.push_back(l_rowId);
                     l_col.push_back(l_colIdBase + l_modId);
                     l_data.push_back(0);
                 } else {
-                    l_row.push_back(l_rowId);
                     l_col.push_back(l_colId);
                     l_data.push_back(l_dataItem);
                     l_idx += 1;
@@ -211,24 +216,33 @@ class Signature {
                 l_rRowNnzs += 1;
             }
         }
+        p_paddedParSpm.create_matrix(l_row, l_col, l_data);
+    }
 
-        SparseMatrix l_paddedParSpm;
-        l_paddedParSpm.create_matrix(l_row, l_col, l_data);
-
-        return l_paddedParSpm;
+    void create_padPar(unsigned int p_id, SparseMatrix& p_parSpm, SparseMatrix& p_paddedParSpm) {
+        p_parSpm.sort_by_row();
+        pad_par(p_parSpm, p_paddedParSpm);
     }
 
     void gen_paddedPars(vector<SparseMatrix>& p_rbSpms, vector<SparseMatrix>& p_paddedParSpms) {
         vector<SparseMatrix> l_parSpms;
         gen_pars(p_rbSpms, l_parSpms);
 
-        for (uint32_t i = 0; i < l_parSpms.size(); i++) {
-            SparseMatrix l_parSpm = l_parSpms[i];
-            l_parSpm.sort_by_row();
+        unsigned int l_size = l_parSpms.size();
+        p_paddedParSpms.resize(l_size);
+
+        vector<thread> l_threads(l_size);
+        for (unsigned int i = 0; i < l_size; i++) {
+            /*SparseMatrix l_parSpm = l_parSpms[i];
+            l_parSpm.complete_sort_by_row();
             SparseMatrix l_paddedParSpm = pad_par(l_parSpm);
             assert(l_paddedParSpm.getM() <= m_maxRows);
             assert(l_paddedParSpm.getN() <= m_maxCols);
-            p_paddedParSpms.push_back(l_paddedParSpm);
+            p_paddedParSpms[i] = l_paddedParSpm;*/
+            l_threads[i] = thread(&Signature::create_padPar, this, i, ref(l_parSpms[i]), ref(p_paddedParSpms[i]));
+        }
+        for (auto &th : l_threads) {
+            th.join();
         }
     }
 
@@ -302,8 +316,6 @@ class Signature {
         for (uint32_t rbId = 0; rbId < l_totalRbs; rbId++) {
             vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(rbId, 0);
             uint32_t l_sRbRowId = l_rbInfo[0];
-            uint32_t l_minRbColId = l_rbInfo[1];
-            uint32_t l_rbCols = l_rbInfo[2];
             uint32_t l_rbNumPars = l_rbInfo[3];
             uint32_t l_chRbMinRowId[m_channels];
             memset(l_chRbMinRowId, 0, m_channels * sizeof(uint32_t));

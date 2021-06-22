@@ -110,8 +110,9 @@ class KernelLoadRbParam : public Kernel {
 
 class xCgHost {
    public:
-    xCgHost();
-    void init(int p_devId, string& p_xclbinName);
+    xCgHost(){};
+    xCgHost(int p_devId, string p_xclbinName);
+    void init(int p_devId, string p_xclbinName);
     void sendDat(vector<void*>& p_nnzVal,
                  vector<unsigned int>& p_nnzValSize,
                  void* p_parParam,

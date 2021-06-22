@@ -15,23 +15,18 @@
 #
 
 pyGenMat=${XFLIB_DIR}/mlp/src/sw/python/genMLP.py
-batch = 92
+batch = 32
 numLayers = 3
 layers=15154 64 512 2
 HPC_configDevice = ${CUR_DIR}/devices.json
 HPC_dataType = float
-HPC_activation = sigmoid
+HPC_activation = relu
 DEV_NUM=1
-HWPERF=1
 
-ifdef MKLROOT 
-CXXFLAGS += -DMKLROOT -I$(MKLROOT)/include
-LDFLAGS += -lmkl_rt -I$(MKLROOT)/include
-endif
-
-ifeq (${HWPERF}, 1)
-CXXFLAGS += -DHWPERF
-endif
+#ifdef MKLROOT 
+#CXXFLAGS += -DMKL -I$(MKLROOT)/include
+#LDFLAGS += -lmkl_rt -I$(MKLROOT)/include
+#endif
 
 dataDir = ./$(BUILD_DIR)/data_b${batch}_l${numLayers}/
 HOST_ARGS += ${DEV_NUM} $(batch) ${numLayers} ${layers} $(dataDir) ${HPC_configDevice} 
