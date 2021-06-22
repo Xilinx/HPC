@@ -1,4 +1,4 @@
-np   =  50 ; % Number of points along one dimension
+np   =  10 ; % Number of points along one dimension
 mode =   1 ; % 0: implicit; 1: thermal
 tf   = 0.1 ; % Termination time 
 dt   = 0.1 ; % Time step
@@ -84,14 +84,14 @@ switch (mode)
       fprintf(fid, '         2      5000     1e-16     1e-16\n') ;
       fprintf(fid, '*CONTROL_THERMAL_TIMESTEP\n') ;
       fprintf(fid, '$       TS       TIP       ITS\n') ;
-      fprintf(fid, '         0       1.0%10d\n', dt) ;
+      fprintf(fid, '         0       1.0%10.6f\n', dt) ;
    otherwise
       % Mechanical options
       fprintf(fid, '*MAT_ELASTIC\n') ;
       fprintf(fid, '$      MID        R0         E\n') ;
       fprintf(fid, '         1       1.0       1.0\n') ;
       fprintf(fid, '*CONTROL_IMPLICIT_GENERAL\n') ;
-      fprintf(fid, '         1%10d\n', dt) ;
+      fprintf(fid, '         1%10.6f\n', dt) ;
       fprintf(fid, '*CONTROL_IMPLICIT_SOLVER\n') ;
       fprintf(fid, '$   LSOLVR    LPRINT\n') ;
       fprintf(fid, '        22         1\n') ;
@@ -100,10 +100,10 @@ switch (mode)
 end
 fprintf(fid, '*CONTROL_TERMINATION\n') ;
 fprintf(fid, '$   ENDTIM\n') ;
-fprintf(fid, '%10d\n', tf) ;
+fprintf(fid, '%10.6f\n', tf) ;
 fprintf(fid, '*DATABASE_BINARY_D3PLOT\n') ;
 fprintf(fid, '$       DT\n') ;
-fprintf(fid, '%10d\n', dt) ;
+fprintf(fid, '%10.6f\n', dt) ;
 fprintf(fid, '*END\n') ;
 fclose(fid) ;
 
