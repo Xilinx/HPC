@@ -153,7 +153,7 @@ double fpga_JPCG(FortranInteger pn,
     *prelres = sqrt(l_res / l_pcg.getDot());
     *pniter = lastIter;
     memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_xk), pn*sizeof(FortranReal));
-    *pflops = lastIter * (3 * pnz + 18 * pn) - 4 * pn;
+    *pflops = lastIter * (2 * pnz + 13 * pn) - 2 * pn;
     return d.count() * 1e3;
 }
 /* -------------------------------------------------------------------------- */
@@ -253,7 +253,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
         if (sqrt(rTr) / rnrm0 < tol) break;
 
         /* New preconditioned residual */
-    for (i = 0; i < n; i++) z[i] = r[i] / dprec[i];
+        for (i = 0; i < n; i++) z[i] = r[i] / dprec[i];
         flops += 1.0 * n;
 
         /* beta = ( r^T z ) / ( old r^T z ) */
@@ -298,9 +298,10 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
             <<"MFLOP" << ","
 #ifdef USE_FPGA
             << "HW Time [ms]" << ","
+            << "HW GFLOPS" << ","
 #endif
             << "API Time [ms]" << ","
-            << "GFLOPS" << endl;
+            << "API GFLOPS" << endl;
         header = false;
     } else 
         fs.open("benchmark.csv", std::ofstream::app);
@@ -312,6 +313,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
         << *pflops/1e6 << ","
 #ifdef USE_FPGA
         << l_hwTime << ","
+        << *pflops/1e6/l_hwTime << ","
 #endif
         << l_timeMs << ","
         << *pflops/1e6/l_timeMs << endl;
