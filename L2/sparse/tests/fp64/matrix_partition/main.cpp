@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     loadMat(dataPath, l_matInfo, l_mat);
     l_timer[0] = chrono::high_resolution_clock::now();
     MatPartition l_matPar = l_spmPar.partitionMat();
-    showTimeData("InMatrix partition time: ", l_timer[0], l_timer[1]);
+    showTimeData("INFO: Matrix partition time: ", l_timer[0], l_timer[1]);
     storeMatPar(dataPath, l_matPar);
     printf("INFO: matrix %s partiton done.\n", l_matInfo.m_name.c_str());
     printf("      Original m, n, nnzs = %d, %d, %d\n", l_matPar.m_m, l_matPar.m_n, l_matPar.m_nnz);
