@@ -82,9 +82,7 @@ void coo_spmv(FInt n,
               Integer* rowInd,
               Integer* colInd,
               Real* mat,
-              Real alpha,
               Real* x,
-              Real beta,
               Real* y);
 
 template<typename FInt, typename Integer, typename Real>
@@ -233,11 +231,12 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     for (niter = 1; niter <= maxit; niter++) {
 /* q = A * p */
 #ifdef FORMAT_COO
-        coo_spmv(n, nnz, rowInd, colInd, matA, 1.0, p, 0.0, q);
+        coo_spmv(n, nnz, rowInd, colInd, matA, p, q);
+        flops += 2.0 * nnz;
 #else
         userLE_spmv(n, nz, colptr, rowind, values, 1.0, p, 0.0, q);
-#endif
         flops += 6.0 * nz - 2.0 * n;
+#endif
 
         /* alpha = ( r^T z ) / ( p^T q ) */
         rTz = userLE_vecdot(n, r, z);
@@ -362,19 +361,15 @@ void coo_spmv(FInt n,
         Integer* rowInd,
         Integer* colInd,
         Real* mat,
-        Real alpha,
         Real* x,
-        Real beta,
         Real* y) {
-    for (Integer i = 0; i < n; i++) y[i] *= beta;
+    for (Integer i = 0; i < n; i++) y[i] = 0;
 
     for (Integer i = 0; i < nz; i++) {
         Integer row = rowInd[i], col = colInd[i];
         assert(row < n && col < n);
-        y[row] += alpha * mat[i] * x[col];
+        y[row] += mat[i] * x[col];
     }
-
-    return;
 }
 
 /* -------------------------------------------------------------------------- */
