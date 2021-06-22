@@ -216,8 +216,10 @@ void KernelLoadRbParam::setMem(void* p_buf, unsigned int p_bufSize) {
     sendBuffer(l_buffers);
 }
 
-xCgHost::xCgHost(){};
-void xCgHost::init(int p_devId, string& p_xclbinName) {
+xCgHost::xCgHost(int p_devId, string p_xclbinName){
+    init(p_devId, p_xclbinName);
+};
+void xCgHost::init(int p_devId, string p_xclbinName) {
     m_card.init(p_devId, p_xclbinName);
     m_krnCtl.fpga(&m_card);
     m_krnLoadArbParam.fpga(&m_card);

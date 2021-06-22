@@ -32,6 +32,9 @@ template <typename t_DataType,
 class PCG {
    public:
     PCG(){};
+    PCG(int p_devId, string p_xclbinName){
+        initDev(p_devId, p_xclbinName);
+    }
     CooMat allocMat(unsigned int p_m, unsigned int p_n, unsigned int p_nnz) {
         return m_spmPar.allocMat(p_m, p_n, p_nnz);
     }

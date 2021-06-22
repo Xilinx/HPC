@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <sys/time.h>
 #include "pcg.hpp"
+#include "cgHost.hpp"
 #include "utils.hpp"
 
 #ifdef AUTODOUBLE
@@ -44,7 +45,7 @@ typedef float FortranReal;
 #define userLE_vecdot USERLE_VECDOR
 #define userLE_vecsum USERLE_VECSUM
 #endif
-
+typedef PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
 /* -------------------------------------------------------------------------- */
 /* Prototypes */
 extern "C" void userLE_JPCG(FortranInteger* pn,
@@ -81,9 +82,7 @@ void coo_spmv(FInt n,
               Integer* rowInd,
               Integer* colInd,
               Real* mat,
-              Real alpha,
               Real* x,
-              Real beta,
               Real* y);
 
 template<typename FInt, typename Integer, typename Real>
@@ -96,7 +95,8 @@ void getCOO(FInt n,
             Integer* rowInd,
             Integer* colInd);
 
-double fpga_JPCG(FortranInteger pn,
+double fpga_JPCG(PCG_TYPE & l_pcg,
+        FortranInteger pn,
                  FortranInteger pnz,
                  uint32_t* rowInd,
                  uint32_t* colInd,
@@ -111,7 +111,6 @@ double fpga_JPCG(FortranInteger pn,
                  FortranReal* pflops){
     std::cout << "running fpga_JPCG..." << std::endl;
     TimePointType l_timer[7];
-    PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> l_pcg;
     CooMat l_mat = l_pcg.allocMat(pn, pn, pnz);
     l_pcg.allocVec(pn);
     CgInputVec l_inVecs = l_pcg.getInputVec();
@@ -127,7 +126,6 @@ double fpga_JPCG(FortranInteger pn,
     showTimeData("Matrix partition time: ", l_timer[1], l_timer[2]);
     l_pcg.initVec();
     showTimeData("Vector initialization time: ", l_timer[2], l_timer[3]);
-    l_pcg.initDev(1, "../cgSolver.xclbin");
     showTimeData("FPGA configuration time: ", l_timer[3], l_timer[4]);
     l_pcg.setDat();
     l_pcg.setInstr(pmaxit, ptol);
@@ -135,7 +133,6 @@ double fpga_JPCG(FortranInteger pn,
     l_pcg.run();
     CgVector l_resVec = l_pcg.getRes();
     showTimeData("PCG run time: ", l_timer[5], l_timer[6]);
-    chrono::duration<double> d = l_timer[6] - l_timer[5];
     CgInstr l_instr = l_pcg.getInstr();
     void* l_xk = l_resVec.h_xk;
     xf::hpc::MemInstr<CG_instrBytes> l_memInstr;
@@ -153,7 +150,8 @@ double fpga_JPCG(FortranInteger pn,
     *prelres = sqrt(l_res / l_pcg.getDot());
     *pniter = lastIter;
     memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_xk), pn*sizeof(FortranReal));
-    *pflops = lastIter * (3 * pnz + 18 * pn) - 4 * pn;
+    *pflops = lastIter * (2 * pnz + 16 * pn) - 2 * pn;
+    chrono::duration<double> d = l_timer[6] - l_timer[5];
     return d.count() * 1e3;
 }
 /* -------------------------------------------------------------------------- */
@@ -171,7 +169,6 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
                  FortranInteger* pniter,
                  FortranReal* prelres,
                  FortranReal* pflops) {
-    TimePointType l_start = std::chrono::high_resolution_clock::now();
     FortranInteger n, nz, maxit;
     FortranInteger niter;
     FortranInteger i;
@@ -196,8 +193,15 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     colInd = (uint32_t*) malloc(nnz * sizeof(uint32_t));
     getCOO(n, nnz, colptr, rowind, values, matA, rowInd, colInd);
 #endif
+
 #ifdef USE_FPGA
-    double l_hwTime = fpga_JPCG(n, nnz, rowInd, colInd, matA, dprec, maxit, tol, b, x, pniter, prelres, pflops);
+    PCG_TYPE l_pcg(1, "../cgSolver.xclbin");
+#endif
+
+    TimePointType l_start = std::chrono::high_resolution_clock::now();
+
+#ifdef USE_FPGA
+    double l_hwTime = fpga_JPCG(l_pcg, n, nnz, rowInd, colInd, matA, dprec, maxit, tol, b, x, pniter, prelres, pflops);
 #else
     FortranReal *r, *z, *p, *q;
     /* Allocate local storage */
@@ -227,11 +231,12 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     for (niter = 1; niter <= maxit; niter++) {
 /* q = A * p */
 #ifdef FORMAT_COO
-        coo_spmv(n, nnz, rowInd, colInd, matA, 1.0, p, 0.0, q);
+        coo_spmv(n, nnz, rowInd, colInd, matA, p, q);
+        flops += 2.0 * nnz;
 #else
         userLE_spmv(n, nz, colptr, rowind, values, 1.0, p, 0.0, q);
-#endif
         flops += 6.0 * nz - 2.0 * n;
+#endif
 
         /* alpha = ( r^T z ) / ( p^T q ) */
         rTz = userLE_vecdot(n, r, z);
@@ -248,17 +253,18 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
 
         /* Compute the norm of the residual */
         rTr = userLE_vecdot(n, r, r);
+        flops += 2.0 * n;
 
         /* Stop if residual is small enough */
         if (sqrt(rTr) / rnrm0 < tol) break;
 
         /* New preconditioned residual */
-    for (i = 0; i < n; i++) z[i] = r[i] / dprec[i];
+        for (i = 0; i < n; i++) z[i] = r[i] / dprec[i];
         flops += 1.0 * n;
 
         /* beta = ( r^T z ) / ( old r^T z ) */
         beta = userLE_vecdot(n, r, z) / rTz;
-        flops += 3.0 * n;
+        flops += 2.0 * n;
 
         /* New search direction */
         userLE_vecsum(n, 1.0, z, beta, p);
@@ -298,9 +304,10 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
             <<"MFLOP" << ","
 #ifdef USE_FPGA
             << "HW Time [ms]" << ","
+            << "HW GFLOPS" << ","
 #endif
             << "API Time [ms]" << ","
-            << "GFLOPS" << endl;
+            << "API GFLOPS" << endl;
         header = false;
     } else 
         fs.open("benchmark.csv", std::ofstream::app);
@@ -312,6 +319,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
         << *pflops/1e6 << ","
 #ifdef USE_FPGA
         << l_hwTime << ","
+        << *pflops/1e6/l_hwTime << ","
 #endif
         << l_timeMs << ","
         << *pflops/1e6/l_timeMs << endl;
@@ -353,19 +361,15 @@ void coo_spmv(FInt n,
         Integer* rowInd,
         Integer* colInd,
         Real* mat,
-        Real alpha,
         Real* x,
-        Real beta,
         Real* y) {
-    for (Integer i = 0; i < n; i++) y[i] *= beta;
+    for (Integer i = 0; i < n; i++) y[i] = 0;
 
     for (Integer i = 0; i < nz; i++) {
         Integer row = rowInd[i], col = colInd[i];
         assert(row < n && col < n);
-        y[row] += alpha * mat[i] * x[col];
+        y[row] += mat[i] * x[col];
     }
-
-    return;
 }
 
 /* -------------------------------------------------------------------------- */
