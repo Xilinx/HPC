@@ -6,6 +6,12 @@ from multiprocessing import Pool
 import pandas as pd
 
 
+def build(target):
+    cmdLine = "make -j 8 TARGET=%s" % target
+    args = shlex.split(cmdLine)
+    subprocess.run(args)
+
+
 def run(target):
     cmdLine = "make run TARGET=%s" % target
     args = shlex.split(cmdLine)
@@ -39,8 +45,10 @@ def report(targets):
 def main():
     targets = ['fpga', 'csc', 'coo']
 
-    with Pool(3) as p:
-        p.map(run, targets)
+    with Pool(8) as p:
+        p.map(build, targets)
+    for t in targets:
+        run(t)
     report(targets)
 
 

@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <sys/time.h>
 #include "pcg.hpp"
+#include "cgHost.hpp"
 #include "utils.hpp"
 
 #ifdef AUTODOUBLE
@@ -44,7 +45,7 @@ typedef float FortranReal;
 #define userLE_vecdot USERLE_VECDOR
 #define userLE_vecsum USERLE_VECSUM
 #endif
-
+typedef PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
 /* -------------------------------------------------------------------------- */
 /* Prototypes */
 extern "C" void userLE_JPCG(FortranInteger* pn,
@@ -96,7 +97,8 @@ void getCOO(FInt n,
             Integer* rowInd,
             Integer* colInd);
 
-double fpga_JPCG(FortranInteger pn,
+double fpga_JPCG(PCG_TYPE & l_pcg,
+        FortranInteger pn,
                  FortranInteger pnz,
                  uint32_t* rowInd,
                  uint32_t* colInd,
@@ -111,7 +113,6 @@ double fpga_JPCG(FortranInteger pn,
                  FortranReal* pflops){
     std::cout << "running fpga_JPCG..." << std::endl;
     TimePointType l_timer[7];
-    PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> l_pcg;
     CooMat l_mat = l_pcg.allocMat(pn, pn, pnz);
     l_pcg.allocVec(pn);
     CgInputVec l_inVecs = l_pcg.getInputVec();
@@ -127,7 +128,6 @@ double fpga_JPCG(FortranInteger pn,
     showTimeData("Matrix partition time: ", l_timer[1], l_timer[2]);
     l_pcg.initVec();
     showTimeData("Vector initialization time: ", l_timer[2], l_timer[3]);
-    l_pcg.initDev(1, "../cgSolver.xclbin");
     showTimeData("FPGA configuration time: ", l_timer[3], l_timer[4]);
     l_pcg.setDat();
     l_pcg.setInstr(pmaxit, ptol);
@@ -135,7 +135,6 @@ double fpga_JPCG(FortranInteger pn,
     l_pcg.run();
     CgVector l_resVec = l_pcg.getRes();
     showTimeData("PCG run time: ", l_timer[5], l_timer[6]);
-    chrono::duration<double> d = l_timer[6] - l_timer[5];
     CgInstr l_instr = l_pcg.getInstr();
     void* l_xk = l_resVec.h_xk;
     xf::hpc::MemInstr<CG_instrBytes> l_memInstr;
@@ -153,7 +152,8 @@ double fpga_JPCG(FortranInteger pn,
     *prelres = sqrt(l_res / l_pcg.getDot());
     *pniter = lastIter;
     memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_xk), pn*sizeof(FortranReal));
-    *pflops = lastIter * (2 * pnz + 13 * pn) - 2 * pn;
+    *pflops = lastIter * (2 * pnz + 16 * pn) - 2 * pn;
+    chrono::duration<double> d = l_timer[6] - l_timer[5];
     return d.count() * 1e3;
 }
 /* -------------------------------------------------------------------------- */
@@ -171,7 +171,6 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
                  FortranInteger* pniter,
                  FortranReal* prelres,
                  FortranReal* pflops) {
-    TimePointType l_start = std::chrono::high_resolution_clock::now();
     FortranInteger n, nz, maxit;
     FortranInteger niter;
     FortranInteger i;
@@ -196,8 +195,15 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     colInd = (uint32_t*) malloc(nnz * sizeof(uint32_t));
     getCOO(n, nnz, colptr, rowind, values, matA, rowInd, colInd);
 #endif
+
 #ifdef USE_FPGA
-    double l_hwTime = fpga_JPCG(n, nnz, rowInd, colInd, matA, dprec, maxit, tol, b, x, pniter, prelres, pflops);
+    PCG_TYPE l_pcg(1, "../cgSolver.xclbin");
+#endif
+
+    TimePointType l_start = std::chrono::high_resolution_clock::now();
+
+#ifdef USE_FPGA
+    double l_hwTime = fpga_JPCG(l_pcg, n, nnz, rowInd, colInd, matA, dprec, maxit, tol, b, x, pniter, prelres, pflops);
 #else
     FortranReal *r, *z, *p, *q;
     /* Allocate local storage */
@@ -248,6 +254,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
 
         /* Compute the norm of the residual */
         rTr = userLE_vecdot(n, r, r);
+        flops += 2.0 * n;
 
         /* Stop if residual is small enough */
         if (sqrt(rTr) / rnrm0 < tol) break;
@@ -258,7 +265,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
 
         /* beta = ( r^T z ) / ( old r^T z ) */
         beta = userLE_vecdot(n, r, z) / rTz;
-        flops += 3.0 * n;
+        flops += 2.0 * n;
 
         /* New search direction */
         userLE_vecsum(n, 1.0, z, beta, p);
