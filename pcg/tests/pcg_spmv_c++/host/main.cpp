@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 
     l_timer[0] = chrono::high_resolution_clock::now();
     l_pcg.partitionMat();
-    showTimeData("Matrix partition time: ", l_timer[0], l_timer[1]);
+    double l_mat_partition_time = showTimeData("Matrix partition time: ", l_timer[0], l_timer[1]);
     l_pcg.initVec();
     showTimeData("Vector initialization time: ", l_timer[1], l_timer[2]);
     l_pcg.initDev(l_deviceId, binaryFile);
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
     l_pcg.setVec();
     showTimeData("Send Vec time: ", l_timer[4], l_timer[5]);
     l_pcg.setInstr(l_maxIter, l_tol);
-    showTimeData("Send instructions time: ", l_timer[5], l_timer[6]);
+    double l_h2d_time = showTimeData("Host to device data transfer time: ", l_timer[3], l_timer[4]);
     double l_runTime = 1;
     l_pcg.run();
     CgVector l_resVec = l_pcg.getRes();
@@ -121,12 +121,13 @@ int main(int argc, char** argv) {
     readBin(l_datFilePath + "/x.mat", l_matInfo.m_m * sizeof(CG_dataType), h_x);
     //compare(h_x.size(), h_x.data(), h_xk.data(), err, l_debug);
     compare<CG_dataType>(l_matInfo.m_m, h_x.data(), (CG_dataType*)(l_xk), err, l_debug);
-    cout << "matrix name, original rows/cols, original NNZs, padded rows/cols, padded NNZs, padding ";
-    cout << "ratio, num of iterations, total run time[sec], time[ms]/run, num_mismatches";
+    
+    cout << "DATA_CSV:,matrix_name, dim, original NNZs, padded dim, padded NNZs, padding ratio, ";
+    cout << "num of iterations, mat partition time[ms], H2D time[ms], total run time[ms], time[ms]/run, num_mismatches";
     cout << endl;
     cout << "DATA_CSV:," << l_mtxName << "," << l_info[0] << "," << l_info[2];
     cout << "," << l_info[4] << "," << l_info[5] << "," << l_padRatio;
-    cout << "," << lastIter + 1 << "," << l_runTime << "," << (float)l_runTime / (lastIter + 1);
+    cout << "," << lastIter + 1 << "," << l_mat_partition_time << "," << l_h2d_time << "," << l_runTime << "," << (float)l_runTime / (lastIter + 1);
     cout << "," << err << endl;
     if (err == 0) {
         cout << "Test pass!" << endl;
