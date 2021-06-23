@@ -40,10 +40,10 @@ def report(targets):
     df['Perf. fpga_HW/csc_API'] = round(df['fpga HW GFLOPS'] /
                                         df['csc API GFLOPS'], 5)
 
-    df['Time fpga_API/csc_API'] = round(df['fpga API Time [ms]'] /
-                                        df['csc API Time [ms]'], 5)
-    df['Time fpga_HW/csc_API'] = round(df['fpga HW Time [ms]'] /
-                                       df['csc API Time [ms]'], 5)
+    df['Time csc_API/fpga_API'] = round(df['csc API Time [ms]'] / 
+                                        df['fpga API Time [ms]'], 5)
+    df['Time csc_API/fpga_HW'] = round(df['csc API Time [ms]'] / 
+                                       df['fpga HW Time [ms]'], 5)
     df.sort_values(by=['Dim'], inplace=True)
     df.to_csv("benchmark.csv", index=False)
 
