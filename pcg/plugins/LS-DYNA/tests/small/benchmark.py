@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import subprocess
+import argparse
 import shlex
 import os
 from multiprocessing import Pool
@@ -12,8 +13,8 @@ def build(target):
     subprocess.run(args)
 
 
-def run(target):
-    cmdLine = "make run TARGET=%s" % target
+def run(target, model):
+    cmdLine = "make run TARGET=%s MODEL_NAME=%s" % (target, model)
     args = shlex.split(cmdLine)
     subprocess.run(args)
 
@@ -34,23 +35,39 @@ def report(targets):
         df['%s API Time [ms]' % t] = df_t['API Time [ms]']
         df['%s API GFLOPS' % t] = df_t['API GFLOPS']
 
-    df['fpga_API/csc_API'] = round(df['fpga API GFLOPS'] /
-                                   df['csc API GFLOPS'], 5)
-    df['fpga_HW/csc_API'] = round(df['fpga HW GFLOPS'] /
-                                  df['csc API GFLOPS'], 5)
+    df['Perf. fpga_API/csc_API'] = round(df['fpga API GFLOPS'] /
+                                         df['csc API GFLOPS'], 5)
+    df['Perf. fpga_HW/csc_API'] = round(df['fpga HW GFLOPS'] /
+                                        df['csc API GFLOPS'], 5)
 
+    df['Time fpga_API/csc_API'] = round(df['fpga API Time [ms]'] /
+                                        df['csc API Time [ms]'], 5)
+    df['Time fpga_HW/csc_API'] = round(df['fpga HW Time [ms]'] /
+                                       df['csc API Time [ms]'], 5)
     df.to_csv("benchmark.csv", index=False)
 
 
-def main():
+def main(model_path):
     targets = ['fpga', 'csc', 'coo']
+
+    if not os.path.isdir(model_path):
+        return
+    model_names = os.listdir(model_path)
 
     with Pool(8) as p:
         p.map(build, targets)
-    for t in targets:
-        run(t)
+
+    for m in model_names:
+        for t in targets:
+            run(t, m)
     report(targets)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser("benchmark multiple targets and models")
+    parser.add_argument('--model_path', type=str, help="path to model files")
+    args = parser.parse_args()
+    if args.model_path is None:
+        print(parser.print_help())
+    else:
+        main(args.model_path)

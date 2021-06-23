@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <experimental/filesystem>
 #include <assert.h>
 #include <sys/time.h>
 #include "pcg.hpp"
@@ -292,11 +293,12 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     auto l_stop = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> l_durationSec = l_stop - l_start;
     double l_timeMs = l_durationSec.count() * 1e3;
-    static bool header = true;
+    string filename = "benchmark.csv";
+    bool header = std::experimental::filesystem::exists(filename);
 
     ofstream fs;
-    if(header) {
-        fs.open("benchmark.csv");
+    fs.open("benchmark.csv", std::ofstream::app);
+    if(!header) {
         fs << "Dim" << ","
             << "NNZ" << ","
             << "Niter" << ","
@@ -308,9 +310,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
 #endif
             << "API Time [ms]" << ","
             << "API GFLOPS" << endl;
-        header = false;
-    } else 
-        fs.open("benchmark.csv", std::ofstream::app);
+    } 
 
     fs << n << ","
         << nnz << ","

@@ -11,6 +11,8 @@ CUR_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
 XFLIB_DIR = $(XF_PROJ_ROOT)
 TEMP_DIR := $(CUR_DIR)/_x_temp
 TARGET?=csc
+MODEL_PATH?=$(XF_PROJ_ROOT)/pcg/models
+MODEL_NAME?=small_tbc
 BUILD_DIR := $(CUR_DIR)/build_output.$(TARGET)
 FC=mpiifort
 CC=mpigxx
@@ -24,7 +26,7 @@ CXXFLAGS += -I$(XFLIB_DIR)/pcg/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
-CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11  -Wno-unknown-pragmas -Wno-unused-label
+CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++14  -Wno-unknown-pragmas -Wno-unused-label
 CXXFLAGS += -fmessage-length=0
 
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
@@ -32,7 +34,7 @@ LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-na
 #
 LD=mpiifort -sox -fpp -qopenmp -static-intel
 #
-LF=  -lrt -lstdc++ -lpthread -lstdc++ -lpthread
+LF=  -lrt -lpthread -lstdc++ -lstdc++fs -lpthread
 CF=  -O3 $(CXXFLAGS) -DAUTODOUBLE -DUNSCORE -Wall
 
 ifeq ($(TARGET), coo)
@@ -153,7 +155,7 @@ $(EXE): $(OBJS)
 
 run: $(EXE)
 	cd $(BUILD_DIR) && \
-	$(EXE) i=$(LS_DYNA_PATH)/run/small_tbc/small_tbc.k memory=1G ncpu=1 impcon=1
+	$(EXE) i=$(MODEL_PATH)/$(MODEL_NAME)/$(MODEL_NAME).k memory=1G ncpu=1 impcon=1
 	cd ..
 
 clean:
