@@ -111,7 +111,7 @@ double fpga_JPCG(PCG_TYPE & l_pcg,
                  FortranReal* prelres,
                  FortranReal* pflops){
     std::cout << "running fpga_JPCG..." << std::endl;
-    TimePointType l_timer[7];
+    TimePointType l_timer[10];
     CooMat l_mat = l_pcg.allocMat(pn, pn, pnz);
     l_pcg.allocVec(pn);
     CgInputVec l_inVecs = l_pcg.getInputVec();
@@ -127,13 +127,16 @@ double fpga_JPCG(PCG_TYPE & l_pcg,
     showTimeData("Matrix partition time: ", l_timer[1], l_timer[2]);
     l_pcg.initVec();
     showTimeData("Vector initialization time: ", l_timer[2], l_timer[3]);
-    showTimeData("FPGA configuration time: ", l_timer[3], l_timer[4]);
-    l_pcg.setDat();
+    //l_pcg.setDat();
+    l_pcg.setMat();
+    showTimeData("Matrix data transfer time: ", l_timer[3], l_timer[4]);
+    l_pcg.setVec();
+    showTimeData("Vector data transfer time: ", l_timer[4], l_timer[5]);
     l_pcg.setInstr(pmaxit, ptol);
-    showTimeData("Host to device data transfer time: ", l_timer[4], l_timer[5]);
+    showTimeData("Host to device data transfer time: ", l_timer[3], l_timer[6]);
     l_pcg.run();
     CgVector l_resVec = l_pcg.getRes();
-    showTimeData("PCG run time: ", l_timer[5], l_timer[6]);
+    showTimeData("PCG run time: ", l_timer[6], l_timer[7]);
     CgInstr l_instr = l_pcg.getInstr();
     void* l_xk = l_resVec.h_xk;
     xf::hpc::MemInstr<CG_instrBytes> l_memInstr;

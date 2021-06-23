@@ -264,6 +264,33 @@ void xCgHost::sendDat(vector<void*>& p_nnzVal,
     m_krnUpdateRkJacobi.setMem(p_rk, p_rkSize, p_zk, p_zkSize, p_jacobi, p_jacobiSize, p_Apk, p_ApkSize);
     m_krnUpdateXk.setMem(p_xk, p_xkSize, p_pk, p_pkSize);
 }
+void xCgHost::sendMatDat(vector<void*>& p_nnzVal,
+                      vector<unsigned int>& p_nnzValSize,
+                      void* p_rbParam,
+                      unsigned int p_rbParamSize) {
+    m_krnLoadAval.setMem(p_nnzVal, p_nnzValSize);
+    m_krnLoadArbParam.setMem(p_rbParam, p_rbParamSize);
+}
+void xCgHost::sendVecDat(void* p_parParam,
+             unsigned int p_parParamSize,
+             void* p_pk,
+             unsigned int p_pkSize,
+             void* p_Apk,
+             unsigned int p_ApkSize,
+             void* p_zk,
+             unsigned int p_zkSize,
+             void* p_rk,
+             unsigned int p_rkSize,
+             void* p_jacobi,
+             unsigned int p_jacobiSize,
+             void* p_xk,
+             unsigned int p_xkSize) {
+    m_krnLoadPkApar.setMem(p_parParam, p_parParamSize, p_pk, p_pkSize);
+    m_krnStoreApk.setMem(p_pk, p_pkSize, p_Apk, p_ApkSize);
+    m_krnUpdatePk.setMem(p_pk, p_pkSize, p_zk, p_zkSize);
+    m_krnUpdateRkJacobi.setMem(p_rk, p_rkSize, p_zk, p_zkSize, p_jacobi, p_jacobiSize, p_Apk, p_ApkSize);
+    m_krnUpdateXk.setMem(p_xk, p_xkSize, p_pk, p_pkSize);
+}
 void xCgHost::sendInstr(void* p_instr, unsigned int p_instrSize) {
     m_krnCtl.setMem(p_instr, p_instrSize);
 }

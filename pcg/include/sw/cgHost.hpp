@@ -131,6 +131,27 @@ class xCgHost {
                  unsigned int p_jacobiSize,
                  void* p_xk,
                  unsigned int p_xkSize);
+
+    void sendMatDat(vector<void*>& p_nnzVal,
+                 vector<unsigned int>& p_nnzValSize,
+                 void* p_rbParam,
+                 unsigned int p_rbParamSize);
+
+    void sendVecDat(void* p_parParam,
+                 unsigned int p_parParamSize,
+                 void* p_pk,
+                 unsigned int p_pkSize,
+                 void* p_Apk,
+                 unsigned int p_ApkSize,
+                 void* p_zk,
+                 unsigned int p_zkSize,
+                 void* p_rk,
+                 unsigned int p_rkSize,
+                 void* p_jacobi,
+                 unsigned int p_jacobiSize,
+                 void* p_xk,
+                 unsigned int p_xkSize);
+
     void sendInstr(void* p_instr, unsigned int p_instrSize);
     void run();
     void getDat();

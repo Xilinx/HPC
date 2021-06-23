@@ -56,6 +56,20 @@ class PCG {
                        l_cgVec.h_jacobi, l_cgVec.vecBytes,
                        l_cgVec.h_xk, l_cgVec.vecBytes);
     }
+    void setMat() {
+        m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize,
+                       m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize);
+    }
+    void setVec() {
+        CgVector l_cgVec = m_genCgVec.getVec();
+        m_host.sendVecDat(m_matPar.m_parParamPtr, m_matPar.m_parParamSize,
+                       l_cgVec.h_pk, l_cgVec.vecBytes,
+                       l_cgVec.h_Apk, l_cgVec.vecBytes,
+                       l_cgVec.h_zk, l_cgVec.vecBytes,
+                       l_cgVec.h_rk, l_cgVec.vecBytes,
+                       l_cgVec.h_jacobi, l_cgVec.vecBytes,
+                       l_cgVec.h_xk, l_cgVec.vecBytes);
+    }
     void setInstr(unsigned int p_maxIter, t_DataType p_tol) {
         t_DataType l_dot = m_genCgVec.getDot();
         t_DataType l_rz = m_genCgVec.getRz();
