@@ -155,7 +155,7 @@ double fpga_JPCG(PCG_TYPE & l_pcg,
     *pniter = lastIter;
     memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_xk), pn*sizeof(FortranReal));
     *pflops = lastIter * (2 * pnz + 16 * pn) - 2 * pn;
-    chrono::duration<double> d = l_timer[6] - l_timer[5];
+    chrono::duration<double> d = l_timer[7] - l_timer[6];
     return d.count() * 1e3;
 }
 /* -------------------------------------------------------------------------- */
