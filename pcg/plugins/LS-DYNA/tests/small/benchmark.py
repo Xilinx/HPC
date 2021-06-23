@@ -44,6 +44,7 @@ def report(targets):
                                         df['csc API Time [ms]'], 5)
     df['Time fpga_HW/csc_API'] = round(df['fpga HW Time [ms]'] /
                                        df['csc API Time [ms]'], 5)
+    df.sort_values(by=['Dim'], inplace=True)
     df.to_csv("benchmark.csv", index=False)
 
 
