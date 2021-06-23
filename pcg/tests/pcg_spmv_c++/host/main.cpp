@@ -39,11 +39,8 @@ int main(int argc, char** argv) {
              << endl;
         return EXIT_FAILURE;
     }
-
     int l_idx = 1;
-
     string binaryFile = argv[l_idx++];
-
     int l_maxIter = atoi(argv[l_idx++]);
     CG_dataType l_tol = atof(argv[l_idx++]);
     string l_datPath = argv[l_idx++];
@@ -82,13 +79,17 @@ int main(int argc, char** argv) {
     showTimeData("Vector initialization time: ", l_timer[1], l_timer[2]);
     l_pcg.initDev(l_deviceId, binaryFile);
     showTimeData("FPGA configuration time: ", l_timer[2], l_timer[3]);
-    l_pcg.setDat();
+    //l_pcg.setDat();
+    l_pcg.setMat();
+    showTimeData("Send Mat time: ", l_timer[3], l_timer[4]);
+    l_pcg.setVec();
+    showTimeData("Send Vec time: ", l_timer[4], l_timer[5]);
     l_pcg.setInstr(l_maxIter, l_tol);
-    showTimeData("Host to device data transfer time: ", l_timer[3], l_timer[4]);
+    showTimeData("Send instructions time: ", l_timer[5], l_timer[6]);
     double l_runTime = 1;
     l_pcg.run();
     CgVector l_resVec = l_pcg.getRes();
-    showTimeData("PCG run time: ", l_timer[4], l_timer[5], &l_runTime);
+    showTimeData("PCG run time: ", l_timer[6], l_timer[7], &l_runTime);
     CgInstr l_instr = l_pcg.getInstr();
     void* l_xk = l_resVec.h_xk;
     void* l_rk = l_resVec.h_rk;
@@ -108,7 +109,7 @@ int main(int argc, char** argv) {
         finalClock = l_cgInstr.getClock();
     }
     vector<uint32_t> l_info = l_pcg.getMatInfo();
-    cout << "HW execution time is: " << finalClock * HW_CLK << "s." << endl;
+    cout << "HW execution time is: " << finalClock * HW_CLK * 1e3<< "msec." << endl;
     float l_padRatio = (float)(l_info[5]) / (float)(l_info[2]);
 
     if (l_debug) {

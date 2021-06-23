@@ -155,8 +155,10 @@ void Kernel::enqueueTask() {
     m_runEvents.push_back(l_event);
 }
 
-void Kernel::finish() const {
+void Kernel::finish() {
     m_fpga->finish();
+    m_txEvents.clear();
+    m_runEvents.clear();
 }
 
 void Kernel::getBuffer(vector<cl::Memory>& h_m) {
