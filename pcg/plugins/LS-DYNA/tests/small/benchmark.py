@@ -3,6 +3,7 @@ import subprocess
 import argparse
 import shlex
 import os
+import pdb
 from multiprocessing import Pool
 import pandas as pd
 
@@ -16,13 +17,14 @@ def build(target):
 def run(target, model):
     cmdLine = "make run TARGET=%s MODEL_NAME=%s" % (target, model)
     args = shlex.split(cmdLine)
-    subprocess.run(args)
+#    subprocess.run(args)
 
 
 def report(targets):
     t = 'fpga'
     filename = os.path.join("build_output.%s" % t, "benchmark.csv")
     df = pd.read_csv(filename)
+    df.sort_values(by=['Dim'], inplace=True, ignore_index=True)
     df = df.rename(columns={'API GFLOPS': '%s API GFLOPS' % t,
                             'HW GFLOPS': '%s HW GFLOPS' % t,
                             'HW Time [ms]': '%s HW Time [ms]' % t,
@@ -32,6 +34,7 @@ def report(targets):
             continue
         filename = os.path.join("build_output.%s" % t, "benchmark.csv")
         df_t = pd.read_csv(filename)
+        df_t.sort_values(by=['Dim'], inplace=True, ignore_index=True)
         df['%s API Time [ms]' % t] = df_t['API Time [ms]']
         df['%s API GFLOPS' % t] = df_t['API GFLOPS']
 
@@ -40,11 +43,10 @@ def report(targets):
     df['Perf. fpga_HW/csc_API'] = round(df['fpga HW GFLOPS'] /
                                         df['csc API GFLOPS'], 5)
 
-    df['Time csc_API/fpga_API'] = round(df['csc API Time [ms]'] / 
+    df['Time csc_API/fpga_API'] = round(df['csc API Time [ms]'] /
                                         df['fpga API Time [ms]'], 5)
-    df['Time csc_API/fpga_HW'] = round(df['csc API Time [ms]'] / 
+    df['Time csc_API/fpga_HW'] = round(df['csc API Time [ms]'] /
                                        df['fpga HW Time [ms]'], 5)
-    df.sort_values(by=['Dim'], inplace=True)
     df.to_csv("benchmark.csv", index=False)
 
 

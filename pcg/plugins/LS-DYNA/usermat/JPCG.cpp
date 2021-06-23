@@ -296,16 +296,26 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     auto l_stop = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> l_durationSec = l_stop - l_start;
     double l_timeMs = l_durationSec.count() * 1e3;
+
+    FortranReal *bp = (FortranReal*) malloc(n * sizeof(FortranReal));
+    userLE_spmv(n, nz, colptr, rowind, values, 1.0, x, 0.0, bp);
+
+    for (i = 0; i < n; i++) {
+        bp[i] = bp[i] - b[i];
+    }
+    FortranReal pTp = userLE_vecdot(n, bp, bp);
+    free(bp);
     string filename = "benchmark.csv";
     bool header = std::experimental::filesystem::exists(filename);
 
-    ofstream fs;
-    fs.open("benchmark.csv", std::ofstream::app);
+    fstream fs;
+    fs.open("benchmark.csv", ios::out | ios::app);
     if(!header) {
         fs << "Dim" << ","
             << "NNZ" << ","
             << "Niter" << ","
             << "Relres" << ","
+            << "Norm.Diff" << ","
             <<"MFLOP" << ","
 #ifdef USE_FPGA
             << "HW Time [ms]" << ","
@@ -319,6 +329,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
         << nnz << ","
         << *pniter << ","
         << *prelres << ","
+        << sqrt(pTp) << ","
         << *pflops/1e6 << ","
 #ifdef USE_FPGA
         << l_hwTime << ","
