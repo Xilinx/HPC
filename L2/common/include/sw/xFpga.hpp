@@ -66,7 +66,7 @@ class Kernel {
     void fpga(FPGA* p_fpga);
     void getCU(const string& p_name);
     void enqueueTask();
-    void finish() const;
+    void finish();
     void getBuffer(vector<cl::Memory>& h_m);
     void sendBuffer(vector<cl::Memory>& h_m);
     cl::Buffer createDeviceBuffer(cl_mem_flags p_flags, void* p_buffer, size_t p_size) const;
