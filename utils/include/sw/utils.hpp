@@ -26,7 +26,7 @@
 
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimePointType;
 
-inline double showTimeData(std::string p_Task, TimePointType& t1, TimePointType& t2, double* p_TimeMsOut = 0) {
+inline void showTimeData(std::string p_Task, TimePointType& t1, TimePointType& t2, double* p_TimeMsOut = 0) {
     t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> l_durationSec = t2 - t1;
     double l_timeMs = l_durationSec.count() * 1e3;
@@ -34,8 +34,6 @@ inline double showTimeData(std::string p_Task, TimePointType& t1, TimePointType&
         *p_TimeMsOut = l_timeMs;
     }
     std::cout << p_Task << "  " << std::fixed << std::setprecision(6) << l_timeMs << " msec\n";
-    
-    return l_timeMs;
 }
 
 template <typename T>

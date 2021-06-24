@@ -74,7 +74,8 @@ int main(int argc, char** argv) {
 
     l_timer[0] = chrono::high_resolution_clock::now();
     l_pcg.partitionMat();
-    double l_mat_partition_time = showTimeData("Matrix partition time: ", l_timer[0], l_timer[1]);
+    double l_mat_partition_time = 0;
+    showTimeData("Matrix partition time: ", l_timer[0], l_timer[1], &l_mat_partition_time);
     l_pcg.initVec();
     showTimeData("Vector initialization time: ", l_timer[1], l_timer[2]);
     l_pcg.initDev(l_deviceId, binaryFile);
@@ -85,11 +86,12 @@ int main(int argc, char** argv) {
     l_pcg.setVec();
     showTimeData("Send Vec time: ", l_timer[4], l_timer[5]);
     l_pcg.setInstr(l_maxIter, l_tol);
-    double l_h2d_time = showTimeData("Host to device data transfer time: ", l_timer[3], l_timer[4]);
+    double l_h2d_time = 0;
+    showTimeData("Host to device data transfer time: ", l_timer[3], l_timer[5], &l_h2d_time);
     double l_runTime = 1;
     l_pcg.run();
     CgVector l_resVec = l_pcg.getRes();
-    showTimeData("PCG run time: ", l_timer[6], l_timer[7], &l_runTime);
+    showTimeData("PCG run time: ", l_timer[5], l_timer[6], &l_runTime);
     CgInstr l_instr = l_pcg.getInstr();
     void* l_xk = l_resVec.h_xk;
     void* l_rk = l_resVec.h_rk;
