@@ -13,51 +13,47 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-.. _overview:
+.. _brief:
 
-.. toctree::
-   :hidden:
+==========================
+Xilinx Alveo HPC Products
+==========================
 
-Requirements
-------------
+General use cases
+-----------------
 
-Software Platform
-~~~~~~~~~~~~~~~~~
+Engineering simulation softwares allow companies to predict the behavior of
+their future products more accurately, and as a result, to deliver high
+quality products with a much short development cycle. One of the key components
+in those engineering simulation applications is a set of numerical solvers. PCG solver
+is a well know method for solving large sparse symmetric positive definite linear systems.
+It is widely used in following simulation systems.
 
-This library is designed to work with Vitis 2021.1 and later, and therefore inherits the system requirements of Vitis and XRT.
+* Structural mechanics simulation
+* Thermal analysis
+* Dynamic fluid simulation
 
-Supported operating systems are RHEL/CentOS 7.4, 7.5 and Ubuntu 16.04.4 LTS, 18.04.1 LTS.
-With CentOS/RHEL 7.4 and 7.5, C++11/C++14 should be enabled via
-`devtoolset-6 <https://www.softwarecollections.org/en/scls/rhscl/devtoolset-6/>`_.
+Integrate Xilinx PCG solver into LS-DYNA thermal analysis product
+------------------------------------------------------------------
+Xilinx PCG solver is integrated into the usermats of LS-DYNA thermal analysis product via 
+a C function interface. The low level hardware detail are transparent to LS-DYNA users. The
+C function is provided in this repository and can be called directly from any other libraires
+of the usermat. 
 
-PCIE Accelerator Card
-~~~~~~~~~~~~~~~~~~~~~
+PCG Solver
+----------
+PCG solver is widely used to solve a large sparse linear system Ax=b, where A is a symmetric 
+positive definite matrix. The algorithm below describes a PCG solver with Jacobi preconditioner.
+The major part of the algorithm is an iterative loop which contains a SPMV (for sparse systems) or 
+GEMV operation (for dense systems) and a groupt of vector operations. When the dimension of the
+matrix is significant smaller than the matrix entries (none zero entries for sparse matrix), the 
+time spent on each iteration is dominated by the matrix vector multiplication. 
 
-PCG products are designed to work with Alveo U280 cards.
+.. figure:: /images/JPCG_algo.png
+   :alt: JPCG algorithm
+   :scale: 100%
+   :align: center
+   
+   Algorithm source: https://en.wikipedia.org/wiki/Conjugate_gradient_method#The_preconditioned_conjugate_gradient_method 
 
-License
--------
 
-Licensed using the `Apache 2.0 license <https://www.apache.org/licenses/LICENSE-2.0>`_.
-
-    Copyright 2019 - 2021 Xilinx, Inc.
-    
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-    
-        http://www.apache.org/licenses/LICENSE-2.0
-    
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-
-Trademark Notice
-----------------
-
-    Xilinx, the Xilinx logo, Artix, ISE, Kintex, Spartan, Virtex, Zynq, and
-    other designated brands included herein are trademarks of Xilinx in the
-    United States and other countries.  All other trademarks are the property
-    of their respective owners.
