@@ -29,10 +29,10 @@ template <typename t_DataType,
           unsigned int t_MaxRows,
           unsigned int t_MaxCols,
           unsigned int t_HbmMemBits>
-class PCG {
+class PCGImpl {
    public:
-    PCG(){};
-    PCG(int p_devId, string p_xclbinName){
+    PCGImpl(){};
+    PCGImpl(int p_devId, string p_xclbinName){
         initDev(p_devId, p_xclbinName);
     }
     CooMat allocMat(unsigned int p_m, unsigned int p_n, unsigned int p_nnz) {

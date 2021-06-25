@@ -46,7 +46,7 @@ typedef float FortranReal;
 #define userLE_vecdot USERLE_VECDOR
 #define userLE_vecsum USERLE_VECSUM
 #endif
-typedef PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
+typedef PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
 /* -------------------------------------------------------------------------- */
 /* Prototypes */
 extern "C" void userLE_JPCG(FortranInteger* pn,

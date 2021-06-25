@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     assert(l_matInfo.m_m == l_matInfo.m_n);
     host_buffer_t<CG_dataType> h_x(l_matInfo.m_m);
     TimePointType l_timer[8];
-    PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> l_pcg;
+    PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> l_pcg;
 
     CooMat l_mat = l_pcg.allocMat(l_matInfo.m_m, l_matInfo.m_n, l_matInfo.m_nnz);
     l_pcg.allocVec(l_matInfo.m_m);
