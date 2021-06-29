@@ -23,13 +23,10 @@
 #include "binFiles.hpp"
 #include "gen_signature.hpp"
 
-using namespace std;
-
-
-CooMatInfo loadMatInfo(string path) {
-    ifstream l_info(path + "infos.txt");
-    vector<string> infos;
-    for (string line; getline(l_info, line);) {
+CooMatInfo loadMatInfo(std::string path) {
+    std::ifstream l_info(path + "infos.txt");
+    std::vector<std::string> infos;
+    for (std::string line; getline(l_info, line);) {
         infos.push_back(line);
     }
     CooMatInfo l_matInfo;
@@ -40,30 +37,30 @@ CooMatInfo loadMatInfo(string path) {
     return l_matInfo;
 } 
 
-void loadMat(string path, CooMatInfo& p_matInfo, CooMat& p_mat) {
+void loadMat(std::string path, CooMatInfo& p_matInfo, CooMat& p_mat) {
     uint32_t l_idxBytes = sizeof(uint32_t)*p_matInfo.m_nnz;
     uint32_t l_datBytes = sizeof(double)*p_matInfo.m_nnz;
-    string l_rowIdxFileName = path+"row.bin";
-    string l_colIdxFileName = path+"col.bin";
-    string l_datFileName = path+"data.bin";
+    std::string l_rowIdxFileName = path+"row.bin";
+    std::string l_colIdxFileName = path+"col.bin";
+    std::string l_datFileName = path+"data.bin";
     readBin(l_rowIdxFileName, p_mat.m_rowIdxPtr, l_idxBytes);
     readBin(l_colIdxFileName, p_mat.m_colIdxPtr, l_idxBytes);
     readBin(l_datFileName, p_mat.m_datPtr, l_datBytes);
     
 }
 
-void storeMatPar(string path, MatPartition& p_matPar) {
-    string l_rbParamFileName(path + "/rbParam.dat");
+void storeMatPar(std::string path, MatPartition& p_matPar) {
+    std::string l_rbParamFileName(path + "/rbParam.dat");
     saveBin(l_rbParamFileName, p_matPar.m_rbParamPtr, p_matPar.m_rbParamSize);
-    string l_parParamFileName(path + "/parParam.dat");
+    std::string l_parParamFileName(path + "/parParam.dat");
     saveBin(l_parParamFileName, p_matPar.m_parParamPtr, p_matPar.m_parParamSize);
 
-    string l_nnzFileNames[SPARSE_hbmChannels];
+    std::string l_nnzFileNames[SPARSE_hbmChannels];
     for (int i = 0; i < SPARSE_hbmChannels; i++) {
-        l_nnzFileNames[i] = path + "/nnzVal_" + to_string(i) + ".dat";
+        l_nnzFileNames[i] = path + "/nnzVal_" + std::to_string(i) + ".dat";
         saveBin(l_nnzFileNames[i], p_matPar.m_nnzValPtr[i], p_matPar.m_nnzValSize[i]);
     }
-    string l_infoFileName(path + "/info.dat");
+    std::string l_infoFileName(path + "/info.dat");
     int int32Arr[6];
     memset(int32Arr, 0, 6 * sizeof(int));
     int32Arr[0] = p_matPar.m_m;
@@ -72,7 +69,7 @@ void storeMatPar(string path, MatPartition& p_matPar) {
     int32Arr[3] = p_matPar.m_mPad;
     int32Arr[4] = p_matPar.m_nPad;
     int32Arr[5] = p_matPar.m_nnzPad;
-    ofstream outFile(l_infoFileName, ios::binary);
+    std::ofstream outFile(l_infoFileName, std::ios::binary);
     outFile.write((char*)&int32Arr[0], sizeof(int) * 6);
     outFile.close();
 }

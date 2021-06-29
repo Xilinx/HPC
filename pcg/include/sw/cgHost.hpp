@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Xilinx, Inc.
+ * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
+
 #ifndef CGHOST_HPP
 #define CGHOST_HPP
 
 #include "xFpga.hpp"
-
-using namespace std;
 
 class CGKernelControl : public Kernel {
    public:
@@ -86,10 +85,10 @@ class CGKernelUpdateXk : public Kernel {
 class KernelLoadNnz : public Kernel {
    public:
     KernelLoadNnz(FPGA* p_fpga = nullptr);
-    void setMem(vector<void*>& p_sigBuf, vector<unsigned int>& p_sigBufBytes);
+    void setMem(std::vector<void*>& p_sigBuf, std::vector<unsigned int>& p_sigBufBytes);
 
    private:
-    vector<cl::Buffer> m_buffers;
+    std::vector<cl::Buffer> m_buffers;
 };
 class KernelLoadCol : public Kernel {
    public:
@@ -111,10 +110,10 @@ class KernelLoadRbParam : public Kernel {
 class xCgHost {
    public:
     xCgHost(){};
-    xCgHost(int p_devId, string p_xclbinName);
-    void init(int p_devId, string p_xclbinName);
-    void sendDat(vector<void*>& p_nnzVal,
-                 vector<unsigned int>& p_nnzValSize,
+    xCgHost(int p_devId, std::string p_xclbinName);
+    void init(int p_devId, std::string p_xclbinName);
+    void sendDat(std::vector<void*>& p_nnzVal,
+                 std::vector<unsigned int>& p_nnzValSize,
                  void* p_parParam,
                  unsigned int p_parParamSize,
                  void* p_pk,
@@ -132,25 +131,25 @@ class xCgHost {
                  void* p_xk,
                  unsigned int p_xkSize);
 
-    void sendMatDat(vector<void*>& p_nnzVal,
-                 vector<unsigned int>& p_nnzValSize,
-                 void* p_rbParam,
-                 unsigned int p_rbParamSize);
+    void sendMatDat(std::vector<void*>& p_nnzVal,
+                    std::vector<unsigned int>& p_nnzValSize,
+                    void* p_rbParam,
+                    unsigned int p_rbParamSize);
 
     void sendVecDat(void* p_parParam,
-                 unsigned int p_parParamSize,
-                 void* p_pk,
-                 unsigned int p_pkSize,
-                 void* p_Apk,
-                 unsigned int p_ApkSize,
-                 void* p_zk,
-                 unsigned int p_zkSize,
-                 void* p_rk,
-                 unsigned int p_rkSize,
-                 void* p_jacobi,
-                 unsigned int p_jacobiSize,
-                 void* p_xk,
-                 unsigned int p_xkSize);
+                    unsigned int p_parParamSize,
+                    void* p_pk,
+                    unsigned int p_pkSize,
+                    void* p_Apk,
+                    unsigned int p_ApkSize,
+                    void* p_zk,
+                    unsigned int p_zkSize,
+                    void* p_rk,
+                    unsigned int p_rkSize,
+                    void* p_jacobi,
+                    unsigned int p_jacobiSize,
+                    void* p_xk,
+                    unsigned int p_xkSize);
 
     void sendInstr(void* p_instr, unsigned int p_instrSize);
     void run();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Xilinx, Inc.
+ * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+*/
+
 #include <algorithm>
 #include <cstring>
 #include <iostream>
@@ -27,28 +28,26 @@
 #include "pcg.hpp"
 #include "utils.hpp"
 
-using namespace std;
-
 template <typename T>
-using host_buffer_t = vector<T, aligned_allocator<T> >;
+using host_buffer_t = std::vector<T, aligned_allocator<T> >;
 
 int main(int argc, char** argv) {
     if (argc < 6 || argc > 8) {
-        cout << "Usage: " << argv[0] << " <XCLBIN File> <Max Iteration> <Tolerence> <data_path> "
-                                        "<mtx_name> [--debug] [device id]"
-             << endl;
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File> <Max Iteration> <Tolerence> <data_path> "
+                                             "<mtx_name> [--debug] [device id]"
+                  << std::endl;
         return EXIT_FAILURE;
     }
     int l_idx = 1;
-    string binaryFile = argv[l_idx++];
+    std::string binaryFile = argv[l_idx++];
     int l_maxIter = atoi(argv[l_idx++]);
     CG_dataType l_tol = atof(argv[l_idx++]);
-    string l_datPath = argv[l_idx++];
-    string l_mtxName = argv[l_idx++];
+    std::string l_datPath = argv[l_idx++];
+    std::string l_mtxName = argv[l_idx++];
     int l_deviceId = 0;
     bool l_debug = false;
     if (argc > l_idx) {
-        string l_option = argv[l_idx++];
+        std::string l_option = argv[l_idx++];
         if (l_option == "--debug")
             l_debug = true;
         else
@@ -56,23 +55,25 @@ int main(int argc, char** argv) {
     }
     if (argc > l_idx) l_deviceId = atoi(argv[l_idx++]);
 
-    string l_datFilePath = l_datPath + "/" + l_mtxName;
+    std::string l_datFilePath = l_datPath + "/" + l_mtxName;
 
     CooMatInfo l_matInfo = loadMatInfo(l_datFilePath + "/");
     assert(l_matInfo.m_m == l_matInfo.m_n);
     host_buffer_t<CG_dataType> h_x(l_matInfo.m_m);
     TimePointType l_timer[8];
-    PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> l_pcg;
+    PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows,
+            SPARSE_maxCols, SPARSE_hbmMemBits>
+        l_pcg;
 
     CooMat l_mat = l_pcg.allocMat(l_matInfo.m_m, l_matInfo.m_n, l_matInfo.m_nnz);
     l_pcg.allocVec(l_matInfo.m_m);
     CgInputVec l_inVecs = l_pcg.getInputVec();
-    
+
     loadMat(l_datFilePath + "/", l_matInfo, l_mat);
     readBin(l_datFilePath + "/A_diag.mat", l_inVecs.h_diag, l_inVecs.vecBytes);
     readBin(l_datFilePath + "/b.mat", l_inVecs.h_b, l_inVecs.vecBytes);
 
-    l_timer[0] = chrono::high_resolution_clock::now();
+    l_timer[0] = std::chrono::high_resolution_clock::now();
     l_pcg.partitionMat();
     double l_mat_partition_time = 0;
     showTimeData("Matrix partition time: ", l_timer[0], l_timer[1], &l_mat_partition_time);
@@ -80,7 +81,7 @@ int main(int argc, char** argv) {
     showTimeData("Vector initialization time: ", l_timer[1], l_timer[2]);
     l_pcg.initDev(l_deviceId, binaryFile);
     showTimeData("FPGA configuration time: ", l_timer[2], l_timer[3]);
-    //l_pcg.setDat();
+    // l_pcg.setDat();
     l_pcg.setMat();
     showTimeData("Send Mat time: ", l_timer[3], l_timer[4]);
     l_pcg.setVec();
@@ -103,15 +104,15 @@ int main(int argc, char** argv) {
         lastIter = i;
         l_cgInstr.load((uint8_t*)(l_instr.h_instr) + (i + 1) * CG_instrBytes, l_memInstr);
         if (l_debug) {
-            cout << l_cgInstr << endl;
+            std::cout << l_cgInstr << std::endl;
         }
         if (l_cgInstr.getMaxIter() == 0) {
             break;
         }
         finalClock = l_cgInstr.getClock();
     }
-    vector<uint32_t> l_info = l_pcg.getMatInfo();
-    cout << "HW execution time is: " << finalClock * HW_CLK * 1e3<< "msec." << endl;
+    std::vector<uint32_t> l_info = l_pcg.getMatInfo();
+    std::cout << "HW execution time is: " << finalClock * HW_CLK * 1e3 << "msec." << std::endl;
     float l_padRatio = (float)(l_info[5]) / (float)(l_info[2]);
 
     if (l_debug) {
@@ -121,21 +122,23 @@ int main(int argc, char** argv) {
 
     int err = 0;
     readBin(l_datFilePath + "/x.mat", l_matInfo.m_m * sizeof(CG_dataType), h_x);
-    //compare(h_x.size(), h_x.data(), h_xk.data(), err, l_debug);
+    // compare(h_x.size(), h_x.data(), h_xk.data(), err, l_debug);
     compare<CG_dataType>(l_matInfo.m_m, h_x.data(), (CG_dataType*)(l_xk), err, l_debug);
-    
-    cout << "DATA_CSV:,matrix_name, dim, original NNZs, padded dim, padded NNZs, padding ratio, ";
-    cout << "num of iterations, mat partition time[ms], H2D time[ms], total run time[ms], time[ms]/run, num_mismatches";
-    cout << endl;
-    cout << "DATA_CSV:," << l_mtxName << "," << l_info[0] << "," << l_info[2];
-    cout << "," << l_info[4] << "," << l_info[5] << "," << l_padRatio;
-    cout << "," << lastIter + 1 << "," << l_mat_partition_time << "," << l_h2d_time << "," << l_runTime << "," << (float)l_runTime / (lastIter + 1);
-    cout << "," << err << endl;
+
+    std::cout << "DATA_CSV:,matrix_name, dim, original NNZs, padded dim, padded NNZs, padding ratio, ";
+    std::cout
+        << "num of iterations, mat partition time[ms], H2D time[ms], total run time[ms], time[ms]/run, num_mismatches";
+    std::cout << std::endl;
+    std::cout << "DATA_CSV:," << l_mtxName << "," << l_info[0] << "," << l_info[2];
+    std::cout << "," << l_info[4] << "," << l_info[5] << "," << l_padRatio;
+    std::cout << "," << lastIter + 1 << "," << l_mat_partition_time << "," << l_h2d_time << "," << l_runTime << ","
+              << (float)l_runTime / (lastIter + 1);
+    std::cout << "," << err << std::endl;
     if (err == 0) {
-        cout << "Test pass!" << endl;
+        std::cout << "Test pass!" << std::endl;
         return EXIT_SUCCESS;
     } else {
-        cout << "Test failed! There are in total " << err << " mismatches in the solution." << endl;
+        std::cout << "Test failed! There are in total " << err << " mismatches in the solution." << std::endl;
         return EXIT_FAILURE;
     }
 }
