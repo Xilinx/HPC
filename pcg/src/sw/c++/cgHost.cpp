@@ -187,16 +187,21 @@ void KernelLoadNnz::setMem(std::vector<void*>& p_sigBuf, std::vector<unsigned in
         OCL_CHECK(err, err = m_kernel.setArg(i, m_buffers[i]));
     }
     // Copy input data to device global memory
-    sendBuffer(l_buffers);
+         sendBuffer(l_buffers);
 }
-
 KernelLoadCol::KernelLoadCol(FPGA* p_fpga) : Kernel(p_fpga) {}
-void KernelLoadCol::setMem(void* p_paramBuf, unsigned int p_paramBufSize, void* p_xBuf, unsigned int p_xBufSize) {
+void KernelLoadCol::setParParamMem(void* p_paramBuf, unsigned int p_paramBufSize) {
     cl_int err;
     std::vector<cl::Memory> l_buffers;
     m_buffers[0] = createDeviceBuffer(CL_MEM_READ_ONLY, p_paramBuf, p_paramBufSize);
     OCL_CHECK(err, err = m_kernel.setArg(0, m_buffers[0]));
     l_buffers.push_back(m_buffers[0]);
+    // Copy input data to device global memory
+    sendBuffer(l_buffers);
+}
+void KernelLoadCol::setXMem(void* p_xBuf, unsigned int p_xBufSize) {
+    cl_int err;
+    std::vector<cl::Memory> l_buffers;
     m_buffers[1] = createDeviceBuffer(CL_MEM_READ_ONLY, p_xBuf, p_xBufSize);
     OCL_CHECK(err, err = m_kernel.setArg(1, m_buffers[1]));
     l_buffers.push_back(m_buffers[1]);
@@ -237,42 +242,17 @@ void xCgHost::init(int p_devId, std::string p_xclbinName) {
     m_krnUpdateRkJacobi.getCU("krnl_update_rk_jacobi");
     m_krnUpdateXk.getCU("krnl_update_xk");
 }
-void xCgHost::sendDat(std::vector<void*>& p_nnzVal,
-                      std::vector<unsigned int>& p_nnzValSize,
-                      void* p_parParam,
-                      unsigned int p_parParamSize,
-                      void* p_pk,
-                      unsigned int p_pkSize,
-                      void* p_rbParam,
-                      unsigned int p_rbParamSize,
-                      void* p_Apk,
-                      unsigned int p_ApkSize,
-                      void* p_zk,
-                      unsigned int p_zkSize,
-                      void* p_rk,
-                      unsigned int p_rkSize,
-                      void* p_jacobi,
-                      unsigned int p_jacobiSize,
-                      void* p_xk,
-                      unsigned int p_xkSize) {
-    m_krnLoadAval.setMem(p_nnzVal, p_nnzValSize);
-    m_krnLoadPkApar.setMem(p_parParam, p_parParamSize, p_pk, p_pkSize);
-    m_krnLoadArbParam.setMem(p_rbParam, p_rbParamSize);
-    m_krnStoreApk.setMem(p_pk, p_pkSize, p_Apk, p_ApkSize);
-    m_krnUpdatePk.setMem(p_pk, p_pkSize, p_zk, p_zkSize);
-    m_krnUpdateRkJacobi.setMem(p_rk, p_rkSize, p_zk, p_zkSize, p_jacobi, p_jacobiSize, p_Apk, p_ApkSize);
-    m_krnUpdateXk.setMem(p_xk, p_xkSize, p_pk, p_pkSize);
-}
 void xCgHost::sendMatDat(std::vector<void*>& p_nnzVal,
                          std::vector<unsigned int>& p_nnzValSize,
                          void* p_rbParam,
-                         unsigned int p_rbParamSize) {
+                         unsigned int p_rbParamSize,
+                         void* p_parParam,
+                         unsigned int p_parParamSize) {
     m_krnLoadAval.setMem(p_nnzVal, p_nnzValSize);
     m_krnLoadArbParam.setMem(p_rbParam, p_rbParamSize);
+    m_krnLoadPkApar.setParParamMem(p_parParam, p_parParamSize);
 }
-void xCgHost::sendVecDat(void* p_parParam,
-                         unsigned int p_parParamSize,
-                         void* p_pk,
+void xCgHost::sendVecDat(void* p_pk,
                          unsigned int p_pkSize,
                          void* p_Apk,
                          unsigned int p_ApkSize,
@@ -284,7 +264,7 @@ void xCgHost::sendVecDat(void* p_parParam,
                          unsigned int p_jacobiSize,
                          void* p_xk,
                          unsigned int p_xkSize) {
-    m_krnLoadPkApar.setMem(p_parParam, p_parParamSize, p_pk, p_pkSize);
+    m_krnLoadPkApar.setXMem(p_pk, p_pkSize);
     m_krnStoreApk.setMem(p_pk, p_pkSize, p_Apk, p_ApkSize);
     m_krnUpdatePk.setMem(p_pk, p_pkSize, p_zk, p_zkSize);
     m_krnUpdateRkJacobi.setMem(p_rk, p_rkSize, p_zk, p_zkSize, p_jacobi, p_jacobiSize, p_Apk, p_ApkSize);

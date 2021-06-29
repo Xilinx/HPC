@@ -93,7 +93,9 @@ class KernelLoadNnz : public Kernel {
 class KernelLoadCol : public Kernel {
    public:
     KernelLoadCol(FPGA* p_fpga = nullptr);
-    void setMem(void* p_paramBuf, unsigned int p_paramBufSize, void* p_xBuf, unsigned int p_xBufSize);
+    //void setMem(void* p_paramBuf, unsigned int p_paramBufSize, void* p_xBuf, unsigned int p_xBufSize);
+    void setParParamMem(void* p_xBuf, unsigned int p_xBufSize);
+    void setXMem(void* p_xBuf, unsigned int p_xBufSize);
 
    private:
     cl::Buffer m_buffers[2];
@@ -112,33 +114,15 @@ class xCgHost {
     xCgHost(){};
     xCgHost(int p_devId, std::string p_xclbinName);
     void init(int p_devId, std::string p_xclbinName);
-    void sendDat(std::vector<void*>& p_nnzVal,
-                 std::vector<unsigned int>& p_nnzValSize,
-                 void* p_parParam,
-                 unsigned int p_parParamSize,
-                 void* p_pk,
-                 unsigned int p_pkSize,
-                 void* p_rbParam,
-                 unsigned int p_rbParamSize,
-                 void* p_Apk,
-                 unsigned int p_ApkSize,
-                 void* p_zk,
-                 unsigned int p_zkSize,
-                 void* p_rk,
-                 unsigned int p_rkSize,
-                 void* p_jacobi,
-                 unsigned int p_jacobiSize,
-                 void* p_xk,
-                 unsigned int p_xkSize);
 
     void sendMatDat(std::vector<void*>& p_nnzVal,
                     std::vector<unsigned int>& p_nnzValSize,
                     void* p_rbParam,
-                    unsigned int p_rbParamSize);
+                    unsigned int p_rbParamSize,
+                    void* p_parParam,
+                    unsigned int p_parParamSize);
 
-    void sendVecDat(void* p_parParam,
-                    unsigned int p_parParamSize,
-                    void* p_pk,
+    void sendVecDat(void* p_pk,
                     unsigned int p_pkSize,
                     void* p_Apk,
                     unsigned int p_ApkSize,
