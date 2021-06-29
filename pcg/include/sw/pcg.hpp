@@ -32,7 +32,7 @@ template <typename t_DataType,
 class PCGImpl {
    public:
     PCGImpl(){};
-    PCGImpl(int p_devId, string p_xclbinName){
+    PCGImpl(int p_devId, std::string p_xclbinName){
         initDev(p_devId, p_xclbinName);
     }
     CooMat allocMat(unsigned int p_m, unsigned int p_n, unsigned int p_nnz) {
@@ -42,7 +42,7 @@ class PCGImpl {
     CgInputVec getInputVec() {return m_genCgVec.getInputVec();}
     void partitionMat() { m_matPar =  m_spmPar.partitionMat(); }
     void initVec() {m_genCgVec.init();}
-    void initDev(int p_devId, string p_xclbinName) { 
+    void initDev(int p_devId, std::string p_xclbinName) { 
         m_host.init(p_devId, p_xclbinName);}
     void setDat() {
         CgVector l_cgVec = m_genCgVec.getVec();
@@ -88,8 +88,8 @@ class PCGImpl {
         CgInstr l_cgInstr = m_genInstr.getInstrPtr();
         return l_cgInstr;
     }
-    vector<uint32_t> getMatInfo() {
-        vector<uint32_t> l_info(6);
+    std::vector<uint32_t> getMatInfo() {
+        std::vector<uint32_t> l_info(6);
         l_info[0] = m_matPar.m_m;
         l_info[1] = m_matPar.m_n;
         l_info[2] = m_matPar.m_nnz;
