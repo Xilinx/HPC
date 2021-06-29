@@ -1,4 +1,19 @@
 /*
+ * Copyright 2019-2021 Xilinx, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+*/
+/*
  * Copyright 2019 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,9 +68,9 @@ inline bool isLessEqual(uint32_t x, uint32_t y) {
 // provide same functionality as numpy.isclose
 template <typename T>
 bool isClose(float p_tolRel, float p_tolAbs, T p_vRef, T p_v, bool& p_exactMatch) {
-    float l_diffAbs = abs(p_v - p_vRef);
+    float l_diffAbs = std::abs(p_v - p_vRef);
     p_exactMatch = (p_vRef == p_v);
-    bool l_status = (l_diffAbs <= (p_tolAbs + p_tolRel * abs(p_vRef)));
+    bool l_status = (l_diffAbs <= (p_tolAbs + p_tolRel * std::abs(p_vRef)));
     return (l_status);
 }
 template <typename T>

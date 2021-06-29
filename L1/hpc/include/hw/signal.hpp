@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Xilinx, Inc.
+ * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,14 +12,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+*/
 
 #ifndef XF_HPC_SIGNAL_HPP
 #define XF_HPC_SIGNAL_HPP
 
 #include <cstdint>
 #include "ap_utils.h"
-using namespace std;
 
 namespace xf {
 namespace hpc {
