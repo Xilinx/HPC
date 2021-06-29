@@ -52,21 +52,48 @@ class SparseMatrix {
         m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
-    void load_row(std::string path) {
-        m_row_list.resize(m_nnz);
-        readBin(path, (char*)&m_row_list[0], m_nnz * sizeof(uint32_t));
+    void loadCoo(uint32_t p_m, uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, double* p_data) {
+        m_m = p_m;
+        m_n = p_n;
+        m_nnz = p_nnz;
+        m_minRowId = 0;
+        m_minColId = 0;
+        m_row_list.insert(m_row_list.end(), p_rowIdx, p_rowIdx+p_nnz);
+        m_col_list.insert(m_col_list.end(), p_colIdx, p_colIdx+p_nnz);
+        m_data_list.insert(m_data_list.end(), p_data, p_data+p_nnz);
         m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
-    }
-
-    void load_col(std::string path) {
-        m_col_list.resize(m_nnz);
-        readBin(path, (char*)&m_col_list[0], m_nnz * sizeof(uint32_t));
         m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
-    void load_data(std::string path) {
+    void loadCscSym(uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr, double* p_data) {
+        m_m = p_n;
+        m_n = p_n;
+        m_nnz = p_nnz;
+        m_minRowId = 0;
+        m_minColId = 0;
+        m_row_list.resize(m_nnz);
+        m_col_list.resize(m_nnz);
         m_data_list.resize(m_nnz);
-        readBin(path, (char*)&m_data_list[0], m_nnz * sizeof(double));
+        
+        uint32_t index = 0;
+        for (uint32_t j = 0; j < p_n; j++) {
+            for (uint32_t k = p_colPtr[j] - 1; k < p_colPtr[j + 1] - 1; k++) {
+                uint32_t i = p_rowIdx[k] - 1;
+                assert(index < m_nnz);
+                m_row_list[index] = i;
+                m_col_list[index] = j;
+                m_data_list[index++] = p_data[k];
+                if (i != j) {
+                    assert(index < m_nnz);
+                    m_row_list[index] = j;
+                    m_col_list[index] = i;
+                    m_data_list[index++] = p_data[k];
+                }
+            }
+        }
+        assert(index == m_nnz);
+        m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
+        m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
     void create_matrix(std::vector<uint32_t> p_row, std::vector<uint32_t> p_col, std::vector<double> p_data) {

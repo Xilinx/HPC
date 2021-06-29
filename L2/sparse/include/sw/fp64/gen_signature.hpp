@@ -24,7 +24,8 @@ CooMatInfo loadMatInfo(std::string path);
 void loadMat(std::string path, CooMatInfo& p_matInfo, CooMat& p_mat);
 void storeMatPar(std::string path, MatPartition& p_matPar);
 
-template <unsigned int t_ParEntries,
+template <typename t_DataType,
+          unsigned int t_ParEntries,
           unsigned int t_AccLatency,
           unsigned int t_HbmChannels,
           unsigned int t_MaxRows,
@@ -45,6 +46,17 @@ class SpmPar {
 
     MatPartition partitionMat() {
         m_spm.updateMinIdx();
+        MatPartition l_res = m_sig.gen_sig(m_spm);
+        return l_res;
+    }
+    
+    MatPartition partitionCooMat(uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, t_DataType* p_data) {
+        m_spm.loadCoo(p_dim, p_dim, p_nnz, p_rowIdx, p_colIdx, p_data);
+        MatPartition l_res = m_sig.gen_sig(m_spm);
+        return l_res;
+    }
+    MatPartition partitionCscSymMat(uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr, t_DataType* p_data) {
+        m_spm.loadCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
         MatPartition l_res = m_sig.gen_sig(m_spm);
         return l_res;
     }

@@ -62,6 +62,22 @@ class GenCgVector {
         m_xk.assign(m_dimAligned, 0);
         m_zk.assign(m_dimAligned, 0);
     }
+    void loadVec(unsigned int p_dim, t_DataType* p_b, t_DataType* p_diagA) {
+        m_dim = p_dim;
+        unsigned int l_dimAlignedBks = (p_dim + t_ParEntries - 1) / t_ParEntries;
+        unsigned int l_dimAligned = l_dimAlignedBks * t_ParEntries;
+        m_dimAligned = l_dimAligned;
+        m_diagA.insert(m_diagA.end(), p_diagA, p_diagA+p_dim);
+        m_diagA.insert(m_diagA.end(), m_dimAligned-m_dim, 1);
+        m_b.insert(m_b.end(), p_b, p_b+p_dim);
+        m_b.insert(m_b.end(), m_dimAligned-m_dim, 0);
+        m_Apk.assign(m_dimAligned, 0);
+        m_jacobi.assign(m_dimAligned, 1);
+        m_pk.assign(m_dimAligned, 0);
+        m_rk.assign(m_dimAligned, 0);
+        m_xk.assign(m_dimAligned, 0);
+        m_zk.assign(m_dimAligned, 0);
+    }
     CgInputVec getInputVec() {
         CgInputVec l_res;
         l_res.vecBytes = m_dimAligned * sizeof(t_DataType);

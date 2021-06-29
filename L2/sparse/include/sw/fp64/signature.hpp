@@ -414,39 +414,6 @@ class Signature {
         }
     }
 
-    void process(std::string path) {
-        std::ifstream l_info(path + "infos.txt");
-        std::vector<std::string> infos;
-        for (std::string line; getline(l_info, line);) {
-            infos.push_back(line);
-        }
-        std::string matrix_name = infos[0];
-
-        m_m = stoi(infos[1]);
-        m_n = stoi(infos[2]);
-        m_nnz = stoi(infos[3]);
-
-        SparseMatrix l_spm = SparseMatrix(m_m, m_n, m_nnz);
-        l_spm.load_row(path + "row.bin");
-        l_spm.load_col(path + "col.bin");
-        l_spm.load_data(path + "data.bin");
-
-        std::vector<SparseMatrix> l_rbSpms;
-        gen_rbs(l_spm, l_rbSpms); // write into l_rbSpms
-        assert(m_rbParam.m_totalRows == l_spm.getM());
-        std::vector<SparseMatrix> l_paddedParSpms;
-        gen_paddedPars(l_rbSpms, l_paddedParSpms); // write into l_paddedParSpms
-        std::vector<std::vector<SparseMatrix> > l_chParSpms;
-        l_chParSpms.resize(m_channels);
-        gen_chPars(l_paddedParSpms, l_chParSpms); // write into l_chParSpms
-        update_rbParams(l_chParSpms);
-        gen_nnzStore(l_chParSpms);
-        printf("INFO: matrix %s partiton done.\n", matrix_name.c_str());
-        printf("      Original m, n, nnzs = %d, %d, %d\n", m_m, m_n, m_nnz);
-        printf("      After padding m, n, nnzs = %d, %d, %d\n", m_mPad, m_nPad, m_nnzPad);
-        printf("      Padding overhead is %f\n", (double)(m_nnzPad - m_nnz) / m_nnz);
-    }
-    
     MatPartition gen_sig(SparseMatrix& p_spm) {
         m_m = p_spm.m_m;
         m_n = p_spm.m_n;
