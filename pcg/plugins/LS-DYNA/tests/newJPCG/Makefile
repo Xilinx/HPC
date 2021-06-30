@@ -142,10 +142,13 @@ OBJS += $(BUILD_DIR)/couple2other_user.o
 OBJS += $(BUILD_DIR)/dynrfn_user.o
 OBJS += $(BUILD_DIR)/userLE_JPCG.o
 OBJS += $(BUILD_DIR)/JPCG.o
+
+ifeq ($(TARGET), fpga)
 OBJS += $(BUILD_DIR)/gen_signature.o
 OBJS += $(BUILD_DIR)/xFPGA.o
 OBJS += $(BUILD_DIR)/xcl2.o
 OBJS += $(BUILD_DIR)/cgHost.o
+endif
 
 EXE := $(BUILD_DIR)/mppdyna
 
@@ -164,6 +167,8 @@ clean:
 $(BUILD_DIR)/JPCG.o:
 	mkdir -p ${BUILD_DIR}
 	$(CC) -c $(CF) -I. -I$(LS_DYNA_PATH) ../../usermat/new_JPCG.cpp -o '$@'
+
+ifeq ($(TARGET), fpga)
 $(BUILD_DIR)/gen_signature.o:
 	mkdir -p ${BUILD_DIR}
 	$(CC) -c $(CF)  $(XFLIB_DIR)/L2/sparse/src/sw/c++/gen_signature.cpp  -o '$@'
@@ -176,6 +181,7 @@ $(BUILD_DIR)/xcl2.o:
 $(BUILD_DIR)/cgHost.o:
 	mkdir -p ${BUILD_DIR}
 	$(CC) -c $(CF)  $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp -o '$@'
+endif
 
 $(BUILD_DIR)/userLE_JPCG.o: ../..//usermat/userLE_JPCG.F90
 	mkdir -p ${BUILD_DIR}
