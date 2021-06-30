@@ -116,51 +116,20 @@ double fpga_JPCG(PCG_TYPE & l_pcg,
                  FortranReal* prelres,
                  FortranReal* pflops){
     std::cout << "running fpga_JPCG..." << std::endl;
-    TimePointType l_timer[10];
-    CooMat l_mat = l_pcg.allocMat(pn, pn, pnz);
-    l_pcg.allocVec(pn);
-    CgInputVec l_inVecs = l_pcg.getInputVec();
+    TimePointType l_timer[5];
     l_timer[0] = std::chrono::high_resolution_clock::now();
-    memcpy(reinterpret_cast<char*>(l_mat.m_rowIdxPtr), reinterpret_cast<char*>(rowInd), pnz*sizeof(uint32_t));
-    memcpy(reinterpret_cast<uint8_t*>(l_mat.m_colIdxPtr), reinterpret_cast<uint8_t*>(colInd), pnz*sizeof(uint32_t));
-    memcpy(reinterpret_cast<uint8_t*>(l_mat.m_datPtr), reinterpret_cast<uint8_t*>(matA), pnz*sizeof(FortranReal));
-    memcpy(reinterpret_cast<uint8_t*>(l_inVecs.h_b), reinterpret_cast<uint8_t*>(b), pn*sizeof(FortranReal));
-    memcpy(reinterpret_cast<uint8_t*>(l_inVecs.h_diag), reinterpret_cast<uint8_t*>(matJ), pn*sizeof(FortranReal));
-    showTimeData("Input data copying time: ", l_timer[0], l_timer[1]);
-    
-    l_pcg.partitionMat();
-    showTimeData("Matrix partition time: ", l_timer[1], l_timer[2]);
-    l_pcg.initVec();
-    showTimeData("Vector initialization time: ", l_timer[2], l_timer[3]);
-    //l_pcg.setDat();
-    l_pcg.setMat();
-    showTimeData("Matrix data transfer time: ", l_timer[3], l_timer[4]);
-    l_pcg.setVec();
-    showTimeData("Vector data transfer time: ", l_timer[4], l_timer[5]);
-    l_pcg.setInstr(pmaxit, ptol);
-    showTimeData("Host to device data transfer time: ", l_timer[3], l_timer[6]);
-    l_pcg.run();
-    CgVector l_resVec = l_pcg.getRes();
-    showTimeData("PCG run time: ", l_timer[6], l_timer[7]);
-    CgInstr l_instr = l_pcg.getInstr();
-    void* l_xk = l_resVec.h_xk;
-    xf::hpc::MemInstr<CG_instrBytes> l_memInstr;
-    xf::hpc::cg::CGSolverInstr<CG_dataType> l_cgInstr;
-    int lastIter = 0;
-    CG_dataType l_res = 0;
-    for (int i = 0; i < pmaxit; i++) {
-        lastIter = i;
-        l_cgInstr.load((uint8_t*)(l_instr.h_instr) + (i + 1) * CG_instrBytes, l_memInstr);
-        if (l_cgInstr.getMaxIter() == 0) {
-            break;
-        }
-        l_res = l_cgInstr.getRes();
-    }
-    *prelres = sqrt(l_res / l_pcg.getDot());
-    *pniter = lastIter;
-    memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_xk), pn*sizeof(FortranReal));
-    *pflops = lastIter * (2 * pnz + 16 * pn) - 2 * pn;
-    chrono::duration<double> d = l_timer[7] - l_timer[6];
+    l_pcg.setCooMat(pn, pnz, rowInd, colInd, matA);
+    showTimeData("Matrix partition and transmission time: ", l_timer[0], l_timer[1]);
+    l_pcg.setVec(pn, b, matJ);
+    showTimeData("Vector initialization & transmission time: ", l_timer[1], l_timer[2]);
+    Results<CG_dataType> l_res = l_pcg.run(pmaxit, ptol);
+    showTimeData("PCG run time: ", l_timer[2], l_timer[3]);
+    cout << "Residual value " << l_res.m_residual << endl;
+    *prelres = sqrt(l_res.m_residual / l_pcg.getDot());
+    *pniter = l_res.m_nIters;
+    memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_res.m_x), pn * sizeof(FortranReal));
+    *pflops = l_res.m_nIters * (2 * pnz + 16 * pn) - 2 * pn;
+    chrono::duration<double> d = l_timer[3] - l_timer[2];
     return d.count() * 1e3;
 }
 #endif
