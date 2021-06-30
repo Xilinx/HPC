@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Xilinx, Inc.
+ * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,9 +122,10 @@ class PCGImpl {
     }
 
    private:
-    SpmPar<t_DataType, t_ParEntries, t_AccLatency, t_HbmChannels, t_MaxRows, t_MaxCols, t_HbmMemBits> m_spmPar;
+    SpmPar<t_DataType> m_spmPar =
+        SpmPar<t_DataType>(t_ParEntries, t_AccLatency, t_HbmChannels, t_MaxRows, t_MaxCols, t_HbmMemBits);
     GenCgVector<t_DataType, t_ParEntries> m_genCgVec;
-    GenCgInstr<t_DataType, t_ParEntries, t_InstrBytes> m_genInstr;
+    GenCgInstr<t_DataType, t_InstrBytes> m_genInstr;
     xCgHost m_host;
     MatPartition m_matPar;
 };
