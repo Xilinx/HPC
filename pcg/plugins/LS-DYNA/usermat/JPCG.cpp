@@ -68,9 +68,7 @@ void userLE_spmv(FortranInteger n,
                  FortranInteger* colptr,
                  FortranInteger* rowind,
                  FortranReal* values,
-                 FortranReal alpha,
                  FortranReal* x,
-                 FortranReal beta,
                  FortranReal* y);
 
 FortranReal userLE_vecdot(FortranInteger n, FortranReal* x, FortranReal* y);
@@ -238,8 +236,8 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
         coo_spmv(n, nnz, rowInd, colInd, matA, p, q);
         flops += 2.0 * nnz;
 #else
-        userLE_spmv(n, nz, colptr, rowind, values, 1.0, p, 0.0, q);
-        flops += 6.0 * nz - 2.0 * n;
+        userLE_spmv(n, nz, colptr, rowind, values, p, q);
+        flops += 4.0 * nz - 2.0 * n;
 #endif
 
         /* alpha = ( r^T z ) / ( p^T q ) */
@@ -297,14 +295,6 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     std::chrono::duration<double> l_durationSec = l_stop - l_start;
     double l_timeMs = l_durationSec.count() * 1e3;
 
-    FortranReal *bp = (FortranReal*) malloc(n * sizeof(FortranReal));
-    userLE_spmv(n, nz, colptr, rowind, values, 1.0, x, 0.0, bp);
-
-    for (i = 0; i < n; i++) {
-        bp[i] = bp[i] - b[i];
-    }
-    FortranReal pTp = userLE_vecdot(n, bp, bp);
-    free(bp);
     string filename = "benchmark.csv";
     bool header = std::experimental::filesystem::exists(filename);
 
@@ -315,21 +305,19 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
             << "NNZ" << ","
             << "Niter" << ","
             << "Relres" << ","
-            << "Norm.Diff" << ","
             <<"MFLOP" << ","
 #ifdef USE_FPGA
-            << "HW Time [ms]" << ","
-            << "HW GFLOPS" << ","
+            << "PCG Time [ms]" << ","
+            << "PCG GFLOPS" << ","
 #endif
-            << "API Time [ms]" << ","
-            << "API GFLOPS" << endl;
+            << "PCG&Matrix Partition Time [ms]" << ","
+            << "PCG&Matrix Partition GFLOPS" << endl;
     } 
 
     fs << n << ","
         << nnz << ","
         << *pniter << ","
         << *prelres << ","
-        << sqrt(pTp) << ","
         << *pflops/1e6 << ","
 #ifdef USE_FPGA
         << l_hwTime << ","
@@ -393,20 +381,18 @@ void userLE_spmv(FortranInteger n,
         FortranInteger* colptr,
         FortranInteger* rowind,
         FortranReal* values,
-        FortranReal alpha,
         FortranReal* x,
-        FortranReal beta,
         FortranReal* y) {
     FortranInteger i, j, k;
 
-    for (i = 0; i < n; i++) y[i] *= beta;
+    for (i = 0; i < n; i++) y[i] = 0;
 
     for (j = 0; j < n; j++) {
         for (k = colptr[j] - 1; k < colptr[j + 1] - 1; k++) {
             i = rowind[k] - 1;
-            y[i] += alpha * values[k] * x[j];
+            y[i] += values[k] * x[j];
             if (i != j) {
-                y[j] += alpha * values[k] * x[i];
+                y[j] += values[k] * x[i];
             }
         }
     }
