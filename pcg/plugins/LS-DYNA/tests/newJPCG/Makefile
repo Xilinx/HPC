@@ -36,12 +36,8 @@ LD=mpiifort -sox -fpp -qopenmp -static-intel
 LF=  -lrt -lpthread -lstdc++ -lstdc++fs -lpthread
 CF=  -O3 $(CXXFLAGS) -DAUTODOUBLE -DUNSCORE -Wall
 
-ifeq ($(TARGET), coo)
-	CF += -DFORMAT_COO
-else
 ifeq ($(TARGET), fpga)
-	CF += -DFORMAT_COO -DUSE_FPGA
-endif
+	CF += -DUSE_FPGA
 endif
 #
 LMATH=$(LS_DYNA_PATH)/usermat/libmkl_scalapack_ilp64.a 
