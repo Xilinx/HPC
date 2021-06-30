@@ -11,8 +11,7 @@ CUR_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
 XFLIB_DIR = $(XF_PROJ_ROOT)
 TEMP_DIR := $(CUR_DIR)/_x_temp
 TARGET?=csc
-MODEL_PATH?=$(XF_PROJ_ROOT)/pcg/models
-MODEL_NAME?=small_tbc
+MODEL_PATH?=$(LS_DYNA_PATH)/small_tbc/small_tbc.k
 BUILD_DIR := $(CUR_DIR)/build_output.$(TARGET)
 FC=mpiifort
 CC=mpigxx
@@ -155,7 +154,7 @@ $(EXE): $(OBJS)
 
 run: $(EXE)
 	cd $(BUILD_DIR) && \
-	$(EXE) i=$(MODEL_PATH)/$(MODEL_NAME)/$(MODEL_NAME).k memory=1G ncpu=1 impcon=1
+	$(EXE) i=$(MODEL_PATH) memory=1G ncpu=1 impcon=1
 	cd ..
 
 clean:
