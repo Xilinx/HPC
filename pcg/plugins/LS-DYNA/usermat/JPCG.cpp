@@ -10,6 +10,8 @@
  */
 /* -------------------------------------------------------------------------- */
 
+#include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <vector>
 #include <cassert>
@@ -20,10 +22,15 @@
 #include <experimental/filesystem>
 #include <assert.h>
 #include <sys/time.h>
-#include "pcg.hpp"
+
+#ifdef USE_FPGA
+#include "pcgImp.hpp"
 #include "cgHost.hpp"
+typedef PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
+#endif
 #include "utils.hpp"
 
+using namespace std;
 #ifdef AUTODOUBLE
 typedef long long FortranMindex; 
 typedef long long FortranInteger;
@@ -46,7 +53,6 @@ typedef float FortranReal;
 #define userLE_vecdot USERLE_VECDOR
 #define userLE_vecsum USERLE_VECSUM
 #endif
-typedef PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
 /* -------------------------------------------------------------------------- */
 /* Prototypes */
 extern "C" void userLE_JPCG(FortranInteger* pn,
@@ -94,6 +100,7 @@ void getCOO(FInt n,
             Integer* rowInd,
             Integer* colInd);
 
+#ifdef USE_FPGA
 double fpga_JPCG(PCG_TYPE & l_pcg,
         FortranInteger pn,
                  FortranInteger pnz,
@@ -156,6 +163,7 @@ double fpga_JPCG(PCG_TYPE & l_pcg,
     chrono::duration<double> d = l_timer[7] - l_timer[6];
     return d.count() * 1e3;
 }
+#endif
 /* -------------------------------------------------------------------------- */
 /* Conjugate Gradients with diagonal preconditioner */
 extern "C" void userLE_JPCG(FortranInteger* pn,
@@ -309,9 +317,13 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
 #ifdef USE_FPGA
             << "PCG Time [ms]" << ","
             << "PCG GFLOPS" << ","
-#endif
             << "PCG&Matrix Partition Time [ms]" << ","
-            << "PCG&Matrix Partition GFLOPS" << endl;
+            << "PCG&Matrix Partition GFLOPS"
+#else
+            << "PCG API Time [ms]" << ","
+            << "PCG API GFLOPS"
+#endif
+            << endl;
     } 
 
     fs << n << ","
@@ -324,7 +336,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
         << *pflops/1e6/l_hwTime << ","
 #endif
         << l_timeMs << ","
-        << *pflops/1e6/l_timeMs << endl;
+        << *pflops/1e6/l_timeMs << std::endl;
     fs.close();
     return;
 }
