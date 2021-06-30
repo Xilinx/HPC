@@ -15,9 +15,9 @@ def build(target):
 
 
 def run(target, model):
-    cmdLine = "make run TARGET=%s MODEL_NAME=%s" % (target, model)
+    cmdLine = "make run TARGET=%s MODEL_PATH=%s" % (target, model)
     args = shlex.split(cmdLine)
-#    subprocess.run(args)
+    subprocess.run(args)
 
 
 def report(targets):
@@ -52,6 +52,10 @@ def report(targets):
 
 def main(model_path):
     targets = ['fpga', 'csc', 'coo']
+    for target in targets:
+        filename = os.path.join("build_output.%s" % target, "benchmark.csv")
+        if os.path.exists(filename):
+            os.remove(filename)
 
     if not os.path.isdir(model_path):
         return
@@ -60,9 +64,9 @@ def main(model_path):
     with Pool(8) as p:
         p.map(build, targets)
 
-    for m in model_names:
-        for t in targets:
-            run(t, m)
+    for t in targets:
+        for m in model_names:
+            run(t, os.path.join(model_path, m, "%s.k" % m))
     report(targets)
 
 

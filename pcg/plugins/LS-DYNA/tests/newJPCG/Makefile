@@ -142,6 +142,7 @@ OBJS += $(BUILD_DIR)/couple2other_user.o
 OBJS += $(BUILD_DIR)/dynrfn_user.o
 OBJS += $(BUILD_DIR)/userLE_JPCG.o
 OBJS += $(BUILD_DIR)/JPCG.o
+
 ifeq ($(TARGET), fpga)
 OBJS += $(BUILD_DIR)/gen_signature.o
 OBJS += $(BUILD_DIR)/xFPGA.o
@@ -165,7 +166,8 @@ clean:
 
 $(BUILD_DIR)/JPCG.o:
 	mkdir -p ${BUILD_DIR}
-	$(CC) -c $(CF) -I. -I$(LS_DYNA_PATH) ../../usermat/JPCG.cpp -o '$@'
+	$(CC) -c $(CF) -I. -I$(LS_DYNA_PATH) ../../usermat/new_JPCG.cpp -o '$@'
+
 ifeq ($(TARGET), fpga)
 $(BUILD_DIR)/gen_signature.o:
 	mkdir -p ${BUILD_DIR}
@@ -181,7 +183,7 @@ $(BUILD_DIR)/cgHost.o:
 	$(CC) -c $(CF)  $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp -o '$@'
 endif
 
-$(BUILD_DIR)/userLE_JPCG.o: $(LS_DYNA_PATH)/usermat/userLE_JPCG.F90
+$(BUILD_DIR)/userLE_JPCG.o: ../..//usermat/userLE_JPCG.F90
 	mkdir -p ${BUILD_DIR}
 	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $^ -o '$@'
 $(BUILD_DIR)/userinterface.o: $(LS_DYNA_PATH)/usermat/userinterface.f90
