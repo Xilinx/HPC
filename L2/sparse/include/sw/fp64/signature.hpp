@@ -1,4 +1,19 @@
 /*
+ * Copyright 2019 Xilinx, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+*/
+/*
  * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,11 +42,17 @@
 #include "utils.hpp"
 
 #define DIV_CEIL(x, y) (((x) + (y)-1) / (y))
+#define ZERO_VAL std::numeric_limits<uint32_t>::max()
 
 class Signature {
    public:
     Signature() = default;
-    Signature(uint32_t parEntries, uint32_t accLatency, uint32_t channels, uint32_t maxRows, uint32_t maxCols, uint32_t memBits) {
+    Signature(uint32_t parEntries,
+              uint32_t accLatency,
+              uint32_t channels,
+              uint32_t maxRows,
+              uint32_t maxCols,
+              uint32_t memBits) {
         m_parEntries = parEntries;
         m_accLatency = accLatency;
         m_channels = channels;
@@ -41,8 +62,14 @@ class Signature {
         m_rbParam.init(m_memBits, m_channels);
         m_parParam.init(m_memBits, m_channels);
         m_nnzStore.init(m_memBits, parEntries, accLatency, m_channels);
+        m_chParSpms.resize(m_channels);
     }
-    void init(uint32_t parEntries, uint32_t accLatency, uint32_t channels, uint32_t maxRows, uint32_t maxCols, uint32_t memBits) {
+    void init(uint32_t parEntries,
+              uint32_t accLatency,
+              uint32_t channels,
+              uint32_t maxRows,
+              uint32_t maxCols,
+              uint32_t memBits) {
         m_parEntries = parEntries;
         m_accLatency = accLatency;
         m_channels = channels;
@@ -52,11 +79,12 @@ class Signature {
         m_rbParam.init(m_memBits, m_channels);
         m_parParam.init(m_memBits, m_channels);
         m_nnzStore.init(m_memBits, parEntries, accLatency, m_channels);
+        m_chParSpms.resize(m_channels);
     }
 
     SparseMatrix add_spm(std::vector<uint32_t> p_row,
                          std::vector<uint32_t> p_col,
-                         std::vector<double> p_data,
+                         std::vector<uint32_t> p_data,
                          uint32_t& p_m,
                          uint32_t& p_n,
                          uint32_t& p_nnz,
@@ -82,7 +110,7 @@ class Signature {
         uint32_t l_sId = 0;
         uint32_t l_eId = 0;
         p_spm.sort_by_row();
-        uint32_t l_minRowId = p_spm.getMinRowId(); 
+        uint32_t l_minRowId = p_spm.getMinRowId();
 
         while (l_eId < p_spm.getNnz()) {
             if (p_spm.getRow(p_spm.getNnz() - 1) < (l_minRowId + m_maxRows)) {
@@ -95,7 +123,7 @@ class Signature {
             if (l_eId > l_sId) {
                 std::vector<uint32_t> l_row = p_spm.getSubRows(l_sId, l_eId);
                 std::vector<uint32_t> l_col = p_spm.getSubCols(l_sId, l_eId);
-                std::vector<double> l_data = p_spm.getSubDatas(l_sId, l_eId);
+                std::vector<uint32_t> l_data = p_spm.getSubDatas(l_sId, l_eId);
 
                 uint32_t l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId = 0;
                 SparseMatrix l_rbSpm = add_spm(l_row, l_col, l_data, l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId);
@@ -135,10 +163,9 @@ class Signature {
             if (l_eId > l_sId) {
                 std::vector<uint32_t> l_row = p_rbSpm.getSubRows(l_sId, l_eId);
                 std::vector<uint32_t> l_col = p_rbSpm.getSubCols(l_sId, l_eId);
-                std::vector<double> l_data = p_rbSpm.getSubDatas(l_sId, l_eId);
+                std::vector<uint32_t> l_data = p_rbSpm.getSubDatas(l_sId, l_eId);
                 uint32_t l_m = 0, l_n = 0, l_nnz = 0, l_spmMinRowId = 0, l_spmMinColId = 0;
-                SparseMatrix l_parSpm =
-                    add_spm(l_row, l_col, l_data, l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId);
+                SparseMatrix l_parSpm = add_spm(l_row, l_col, l_data, l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId);
                 p_parSpms.push_back(l_parSpm);
                 assert(l_m <= m_maxRows);
                 assert(l_n <= m_maxCols);
@@ -155,13 +182,13 @@ class Signature {
         uint32_t l_totalRbs = p_rbSpms.size();
         std::vector<std::vector<SparseMatrix> > l_parSpms(l_totalRbs);
         std::vector<std::thread> l_threads(l_totalRbs);
-        for (auto i = 0; i < l_totalRbs; ++i) {
+        for (uint32_t i = 0; i < l_totalRbs; ++i) {
             l_threads[i] = std::thread(&Signature::genPars4Rb, this, i, std::ref(p_rbSpms[i]), std::ref(l_parSpms[i]));
         }
-        for (auto &th: l_threads) {
+        for (auto& th : l_threads) {
             th.join();
         }
-        for (auto i=0; i < l_totalRbs; ++i) {
+        for (uint32_t i = 0; i < l_totalRbs; ++i) {
             p_parSpms.insert(p_parSpms.end(), l_parSpms[i].begin(), l_parSpms[i].end());
         }
     }
@@ -171,7 +198,7 @@ class Signature {
 
         std::vector<uint32_t> l_row;
         std::vector<uint32_t> l_col;
-        std::vector<double> l_data;
+        std::vector<uint32_t> l_data;
         std::unordered_map<int, int> l_rowNnzs;
         for (uint32_t i = 0; i < l_nnzs; i++) {
             uint32_t r = p_parSpm.getRow(i);
@@ -187,7 +214,7 @@ class Signature {
             uint32_t l_colIdBase = (p_parSpm.getCol(l_sId) / m_parEntries) * m_parEntries;
             uint32_t l_rRowNnzs = 0;
             while (l_idx < l_cRowNnzs) {
-                double l_dataItem = p_parSpm.getData(l_sId + l_idx);
+                uint32_t l_dataItem = p_parSpm.getData(l_sId + l_idx);
                 uint32_t l_colId = p_parSpm.getCol(l_sId + l_idx);
                 if (l_modId == 0) {
                     l_colIdBase = (l_colId / m_parEntries) * m_parEntries;
@@ -195,7 +222,7 @@ class Signature {
                 l_row.push_back(l_rowId);
                 if (l_colId != (l_colIdBase + l_modId)) {
                     l_col.push_back(l_colIdBase + l_modId);
-                    l_data.push_back(0);
+                    l_data.push_back(ZERO_VAL);
                 } else {
                     l_col.push_back(l_colId);
                     l_data.push_back(l_dataItem);
@@ -209,7 +236,7 @@ class Signature {
             while ((l_rRowNnzs % (m_parEntries * m_accLatency)) != 0) {
                 l_row.push_back(l_rowId);
                 l_col.push_back(l_colIdBase + l_modId);
-                l_data.push_back(0);
+                l_data.push_back(ZERO_VAL);
                 l_modId = (l_modId + 1) % m_parEntries;
                 l_rRowNnzs += 1;
             }
@@ -237,9 +264,10 @@ class Signature {
             assert(l_paddedParSpm.getM() <= m_maxRows);
             assert(l_paddedParSpm.getN() <= m_maxCols);
             p_paddedParSpms[i] = l_paddedParSpm;*/
-            l_threads[i] = std::thread(&Signature::create_padPar, this, i, std::ref(l_parSpms[i]), std::ref(p_paddedParSpms[i]));
+            l_threads[i] =
+                std::thread(&Signature::create_padPar, this, i, std::ref(l_parSpms[i]), std::ref(p_paddedParSpms[i]));
         }
-        for (auto &th : l_threads) {
+        for (auto& th : l_threads) {
             th.join();
         }
     }
@@ -276,7 +304,7 @@ class Signature {
 
                 std::vector<uint32_t> l_row = l_parSpm.getSubRows(l_sId, l_eId);
                 std::vector<uint32_t> l_col = l_parSpm.getSubCols(l_sId, l_eId);
-                std::vector<double> l_data = l_parSpm.getSubDatas(l_sId, l_eId);
+                std::vector<uint32_t> l_data = l_parSpm.getSubDatas(l_sId, l_eId);
 
                 l_sId = l_eId;
                 uint32_t l_m = 0, l_n = 0, l_nnz = 0, l_minRowId = 0, l_minColId = 0;
@@ -351,7 +379,7 @@ class Signature {
         }
     }
 
-    void gen_nnzStore(std::vector<std::vector<SparseMatrix> >& p_chParSpms) {
+    void gen_nnzStore(double* p_data) {
         for (uint32_t c = 0; c < m_channels; c++) {
             m_nnzStore.add_dummyInfo(c);
         }
@@ -369,7 +397,7 @@ class Signature {
                 uint32_t l_parId = l_sParId + parId;
                 uint32_t l_sParColId = m_parParam.get_parInfo(l_parId)[0];
                 for (uint32_t c = 0; c < m_channels; c++) {
-                    SparseMatrix l_chParSpm = p_chParSpms[c][l_parId];
+                    SparseMatrix l_chParSpm = m_chParSpms[c][l_parId];
                     m_nnzStore.m_totalRowIdxBks[c] += DIV_CEIL(l_chParSpm.getNnz(), l_rowIdxMod);
                     m_nnzStore.m_totalColIdxBks[c] += DIV_CEIL(l_chParSpm.getNnz(), l_colIdxMod);
                     m_nnzStore.m_totalNnzBks[c] += l_chParSpm.getNnz() / m_parEntries;
@@ -400,7 +428,8 @@ class Signature {
                             m_nnzStore.add_idxArr(c, l_colIdx);
                         }
                         for (uint32_t j = 0; j < m_parEntries; j++) {
-                            l_nnz[j] = l_chParSpm.getData(i + j);
+                            uint32_t l_nnzIdx = l_chParSpm.getData(i + j);
+                            l_nnz[j] = (l_nnzIdx == ZERO_VAL) ? 0 : p_data[l_chParSpm.getData(i + j)];
                         }
                         m_nnzStore.add_nnzArr(c, l_nnz);
                     }
@@ -414,20 +443,21 @@ class Signature {
         }
     }
 
-    MatPartition gen_sig(SparseMatrix& p_spm) {
+    MatPartition gen_sig(SparseMatrix& p_spm, double* p_data) {
         m_m = p_spm.m_m;
         m_n = p_spm.m_n;
         m_nnz = p_spm.m_nnz;
         std::vector<SparseMatrix> l_rbSpms;
         gen_rbs(p_spm, l_rbSpms); // write into l_rbSpms
-        assert(m_rbParam.m_totalRows == p_spm.getM());   
+        assert(m_rbParam.m_totalRows == p_spm.getM());
         std::vector<SparseMatrix> l_paddedParSpms;
         gen_paddedPars(l_rbSpms, l_paddedParSpms); // write into l_paddedParSpms
-        std::vector<std::vector<SparseMatrix> > l_chParSpms;
-        l_chParSpms.resize(m_channels);
-        gen_chPars(l_paddedParSpms, l_chParSpms); // write into l_chParSpms
-        update_rbParams(l_chParSpms);
-        gen_nnzStore(l_chParSpms);
+        for (unsigned int i = 0; i < m_channels; ++i) {
+            m_chParSpms[i].clear();
+        }
+        gen_chPars(l_paddedParSpms, m_chParSpms); // write into m_chParSpms
+        update_rbParams(m_chParSpms);
+        gen_nnzStore(p_data);
         m_rbParam.update_buf();
         m_parParam.update_buf();
         m_nnzStore.update_buf();
@@ -439,7 +469,30 @@ class Signature {
         l_res.m_parParamSize = m_parParam.m_buf.size();
 
         l_res.m_nnzValPtr.resize(m_nnzStore.m_buf.size());
-        for (uint32_t i=0; i<m_nnzStore.m_buf.size(); ++i) {
+        for (uint32_t i = 0; i < m_nnzStore.m_buf.size(); ++i) {
+            l_res.m_nnzValPtr[i] = (void*)(&(m_nnzStore.m_buf[i][0]));
+            l_res.m_nnzValSize.push_back(m_nnzStore.m_buf[i].size());
+        }
+        l_res.m_m = m_m;
+        l_res.m_n = m_n;
+        l_res.m_nnz = m_nnz;
+        l_res.m_mPad = m_mPad;
+        l_res.m_nPad = m_nPad;
+        l_res.m_nnzPad = m_nnzPad;
+        return l_res;
+    }
+
+    MatPartition update_sig(double* p_data) {
+        gen_nnzStore(p_data);
+        MatPartition l_res;
+        l_res.m_rbParamPtr = (void*)(&(m_rbParam.m_buf[0]));
+        l_res.m_rbParamSize = m_rbParam.m_buf.size();
+
+        l_res.m_parParamPtr = (void*)(&(m_parParam.m_buf[0]));
+        l_res.m_parParamSize = m_parParam.m_buf.size();
+
+        l_res.m_nnzValPtr.resize(m_nnzStore.m_buf.size());
+        for (uint32_t i = 0; i < m_nnzStore.m_buf.size(); ++i) {
             l_res.m_nnzValPtr[i] = (void*)(&(m_nnzStore.m_buf[i][0]));
             l_res.m_nnzValSize.push_back(m_nnzStore.m_buf[i].size());
         }
@@ -478,5 +531,6 @@ class Signature {
     RowBlockParam m_rbParam;
     ParParam m_parParam;
     NnzStore m_nnzStore;
+    std::vector<std::vector<SparseMatrix> > m_chParSpms;
 };
 #endif

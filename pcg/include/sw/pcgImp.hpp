@@ -21,7 +21,7 @@
 #include "cgVector.hpp"
 #include "cgHost.hpp"
 
-template<typename t_DataType>
+template <typename t_DataType>
 struct Results {
     void* m_x;
     t_DataType m_residual;
@@ -38,44 +38,42 @@ template <typename t_DataType,
           unsigned int t_HbmMemBits>
 class PCGImpl {
    public:
-        PCGImpl(){};
-        PCGImpl(int p_devId, std::string p_xclbinName){
-            m_host.init(p_devId, p_xclbinName);
-        }
-        void setCooMat(uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, t_DataType* p_data) {
-            m_matPar =  m_spmPar.partitionCooMat(p_dim, p_nnz, p_rowIdx, p_colIdx, p_data);
-        }
-        void setCscSymMat(uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr, t_DataType* p_data) {
-            m_matPar =  m_spmPar.partitionCscSymMat(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
-        }
+    PCGImpl(){};
+    PCGImpl(int p_devId, std::string p_xclbinName) { m_host.init(p_devId, p_xclbinName); }
+    void setCooMat(uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, t_DataType* p_data) {
+        m_matPar = m_spmPar.partitionCooMat(p_dim, p_dim, p_nnz, p_rowIdx, p_colIdx, p_data);
+        m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
+                          m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+    }
+    void setCscSymMat(uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr, t_DataType* p_data) {
+        m_matPar = m_spmPar.partitionCscSymMat(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
+        m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
+                          m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+    }
+    void updateMat(t_DataType* p_data) {
+        m_matPar = m_spmPar.updateMat(p_data);
+        m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
+                          m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+    }
 
-        void sendMat() {
-            m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize,
-                       m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
-                       m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
-        }
+    void setVec(uint32_t p_dim, t_DataType* p_b, t_DataType* p_diagA) {
+        m_genCgVec.loadVec(p_dim, p_b, p_diagA);
+        m_genCgVec.init();
+        this->sendVec();
+    }
 
-        void setVec(uint32_t p_dim, t_DataType* p_b, t_DataType* p_diagA) {
-            m_genCgVec.loadVec(p_dim, p_b, p_diagA);
-            m_genCgVec.init();
-            this->sendVec();
-        }
-
-        void run() {
-            m_host.run();
-        }
-        Results<t_DataType> run(unsigned int p_maxIter, t_DataType p_tol) {
+    Results<t_DataType> run(unsigned int p_maxIter, t_DataType p_tol) {
         this->setInstr(p_maxIter, p_tol);
         m_host.run();
-        CgVector l_resVec = getRes();
+        CgVector l_resVec = this->getRes();
         Results<t_DataType> l_res;
         l_res.m_x = l_resVec.h_xk;
         xf::hpc::MemInstr<t_InstrBytes> l_memInstr;
         xf::hpc::cg::CGSolverInstr<CG_dataType> l_cgInstr;
         l_res.m_nIters = 0;
         l_res.m_residual = 0;
-         
-        CgInstr l_instr = this->getInstr();
+
+        CgInstr l_instr = m_genInstr.getInstrPtr();
         for (unsigned int i = 0; i < p_maxIter; i++) {
             l_res.m_nIters = i;
             l_cgInstr.load((uint8_t*)(l_instr.h_instr) + (i + 1) * t_InstrBytes, l_memInstr);
@@ -85,57 +83,43 @@ class PCGImpl {
             l_res.m_residual = l_cgInstr.getRes();
         }
         return l_res;
-        }
+    }
 
-        std::vector<uint32_t> getMatInfo() {
+    std::vector<uint32_t> getMatInfo() {
         std::vector<uint32_t> l_info(6);
         l_info[0] = m_matPar.m_m;
         l_info[1] = m_matPar.m_n;
         l_info[2] = m_matPar.m_nnz;
         l_info[3] = m_matPar.m_mPad;
         l_info[4] = m_matPar.m_nPad;
-        l_info[5] = m_matPar.m_nnzPad; 
+        l_info[5] = m_matPar.m_nnzPad;
         return l_info;
-        }
-        MatPartition getMatPar() {return m_matPar;}
-        t_DataType getDot() {return m_genCgVec.getDot();}
-        t_DataType getRz() {return m_genCgVec.getRz();}
-        CgVector getVec() {return m_genCgVec.getVec();}
+    }
+    MatPartition getMatPar() { return m_matPar; }
+    t_DataType getDot() { return m_genCgVec.getDot(); }
+    t_DataType getRz() { return m_genCgVec.getRz(); }
+    CgVector getVec() { return m_genCgVec.getVec(); }
 
-        CooMat allocMat(unsigned int p_m, unsigned int p_n, unsigned int p_nnz) {
-        return m_spmPar.allocMat(p_m, p_n, p_nnz);
-        }
-        void allocVec(unsigned int p_dim) { return m_genCgVec.allocVec(p_dim); }
-        CgInputVec getInputVec() {return m_genCgVec.getInputVec();}
-        CgVector getRes(){
-            m_host.getDat();
-            m_host.finish();
-            return m_genCgVec.getVec();
-        }
-        CgInstr getInstr(){
-            CgInstr l_cgInstr = m_genInstr.getInstrPtr();
-            return l_cgInstr;
-        }
+    CgVector getRes() {
+        m_host.getDat();
+        m_host.finish();
+        return m_genCgVec.getVec();
+    }
 
-        void partitionMat() { m_matPar =  m_spmPar.partitionMat(); }
-        void initVec() {m_genCgVec.init();}
-        void sendVec() {
-            CgVector l_cgVec = m_genCgVec.getVec();
-            m_host.sendVecDat(l_cgVec.h_pk, l_cgVec.vecBytes,
-                           l_cgVec.h_Apk, l_cgVec.vecBytes,
-                           l_cgVec.h_zk, l_cgVec.vecBytes,
-                           l_cgVec.h_rk, l_cgVec.vecBytes,
-                           l_cgVec.h_jacobi, l_cgVec.vecBytes,
-                           l_cgVec.h_xk, l_cgVec.vecBytes);
-        }
-        void setInstr(unsigned int p_maxIter, t_DataType p_tol) {
-            t_DataType l_dot = m_genCgVec.getDot();
-            t_DataType l_rz = m_genCgVec.getRz();
-            m_genInstr.setInstr(p_maxIter, m_genCgVec.getDimAligned(), l_dot, p_tol, l_rz);
-            m_genInstr.updateInstr();
-            CgInstr l_cgInstr = m_genInstr.getInstrPtr();
-            m_host.sendInstr(l_cgInstr.h_instr, l_cgInstr.h_instrBytes);
-        }
+    void sendVec() {
+        CgVector l_cgVec = m_genCgVec.getVec();
+        m_host.sendVecDat(l_cgVec.h_pk, l_cgVec.vecBytes, l_cgVec.h_Apk, l_cgVec.vecBytes, l_cgVec.h_zk,
+                          l_cgVec.vecBytes, l_cgVec.h_rk, l_cgVec.vecBytes, l_cgVec.h_jacobi, l_cgVec.vecBytes,
+                          l_cgVec.h_xk, l_cgVec.vecBytes);
+    }
+    void setInstr(unsigned int p_maxIter, t_DataType p_tol) {
+        t_DataType l_dot = m_genCgVec.getDot();
+        t_DataType l_rz = m_genCgVec.getRz();
+        m_genInstr.setInstr(p_maxIter, m_genCgVec.getDimAligned(), l_dot, p_tol, l_rz);
+        m_genInstr.updateInstr();
+        CgInstr l_cgInstr = m_genInstr.getInstrPtr();
+        m_host.sendInstr(l_cgInstr.h_instr, l_cgInstr.h_instrBytes);
+    }
 
    private:
     SpmPar<t_DataType, t_ParEntries, t_AccLatency, t_HbmChannels, t_MaxRows, t_MaxCols, t_HbmMemBits> m_spmPar;

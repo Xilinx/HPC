@@ -1,4 +1,19 @@
 /*
+ * Copyright 2019 Xilinx, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+*/
+/*
  * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,10 +82,10 @@ class GenCgVector {
         unsigned int l_dimAlignedBks = (p_dim + t_ParEntries - 1) / t_ParEntries;
         unsigned int l_dimAligned = l_dimAlignedBks * t_ParEntries;
         m_dimAligned = l_dimAligned;
-        m_diagA.insert(m_diagA.end(), p_diagA, p_diagA+p_dim);
-        m_diagA.insert(m_diagA.end(), m_dimAligned-m_dim, 1);
-        m_b.insert(m_b.end(), p_b, p_b+p_dim);
-        m_b.insert(m_b.end(), m_dimAligned-m_dim, 0);
+        m_diagA.insert(m_diagA.end(), p_diagA, p_diagA + p_dim);
+        m_diagA.insert(m_diagA.end(), m_dimAligned - m_dim, 1);
+        m_b.insert(m_b.end(), p_b, p_b + p_dim);
+        m_b.insert(m_b.end(), m_dimAligned - m_dim, 0);
         m_Apk.assign(m_dimAligned, 0);
         m_jacobi.assign(m_dimAligned, 1);
         m_pk.assign(m_dimAligned, 0);

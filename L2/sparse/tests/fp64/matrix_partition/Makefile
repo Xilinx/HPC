@@ -22,6 +22,7 @@ TARGET=gen_signature.exe
 
 sig_path=./sig_dat/
 mtx_list=test_matrices.txt
+SPARSE_dataType=double
 SPARSE_maxRows=4096
 SPARSE_maxCols=4096
 SPARSE_hbmChannels=16
@@ -30,7 +31,8 @@ SPARSE_accLatency=8
 SPARSE_hbmMemBits=256
 MTX_NAME=nasa2910
 
-MACROS +=-D SPARSE_maxRows=$(SPARSE_maxRows) \
+MACROS +=-D SPARSE_dataType=$(SPARSE_dataType) \
+	 -D SPARSE_maxRows=$(SPARSE_maxRows) \
 	 -D SPARSE_maxCols=$(SPARSE_maxCols) \
 	 -D SPARSE_hbmChannels=$(SPARSE_hbmChannels) \
 	 -D SPARSE_parEntries=$(SPARSE_parEntries) \

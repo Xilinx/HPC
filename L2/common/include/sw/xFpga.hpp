@@ -1,4 +1,19 @@
 /*
+ * Copyright 2019 Xilinx, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+*/
+/*
  * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,8 +56,8 @@ class FPGA {
     void finish() const;
     cl::Buffer createDeviceBuffer(cl_mem_flags p_flags, void* p_buffer, size_t p_size);
     std::vector<cl::Buffer> createDeviceBuffer(cl_mem_flags p_flags,
-                                          const std::vector<void*>& p_buffer,
-                                          const std::vector<size_t>& p_size);
+                                               const std::vector<void*>& p_buffer,
+                                               const std::vector<size_t>& p_size);
 
    protected:
     bool exists(const void* p_ptr) const;
@@ -70,7 +85,9 @@ class Kernel {
     void getBuffer(std::vector<cl::Memory>& h_m);
     void sendBuffer(std::vector<cl::Memory>& h_m);
     cl::Buffer createDeviceBuffer(cl_mem_flags p_flags, void* p_buffer, size_t p_size) const;
-    std::vector<cl::Buffer> createDeviceBuffer(cl_mem_flags p_flags, std::vector<void*>& p_buffer, std::vector<size_t>& p_size) const;
+    std::vector<cl::Buffer> createDeviceBuffer(cl_mem_flags p_flags,
+                                               std::vector<void*>& p_buffer,
+                                               std::vector<size_t>& p_size) const;
 
    protected:
     FPGA* m_fpga;
