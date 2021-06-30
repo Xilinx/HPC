@@ -26,8 +26,6 @@
 #include <unordered_map>
 #include "utils.hpp"
 
-using namespace std;
-
 #define DIV_CEIL(x, y) (((x) + (y)-1) / (y))
 
 class Signature {
@@ -56,9 +54,9 @@ class Signature {
         m_nnzStore.init(m_memBits, parEntries, accLatency, m_channels);
     }
 
-    SparseMatrix add_spm(vector<uint32_t> p_row,
-                         vector<uint32_t> p_col,
-                         vector<double> p_data,
+    SparseMatrix add_spm(std::vector<uint32_t> p_row,
+                         std::vector<uint32_t> p_col,
+                         std::vector<double> p_data,
                          uint32_t& p_m,
                          uint32_t& p_n,
                          uint32_t& p_nnz,
@@ -74,7 +72,7 @@ class Signature {
         return l_spm;
     }
 
-    void gen_rbs(SparseMatrix& p_spm, vector<SparseMatrix>& p_rbSpms) {
+    void gen_rbs(SparseMatrix& p_spm, std::vector<SparseMatrix>& p_rbSpms) {
         m_mPad = p_spm.getM();
         m_nPad = DIV_CEIL(p_spm.getN(), m_parEntries) * m_parEntries;
         m_rbParam.add_dummyInfo();
@@ -90,14 +88,14 @@ class Signature {
             if (p_spm.getRow(p_spm.getNnz() - 1) < (l_minRowId + m_maxRows)) {
                 l_eId = p_spm.getNnz();
             } else {
-                vector<uint32_t> l_tmp = p_spm.getRows();
+                std::vector<uint32_t> l_tmp = p_spm.getRows();
                 auto l_up = upper_bound(l_tmp.begin(), l_tmp.end(), l_minRowId + m_maxRows, isLessEqual);
                 l_eId = l_up - l_tmp.begin();
             }
             if (l_eId > l_sId) {
-                vector<uint32_t> l_row = p_spm.getSubRows(l_sId, l_eId);
-                vector<uint32_t> l_col = p_spm.getSubCols(l_sId, l_eId);
-                vector<double> l_data = p_spm.getSubDatas(l_sId, l_eId);
+                std::vector<uint32_t> l_row = p_spm.getSubRows(l_sId, l_eId);
+                std::vector<uint32_t> l_col = p_spm.getSubCols(l_sId, l_eId);
+                std::vector<double> l_data = p_spm.getSubDatas(l_sId, l_eId);
 
                 uint32_t l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId = 0;
                 SparseMatrix l_rbSpm = add_spm(l_row, l_col, l_data, l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId);
@@ -117,8 +115,8 @@ class Signature {
         }
     }
 
-    void genPars4Rb(unsigned int p_rbId, SparseMatrix& p_rbSpm, vector<SparseMatrix>& p_parSpms) {
-        vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(p_rbId, 1);
+    void genPars4Rb(unsigned int p_rbId, SparseMatrix& p_rbSpm, std::vector<SparseMatrix>& p_parSpms) {
+        std::vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(p_rbId, 1);
         assert(p_rbSpm.getNnz() == l_rbInfo[1]);
         assert(p_rbSpm.getM() == l_rbInfo[0]);
         assert(p_rbSpm.getM() <= m_maxRows);
@@ -130,14 +128,14 @@ class Signature {
             if (p_rbSpm.getCol(p_rbSpm.getNnz() - 1) < l_minColId + m_maxCols) {
                 l_eId = p_rbSpm.getNnz();
             } else {
-                vector<uint32_t> l_tmp = p_rbSpm.getCols();
+                std::vector<uint32_t> l_tmp = p_rbSpm.getCols();
                 auto l_up = upper_bound(l_tmp.begin(), l_tmp.end(), l_minColId + m_maxCols, isLessEqual);
                 l_eId = l_up - l_tmp.begin();
             }
             if (l_eId > l_sId) {
-                vector<uint32_t> l_row = p_rbSpm.getSubRows(l_sId, l_eId);
-                vector<uint32_t> l_col = p_rbSpm.getSubCols(l_sId, l_eId);
-                vector<double> l_data = p_rbSpm.getSubDatas(l_sId, l_eId);
+                std::vector<uint32_t> l_row = p_rbSpm.getSubRows(l_sId, l_eId);
+                std::vector<uint32_t> l_col = p_rbSpm.getSubCols(l_sId, l_eId);
+                std::vector<double> l_data = p_rbSpm.getSubDatas(l_sId, l_eId);
                 uint32_t l_m = 0, l_n = 0, l_nnz = 0, l_spmMinRowId = 0, l_spmMinColId = 0;
                 SparseMatrix l_parSpm =
                     add_spm(l_row, l_col, l_data, l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId);
@@ -153,12 +151,12 @@ class Signature {
         }
         m_rbParam.set_numPars(p_rbId, l_rbPars);
     }
-    void gen_pars(vector<SparseMatrix>& p_rbSpms, vector<SparseMatrix>& p_parSpms) {
+    void gen_pars(std::vector<SparseMatrix>& p_rbSpms, std::vector<SparseMatrix>& p_parSpms) {
         uint32_t l_totalRbs = p_rbSpms.size();
-        vector<vector<SparseMatrix> > l_parSpms(l_totalRbs);
-        vector<thread> l_threads(l_totalRbs);
+        std::vector<std::vector<SparseMatrix> > l_parSpms(l_totalRbs);
+        std::vector<std::thread> l_threads(l_totalRbs);
         for (auto i = 0; i < l_totalRbs; ++i) {
-            l_threads[i] = thread(&Signature::genPars4Rb, this, i, ref(p_rbSpms[i]), ref(l_parSpms[i]));
+            l_threads[i] = std::thread(&Signature::genPars4Rb, this, i, std::ref(p_rbSpms[i]), std::ref(l_parSpms[i]));
         }
         for (auto &th: l_threads) {
             th.join();
@@ -171,10 +169,10 @@ class Signature {
     void pad_par(SparseMatrix& p_parSpm, SparseMatrix& p_paddedParSpm) {
         uint32_t l_nnzs = p_parSpm.getNnz();
 
-        vector<uint32_t> l_row;
-        vector<uint32_t> l_col;
-        vector<double> l_data;
-        unordered_map<int, int> l_rowNnzs;
+        std::vector<uint32_t> l_row;
+        std::vector<uint32_t> l_col;
+        std::vector<double> l_data;
+        std::unordered_map<int, int> l_rowNnzs;
         for (uint32_t i = 0; i < l_nnzs; i++) {
             uint32_t r = p_parSpm.getRow(i);
             ++l_rowNnzs[r];
@@ -224,14 +222,14 @@ class Signature {
         pad_par(p_parSpm, p_paddedParSpm);
     }
 
-    void gen_paddedPars(vector<SparseMatrix>& p_rbSpms, vector<SparseMatrix>& p_paddedParSpms) {
-        vector<SparseMatrix> l_parSpms;
+    void gen_paddedPars(std::vector<SparseMatrix>& p_rbSpms, std::vector<SparseMatrix>& p_paddedParSpms) {
+        std::vector<SparseMatrix> l_parSpms;
         gen_pars(p_rbSpms, l_parSpms);
 
         unsigned int l_size = l_parSpms.size();
         p_paddedParSpms.resize(l_size);
 
-        vector<thread> l_threads(l_size);
+        std::vector<std::thread> l_threads(l_size);
         for (unsigned int i = 0; i < l_size; i++) {
             /*SparseMatrix l_parSpm = l_parSpms[i];
             l_parSpm.complete_sort_by_row();
@@ -239,14 +237,14 @@ class Signature {
             assert(l_paddedParSpm.getM() <= m_maxRows);
             assert(l_paddedParSpm.getN() <= m_maxCols);
             p_paddedParSpms[i] = l_paddedParSpm;*/
-            l_threads[i] = thread(&Signature::create_padPar, this, i, ref(l_parSpms[i]), ref(p_paddedParSpms[i]));
+            l_threads[i] = std::thread(&Signature::create_padPar, this, i, std::ref(l_parSpms[i]), std::ref(p_paddedParSpms[i]));
         }
         for (auto &th : l_threads) {
             th.join();
         }
     }
 
-    void gen_chPars(vector<SparseMatrix>& p_paddedParSpms, vector<vector<SparseMatrix> >& p_chParSpms) {
+    void gen_chPars(std::vector<SparseMatrix>& p_paddedParSpms, std::vector<std::vector<SparseMatrix> >& p_chParSpms) {
         m_parParam.add_dummyInfo();
         uint32_t l_totalPars = p_paddedParSpms.size();
         for (uint32_t i = 0; i < l_totalPars; i++) {
@@ -276,9 +274,9 @@ class Signature {
                     l_eId += 1;
                 }
 
-                vector<uint32_t> l_row = l_parSpm.getSubRows(l_sId, l_eId);
-                vector<uint32_t> l_col = l_parSpm.getSubCols(l_sId, l_eId);
-                vector<double> l_data = l_parSpm.getSubDatas(l_sId, l_eId);
+                std::vector<uint32_t> l_row = l_parSpm.getSubRows(l_sId, l_eId);
+                std::vector<uint32_t> l_col = l_parSpm.getSubCols(l_sId, l_eId);
+                std::vector<double> l_data = l_parSpm.getSubDatas(l_sId, l_eId);
 
                 l_sId = l_eId;
                 uint32_t l_m = 0, l_n = 0, l_nnz = 0, l_minRowId = 0, l_minColId = 0;
@@ -310,11 +308,11 @@ class Signature {
         m_parParam.m_totalPars = l_totalPars;
     }
 
-    void update_rbParams(vector<vector<SparseMatrix> >& p_chParSpms) {
+    void update_rbParams(std::vector<std::vector<SparseMatrix> >& p_chParSpms) {
         uint32_t l_totalRbs = m_rbParam.m_totalRbs;
         uint32_t l_sRbParId = 0;
         for (uint32_t rbId = 0; rbId < l_totalRbs; rbId++) {
-            vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(rbId, 0);
+            std::vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(rbId, 0);
             uint32_t l_sRbRowId = l_rbInfo[0];
             uint32_t l_rbNumPars = l_rbInfo[3];
             uint32_t l_chRbMinRowId[m_channels];
@@ -353,7 +351,7 @@ class Signature {
         }
     }
 
-    void gen_nnzStore(vector<vector<SparseMatrix> >& p_chParSpms) {
+    void gen_nnzStore(std::vector<std::vector<SparseMatrix> >& p_chParSpms) {
         for (uint32_t c = 0; c < m_channels; c++) {
             m_nnzStore.add_dummyInfo(c);
         }
@@ -364,7 +362,7 @@ class Signature {
         uint32_t l_sParId = 0;
 
         for (uint32_t rbId = 0; rbId < m_rbParam.m_totalRbs; rbId++) {
-            vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(rbId, 0);
+            std::vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(rbId, 0);
             uint32_t l_pars = l_rbInfo[3];
             uint32_t l_sRbRowId = l_rbInfo[0];
             for (uint32_t parId = 0; parId < l_pars; parId++) {
@@ -416,49 +414,16 @@ class Signature {
         }
     }
 
-    void process(string path) {
-        ifstream l_info(path + "infos.txt");
-        vector<string> infos;
-        for (string line; getline(l_info, line);) {
-            infos.push_back(line);
-        }
-        string matrix_name = infos[0];
-
-        m_m = stoi(infos[1]);
-        m_n = stoi(infos[2]);
-        m_nnz = stoi(infos[3]);
-
-        SparseMatrix l_spm = SparseMatrix(m_m, m_n, m_nnz);
-        l_spm.load_row(path + "row.bin");
-        l_spm.load_col(path + "col.bin");
-        l_spm.load_data(path + "data.bin");
-
-        vector<SparseMatrix> l_rbSpms;
-        gen_rbs(l_spm, l_rbSpms); // write into l_rbSpms
-        assert(m_rbParam.m_totalRows == l_spm.getM());
-        vector<SparseMatrix> l_paddedParSpms;
-        gen_paddedPars(l_rbSpms, l_paddedParSpms); // write into l_paddedParSpms
-        vector<vector<SparseMatrix> > l_chParSpms;
-        l_chParSpms.resize(m_channels);
-        gen_chPars(l_paddedParSpms, l_chParSpms); // write into l_chParSpms
-        update_rbParams(l_chParSpms);
-        gen_nnzStore(l_chParSpms);
-        printf("INFO: matrix %s partiton done.\n", matrix_name.c_str());
-        printf("      Original m, n, nnzs = %d, %d, %d\n", m_m, m_n, m_nnz);
-        printf("      After padding m, n, nnzs = %d, %d, %d\n", m_mPad, m_nPad, m_nnzPad);
-        printf("      Padding overhead is %f\n", (double)(m_nnzPad - m_nnz) / m_nnz);
-    }
-    
     MatPartition gen_sig(SparseMatrix& p_spm) {
         m_m = p_spm.m_m;
         m_n = p_spm.m_n;
         m_nnz = p_spm.m_nnz;
-        vector<SparseMatrix> l_rbSpms;
+        std::vector<SparseMatrix> l_rbSpms;
         gen_rbs(p_spm, l_rbSpms); // write into l_rbSpms
         assert(m_rbParam.m_totalRows == p_spm.getM());   
-        vector<SparseMatrix> l_paddedParSpms;
+        std::vector<SparseMatrix> l_paddedParSpms;
         gen_paddedPars(l_rbSpms, l_paddedParSpms); // write into l_paddedParSpms
-        vector<vector<SparseMatrix> > l_chParSpms;
+        std::vector<std::vector<SparseMatrix> > l_chParSpms;
         l_chParSpms.resize(m_channels);
         gen_chPars(l_paddedParSpms, l_chParSpms); // write into l_chParSpms
         update_rbParams(l_chParSpms);
@@ -487,13 +452,13 @@ class Signature {
         return l_res;
     }
 
-    void store_rbParam(string filename) { m_rbParam.write_file(filename); }
+    void store_rbParam(std::string filename) { m_rbParam.write_file(filename); }
 
-    void store_parParam(string filename) { m_parParam.write_file(filename); }
+    void store_parParam(std::string filename) { m_parParam.write_file(filename); }
 
-    void store_nnz(string* filenames) { m_nnzStore.write_file(filenames); }
+    void store_nnz(std::string* filenames) { m_nnzStore.write_file(filenames); }
 
-    void store_info(string filename) {
+    void store_info(std::string filename) {
         uint32_t int32Arr[6];
         memset(int32Arr, 0, 6 * sizeof(uint32_t));
         int32Arr[0] = m_m;
@@ -502,7 +467,7 @@ class Signature {
         int32Arr[3] = m_mPad;
         int32Arr[4] = m_nPad;
         int32Arr[5] = m_nnzPad;
-        ofstream outFile(filename, ios::binary);
+        std::ofstream outFile(filename, std::ios::binary);
         outFile.write((char*)&int32Arr[0], sizeof(uint32_t) * 6);
     }
 

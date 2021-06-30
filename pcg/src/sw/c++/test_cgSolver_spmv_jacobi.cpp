@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Xilinx, Inc.
+ * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,9 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+*/
+
 #include <algorithm>
-#include <cstring>
+#include <ctring>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -30,31 +31,30 @@
 #include "binFiles.hpp"
 #include "spmvKernel.hpp"
 
-using namespace std;
-
 int main(int argc, char** argv) {
     if (argc < 6 || argc > 9) {
-        cout << "Usage: " << argv[0] << " <XCLBIN File> <Max Iteration> <Tolerence> <signature_path> <vector_path> "
-                                        "<mtx_name> [--debug] [device id]"
-             << endl;
+        std::cout << "Usage: " << argv[0]
+                  << " <XCLBIN File> <Max Iteration> <Tolerence> <signature_path> <vector_path> "
+                     "<mtx_name> [--debug] [device id]"
+                  << std::endl;
         return EXIT_FAILURE;
     }
 
     uint32_t l_idx = 1;
 
-    string binaryFile = argv[l_idx++];
+    std::string binaryFile = argv[l_idx++];
 
     int l_maxIter = atoi(argv[l_idx++]);
     CG_dataType l_tol = atof(argv[l_idx++]);
-    string l_sigPath = argv[l_idx++];
-    string l_vecPath = argv[l_idx++];
-    string l_mtxName = argv[l_idx++];
-    string l_sigFilePath = l_sigPath + "/" + l_mtxName;
-    string l_vecFilePath = l_vecPath + "/" + l_mtxName;
+    std::string l_sigPath = argv[l_idx++];
+    std::string l_vecPath = argv[l_idx++];
+    std::string l_mtxName = argv[l_idx++];
+    std::string l_sigFilePath = l_sigPath + "/" + l_mtxName;
+    std::string l_vecFilePath = l_vecPath + "/" + l_mtxName;
 
     int l_instrSize = CG_instrBytes * (1 + l_maxIter);
 
-    vector<uint32_t> l_info(6);
+    std::vector<uint32_t> l_info(6);
     readBin<uint32_t>(l_sigFilePath + "/info.dat", 6 * sizeof(uint32_t), l_info.data());
     unsigned int l_vecSize = (l_info[1] + CG_parEntries - 1) / CG_parEntries;
     l_vecSize = l_vecSize * CG_parEntries;
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
     l_bytes = getBinBytes(l_sigFilePath + "/rbParam.dat");
     readBin<uint8_t, aligned_allocator<uint8_t> >(l_sigFilePath + "/rbParam.dat", l_bytes, h_rbParam);
     for (unsigned int i = 0; i < CG_numChannels; ++i) {
-        string l_nnzFileName = l_sigFilePath + "/nnzVal_" + to_string(i) + ".dat";
+        std::string l_nnzFileName = l_sigFilePath + "/nnzVal_" + to_std::string(i) + ".dat";
         l_bytes = getBinBytes(l_nnzFileName);
         readBin<uint8_t, aligned_allocator<uint8_t> >(l_nnzFileName, l_bytes, h_nnzVal[i]);
     }
@@ -111,12 +111,12 @@ int main(int argc, char** argv) {
     l_cgInstr.setRZ(l_rz);
     l_cgInstr.setVecSize(l_vecSize);
     l_cgInstr.store(h_instr.data(), l_memInstr);
-    //     cout << "Square of the norm(b) is: " << l_dot << endl;
+    //     std::cout << "Square of the norm(b) is: " << l_dot << std::endl;
 
     int l_deviceId = 0;
     bool l_debug = false;
     if (argc > l_idx) {
-        string l_option = argv[l_idx++];
+        std::string l_option = argv[l_idx++];
         if (l_option == "--debug")
             l_debug = true;
         else
@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
     l_kernelUpdateXk.getCU("krnl_update_xk");
     l_kernelUpdateXk.setMem(h_xk, h_pk);
 
-    vector<Kernel> l_kernels;
+    std::vector<Kernel> l_kernels;
     l_kernels.push_back(l_kernelControl);
     l_kernels.push_back(l_kernelLoadArbParam);
     l_kernels.push_back(l_kernelLoadAval);
@@ -182,14 +182,14 @@ int main(int argc, char** argv) {
         lastIter = i;
         l_cgInstr.load(h_instr.data() + (i + 1) * CG_instrBytes, l_memInstr);
         if (l_debug) {
-            cout << l_cgInstr << endl;
+            std::cout << l_cgInstr << std::endl;
         }
         if (l_cgInstr.getMaxIter() == 0) {
             break;
         }
         finalClock = l_cgInstr.getClock();
     }
-    cout << "HW execution time is: " << finalClock * HW_CLK << "s." << endl;
+    std::cout << "HW execution time is: " << finalClock * HW_CLK << "s." << std::endl;
     float l_padRatio = (float)(l_info[5]) / (float)(l_info[2]);
 
     if (l_debug) {
@@ -199,18 +199,18 @@ int main(int argc, char** argv) {
 
     int err = 0;
     compare(h_x.size(), h_x.data(), h_xk.data(), err, l_debug);
-    cout << "matrix name, original rows/cols, original NNZs, padded rows/cols, padded NNZs, padding ";
-    cout << "ratio, num of iterations, total run time[sec], time[ms]/run, num_mismatches";
-    cout << endl;
-    cout << "DATA_CSV:," << l_mtxName << "," << l_info[0] << "," << l_info[2];
-    cout << "," << l_info[4] << "," << l_info[5] << "," << l_padRatio;
-    cout << "," << lastIter + 1 << "," << l_runTime << "," << (float)l_runTime * 1000 / (lastIter + 1);
-    cout << "," << err << endl;
+    std::cout << "matrix name, original rows/cols, original NNZs, padded rows/cols, padded NNZs, padding ";
+    std::cout << "ratio, num of iterations, total run time[sec], time[ms]/run, num_mismatches";
+    std::cout << std::endl;
+    std::cout << "DATA_CSV:," << l_mtxName << "," << l_info[0] << "," << l_info[2];
+    std::cout << "," << l_info[4] << "," << l_info[5] << "," << l_padRatio;
+    std::cout << "," << lastIter + 1 << "," << l_runTime << "," << (float)l_runTime * 1000 / (lastIter + 1);
+    std::cout << "," << err << std::endl;
     if (err == 0) {
-        cout << "Test pass!" << endl;
+        std::cout << "Test pass!" << std::endl;
         return EXIT_SUCCESS;
     } else {
-        cout << "Test failed! There are in total " << err << " mismatches in the solution." << endl;
+        std::cout << "Test failed! There are in total " << err << " mismatches in the solution." << std::endl;
         return EXIT_FAILURE;
     }
 }

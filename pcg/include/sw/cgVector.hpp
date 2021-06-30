@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Xilinx, Inc.
+ * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@
 #include "cgInstr.hpp"
 #include "utils.hpp"
 
-using namespace std;
 using namespace xf::hpc;
 
 struct CgInputVec {
@@ -54,8 +53,24 @@ class GenCgVector {
         unsigned int l_dimAlignedBks = (p_dim + t_ParEntries - 1) / t_ParEntries;
         unsigned int l_dimAligned = l_dimAlignedBks * t_ParEntries;
         m_dimAligned = l_dimAligned;
-        m_diagA.assign(m_dimAligned,1);
+        m_diagA.assign(m_dimAligned, 1);
         m_b.assign(m_dimAligned, 0);
+        m_Apk.assign(m_dimAligned, 0);
+        m_jacobi.assign(m_dimAligned, 1);
+        m_pk.assign(m_dimAligned, 0);
+        m_rk.assign(m_dimAligned, 0);
+        m_xk.assign(m_dimAligned, 0);
+        m_zk.assign(m_dimAligned, 0);
+    }
+    void loadVec(unsigned int p_dim, t_DataType* p_b, t_DataType* p_diagA) {
+        m_dim = p_dim;
+        unsigned int l_dimAlignedBks = (p_dim + t_ParEntries - 1) / t_ParEntries;
+        unsigned int l_dimAligned = l_dimAlignedBks * t_ParEntries;
+        m_dimAligned = l_dimAligned;
+        m_diagA.insert(m_diagA.end(), p_diagA, p_diagA+p_dim);
+        m_diagA.insert(m_diagA.end(), m_dimAligned-m_dim, 1);
+        m_b.insert(m_b.end(), p_b, p_b+p_dim);
+        m_b.insert(m_b.end(), m_dimAligned-m_dim, 0);
         m_Apk.assign(m_dimAligned, 0);
         m_jacobi.assign(m_dimAligned, 1);
         m_pk.assign(m_dimAligned, 0);
@@ -97,28 +112,29 @@ class GenCgVector {
     }
     t_DataType getDot() { return m_dot; }
     t_DataType getRz() { return m_rz; }
-    void* getXk() {return (void*)(m_xk.data());}
-    unsigned int getDimAligned() {return m_dimAligned;}
-    unsigned int getDim() {return m_dim;}
+    void* getXk() { return (void*)(m_xk.data()); }
+    unsigned int getDimAligned() { return m_dimAligned; }
+    unsigned int getDim() { return m_dim; }
 
    private:
     unsigned int m_dim, m_dimAligned;
     t_DataType m_dot, m_rz;
-    vector<t_DataType, alignedAllocator<t_DataType> > m_diagA;
-    vector<t_DataType, alignedAllocator<t_DataType> > m_b;
-    vector<t_DataType, alignedAllocator<t_DataType> > m_Apk;
-    vector<t_DataType, alignedAllocator<t_DataType> > m_jacobi;
-    vector<t_DataType, alignedAllocator<t_DataType> > m_pk;
-    vector<t_DataType, alignedAllocator<t_DataType> > m_rk;
-    vector<t_DataType, alignedAllocator<t_DataType> > m_xk;
-    vector<t_DataType, alignedAllocator<t_DataType> > m_zk;
+    std::vector<t_DataType, alignedAllocator<t_DataType> > m_diagA;
+    std::vector<t_DataType, alignedAllocator<t_DataType> > m_b;
+    std::vector<t_DataType, alignedAllocator<t_DataType> > m_Apk;
+    std::vector<t_DataType, alignedAllocator<t_DataType> > m_jacobi;
+    std::vector<t_DataType, alignedAllocator<t_DataType> > m_pk;
+    std::vector<t_DataType, alignedAllocator<t_DataType> > m_rk;
+    std::vector<t_DataType, alignedAllocator<t_DataType> > m_xk;
+    std::vector<t_DataType, alignedAllocator<t_DataType> > m_zk;
 };
 
 template <typename t_DataType, unsigned int t_ParEntries, unsigned int t_InstrBytes>
 class GenCgInstr {
    public:
-    GenCgInstr() {};
-    void setInstr(unsigned int p_maxIter, unsigned int p_dimAligned, t_DataType p_dot, t_DataType p_tol, t_DataType p_rz) {
+    GenCgInstr(){};
+    void setInstr(
+        unsigned int p_maxIter, unsigned int p_dimAligned, t_DataType p_dot, t_DataType p_tol, t_DataType p_rz) {
         unsigned int l_instrSize = t_InstrBytes * (1 + p_maxIter);
         m_instr.resize(l_instrSize);
         m_cgInstr.setMaxIter(p_maxIter);
@@ -127,9 +143,10 @@ class GenCgInstr {
         m_cgInstr.setRZ(p_rz);
         m_cgInstr.setVecSize(p_dimAligned);
     }
-    void updateInstr() { 
+    void updateInstr() {
         MemInstr<t_InstrBytes> l_memInstr;
-        m_cgInstr.store(m_instr.data(), l_memInstr); }
+        m_cgInstr.store(m_instr.data(), l_memInstr);
+    }
 
     CgInstr getInstrPtr() {
         CgInstr l_res;
@@ -139,7 +156,7 @@ class GenCgInstr {
     }
 
    private:
-    vector<uint8_t, alignedAllocator<uint8_t> > m_instr;
+    std::vector<uint8_t, alignedAllocator<uint8_t> > m_instr;
     cg::CGSolverInstr<CG_dataType> m_cgInstr;
 };
 #endif

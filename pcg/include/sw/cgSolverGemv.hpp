@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Xilinx, Inc.
+ * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,10 @@
  * limitations under the License.
 */
 
+
 #include "cgSolverKernel.hpp"
 #include "utils.hpp"
 #include "binFiles.hpp"
-
-using namespace std;
 
 template <typename t_DataType,
           unsigned int t_InstrBytes,
@@ -46,7 +45,7 @@ class CgSolverGemv {
         m_kernelUpdateXk.getCU("krnl_update_xk");
     }
 
-    void setA(const string filePath, unsigned int p_size) {
+    void setA(const std::string filePath, unsigned int p_size) {
         m_matrixSize = p_size * p_size;
         m_vecSize = p_size;
 
@@ -59,7 +58,7 @@ class CgSolverGemv {
         }
     }
 
-    void setB(const string filePath) {
+    void setB(const std::string filePath) {
         h_b.resize(m_vecSize);
         h_pk.resize(m_vecSize);
         h_Apk.resize(m_vecSize);
@@ -118,7 +117,7 @@ class CgSolverGemv {
         }
     }
 
-    int verify(const string filePath) {
+    int verify(const std::string filePath) {
         host_buffer_t<CG_dataType> h_x(m_vecSize);
         readBin(filePath, h_x.size() * sizeof(t_DataType), h_x);
         int err = 0;
@@ -128,7 +127,7 @@ class CgSolverGemv {
 
    private:
     FPGA* m_fpga;
-    vector<Kernel> m_kernels;
+    std::vector<Kernel> m_kernels;
 
     unsigned int m_maxIter, m_instrSize;
     t_DataType m_tol;

@@ -31,8 +31,6 @@
 #include "binFiles.hpp"
 #include "utils.hpp"
 
-using namespace std;
-
 class SparseMatrix {
    public:
     SparseMatrix() = default;
@@ -42,7 +40,7 @@ class SparseMatrix {
         m_nnz = nnz;
     }
     void init(uint32_t m, uint32_t n, uint32_t nnz) {
-        m_m= m;
+        m_m = m;
         m_n = n;
         m_nnz = nnz;
         m_row_list.resize(m_nnz);
@@ -54,24 +52,51 @@ class SparseMatrix {
         m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
-    void load_row(string path) {
-        m_row_list.resize(m_nnz);
-        readBin(path, (char*)&m_row_list[0], m_nnz * sizeof(uint32_t));
+    void loadCoo(uint32_t p_m, uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, double* p_data) {
+        m_m = p_m;
+        m_n = p_n;
+        m_nnz = p_nnz;
+        m_minRowId = 0;
+        m_minColId = 0;
+        m_row_list.insert(m_row_list.end(), p_rowIdx, p_rowIdx+p_nnz);
+        m_col_list.insert(m_col_list.end(), p_colIdx, p_colIdx+p_nnz);
+        m_data_list.insert(m_data_list.end(), p_data, p_data+p_nnz);
         m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
-    }
-
-    void load_col(string path) {
-        m_col_list.resize(m_nnz);
-        readBin(path, (char*)&m_col_list[0], m_nnz * sizeof(uint32_t));
         m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
-    void load_data(string path) {
+    void loadCscSym(uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr, double* p_data) {
+        m_m = p_n;
+        m_n = p_n;
+        m_nnz = p_nnz;
+        m_minRowId = 0;
+        m_minColId = 0;
+        m_row_list.resize(m_nnz);
+        m_col_list.resize(m_nnz);
         m_data_list.resize(m_nnz);
-        readBin(path, (char*)&m_data_list[0], m_nnz * sizeof(double));
+        
+        uint32_t index = 0;
+        for (uint32_t j = 0; j < p_n; j++) {
+            for (uint32_t k = p_colPtr[j] - 1; k < p_colPtr[j + 1] - 1; k++) {
+                uint32_t i = p_rowIdx[k] - 1;
+                assert(index < m_nnz);
+                m_row_list[index] = i;
+                m_col_list[index] = j;
+                m_data_list[index++] = p_data[k];
+                if (i != j) {
+                    assert(index < m_nnz);
+                    m_row_list[index] = j;
+                    m_col_list[index] = i;
+                    m_data_list[index++] = p_data[k];
+                }
+            }
+        }
+        assert(index == m_nnz);
+        m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
+        m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
-    void create_matrix(vector<uint32_t> p_row, vector<uint32_t> p_col, vector<double> p_data) {
+    void create_matrix(std::vector<uint32_t> p_row, std::vector<uint32_t> p_col, std::vector<double> p_data) {
         if (!p_row.empty()) {
             m_nnz = p_row.size();
             m_row_list = p_row;
@@ -94,15 +119,15 @@ class SparseMatrix {
 
     uint32_t getRow(uint32_t index) { return m_row_list[index]; }
 
-    vector<uint32_t> getRows() { return m_row_list; }
+    std::vector<uint32_t> getRows() { return m_row_list; }
 
     uint32_t getCol(uint32_t index) { return m_col_list[index]; }
 
-    vector<uint32_t> getCols() { return m_col_list; }
+    std::vector<uint32_t> getCols() { return m_col_list; }
 
     double getData(uint32_t index) { return m_data_list[index]; }
 
-    vector<double> getDatas() { return m_data_list; }
+    std::vector<double> getDatas() { return m_data_list; }
 
     uint32_t getM() { return m_m; }
 
@@ -113,39 +138,41 @@ class SparseMatrix {
     uint32_t getMinRowId() { return m_minRowId; }
     uint32_t getMinColId() { return m_minColId; }
 
-    vector<uint32_t> getSubRows(uint32_t start, uint32_t end) {
-        vector<uint32_t> l_row(m_row_list.begin() + start, m_row_list.begin() + end);
+    std::vector<uint32_t> getSubRows(uint32_t start, uint32_t end) {
+        std::vector<uint32_t> l_row(m_row_list.begin() + start, m_row_list.begin() + end);
         return l_row;
     }
-    vector<uint32_t> getSubCols(uint32_t start, uint32_t end) {
-        vector<uint32_t> l_col(m_col_list.begin() + start, m_col_list.begin() + end);
+    std::vector<uint32_t> getSubCols(uint32_t start, uint32_t end) {
+        std::vector<uint32_t> l_col(m_col_list.begin() + start, m_col_list.begin() + end);
         return l_col;
     }
-    vector<double> getSubDatas(uint32_t start, uint32_t end) {
-        vector<double> l_data(m_data_list.begin() + start, m_data_list.begin() + end);
+    std::vector<double> getSubDatas(uint32_t start, uint32_t end) {
+        std::vector<double> l_data(m_data_list.begin() + start, m_data_list.begin() + end);
         return l_data;
     }
 
-    void partialSort(uint32_t p_sId, unsigned int p_size, vector<uint32_t>& p_list, vector<uint32_t>& p_idx) {
+    void partialSort(uint32_t p_sId, unsigned int p_size, std::vector<uint32_t>& p_list, std::vector<uint32_t>& p_idx) {
         p_idx.resize(p_size);
         iota(p_idx.begin(), p_idx.end(), p_sId);
         stable_sort(p_idx.begin(), p_idx.end(), [&](uint32_t i1, uint32_t i2) { return p_list[i1] < p_list[i2]; });
     }
-    
-    void mergeIdx(unsigned int p_size, vector<uint32_t> p_idxArr[2], vector<uint32_t>& p_list, vector<uint32_t>& p_idx) {
-        vector<unsigned int> l_ids(2, 0);
-        for (auto i=0; i<p_size; ++i) {
+
+    void mergeIdx(unsigned int p_size,
+                  std::vector<uint32_t> p_idxArr[2],
+                  std::vector<uint32_t>& p_list,
+                  std::vector<uint32_t>& p_idx) {
+        std::vector<unsigned int> l_ids(2, 0);
+        for (auto i = 0; i < p_size; ++i) {
             if (l_ids[0] < p_idxArr[0].size()) {
-                if ((l_ids[1] < p_idxArr[1].size()) && (p_list[p_idxArr[1][l_ids[1]]] < p_list[p_idxArr[0][l_ids[0]]])) {
+                if ((l_ids[1] < p_idxArr[1].size()) &&
+                    (p_list[p_idxArr[1][l_ids[1]]] < p_list[p_idxArr[0][l_ids[0]]])) {
                     p_idx[i] = p_idxArr[1][l_ids[1]];
                     l_ids[1]++;
-                }
-                else {
+                } else {
                     p_idx[i] = p_idxArr[0][l_ids[0]];
                     l_ids[0]++;
                 }
-            }
-            else {
+            } else {
                 p_idx[i] = p_idxArr[1][l_ids[1]];
                 l_ids[1]++;
             }
@@ -153,15 +180,17 @@ class SparseMatrix {
     }
 
     void sort_by_row() {
-        vector<uint32_t> idx(m_nnz);
-        //iota(idx.begin(), idx.end(), 0);
-        //stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_row_list[i1] < m_row_list[i2]; });
-        vector<uint32_t> l_idxArr[2];
-        thread t1(&SparseMatrix::partialSort, this, 0, m_nnz/2, ref(m_row_list), ref(l_idxArr[0]));
-        thread t2(&SparseMatrix::partialSort, this, m_nnz/2, m_nnz - m_nnz/2, ref(m_row_list), ref(l_idxArr[1]));
+        std::vector<uint32_t> idx(m_nnz);
+        // iota(idx.begin(), idx.end(), 0);
+        // stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_row_list[i1] <
+        // m_row_list[i2]; });
+        std::vector<uint32_t> l_idxArr[2];
+        std::thread t1(&SparseMatrix::partialSort, this, 0, m_nnz / 2, ref(m_row_list), ref(l_idxArr[0]));
+        std::thread t2(&SparseMatrix::partialSort, this, m_nnz / 2, m_nnz - m_nnz / 2, ref(m_row_list),
+                       ref(l_idxArr[1]));
         t1.join();
         t2.join();
-        mergeIdx(m_nnz, l_idxArr, m_row_list, idx); 
+        mergeIdx(m_nnz, l_idxArr, m_row_list, idx);
         // then sort each part using this index
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
@@ -179,11 +208,15 @@ class SparseMatrix {
         free(l_data_list);
     }
     void complete_sort_by_row() {
-        vector<uint32_t> idx(m_nnz);
+        std::vector<uint32_t> idx(m_nnz);
         iota(idx.begin(), idx.end(), 0);
-        //stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_col_list[i1] < m_col_list[i2]; });
-        stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { 
-            return (m_row_list[i1] < m_row_list[i2])? true: (m_row_list[i1] == m_row_list[i2])? m_col_list[i1] <= m_col_list[i2]: false; });
+        // stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_col_list[i1] <
+        // m_col_list[i2]; });
+        stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) {
+            return (m_row_list[i1] < m_row_list[i2])
+                       ? true
+                       : (m_row_list[i1] == m_row_list[i2]) ? m_col_list[i1] <= m_col_list[i2] : false;
+        });
         // then sort each part using this index
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
@@ -202,15 +235,17 @@ class SparseMatrix {
     }
 
     void sort_by_col() {
-        vector<uint32_t> idx(m_nnz);
-        //iota(idx.begin(), idx.end(), 0);
-        //stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_col_list[i1] < m_col_list[i2]; });
-        vector<uint32_t> l_idxArr[2];
-        thread t1(&SparseMatrix::partialSort, this, 0, m_nnz/2, ref(m_col_list), ref(l_idxArr[0]));
-        thread t2(&SparseMatrix::partialSort, this, m_nnz/2, m_nnz - m_nnz/2, ref(m_col_list), ref(l_idxArr[1]));
+        std::vector<uint32_t> idx(m_nnz);
+        // iota(idx.begin(), idx.end(), 0);
+        // stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_col_list[i1] <
+        // m_col_list[i2]; });
+        std::vector<uint32_t> l_idxArr[2];
+        std::thread t1(&SparseMatrix::partialSort, this, 0, m_nnz / 2, ref(m_col_list), ref(l_idxArr[0]));
+        std::thread t2(&SparseMatrix::partialSort, this, m_nnz / 2, m_nnz - m_nnz / 2, ref(m_col_list),
+                       ref(l_idxArr[1]));
         t1.join();
         t2.join();
-        mergeIdx(m_nnz, l_idxArr, m_col_list, idx); 
+        mergeIdx(m_nnz, l_idxArr, m_col_list, idx);
         // then sort each part using this index
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
@@ -230,9 +265,9 @@ class SparseMatrix {
 
    public:
     uint32_t m_m, m_n, m_nnz;
-    vector<uint32_t> m_row_list;
-    vector<uint32_t> m_col_list;
-    vector<double> m_data_list;
+    std::vector<uint32_t> m_row_list;
+    std::vector<uint32_t> m_col_list;
+    std::vector<double> m_data_list;
     uint32_t m_minRowId, m_minColId;
 };
 
@@ -292,12 +327,12 @@ class RowBlockParam {
         return l_offset;
     }
 
-    vector<uint32_t> get_rbInfo(uint32_t p_rbId, uint32_t p_rbInfoId) {
+    std::vector<uint32_t> get_rbInfo(uint32_t p_rbId, uint32_t p_rbInfoId) {
         uint32_t l_size = m_memBytes / 4;
         uint32_t l_offset = get_rb_offset(p_rbId);
         l_offset += p_rbInfoId * m_memBytes;
 
-        vector<uint32_t> l_buf;
+        std::vector<uint32_t> l_buf;
         l_buf.resize(l_size);
         memcpy(&l_buf[0], &m_buf[l_offset], l_size * sizeof(uint32_t));
         return l_buf;
@@ -307,7 +342,7 @@ class RowBlockParam {
         uint32_t l_offset = get_rb_offset(p_rbId);
         uint32_t l_size = m_memBytes / 4;
 
-        vector<uint32_t> int32Arr;
+        std::vector<uint32_t> int32Arr;
         int32Arr.resize(l_size);
         memcpy(&int32Arr[0], &m_buf[l_offset], l_size * sizeof(uint32_t));
         int32Arr[3] = p_numPars;
@@ -318,7 +353,7 @@ class RowBlockParam {
         uint32_t l_offset = get_rb_offset(p_rbId);
         l_offset += m_memBytes;
         uint32_t l_size = m_memBytes / 4;
-        vector<uint32_t> int32Arr;
+        std::vector<uint32_t> int32Arr;
         int32Arr.resize(l_size);
         memcpy(&int32Arr[0], &m_buf[l_offset], l_size * sizeof(uint32_t));
         int32Arr[1] = p_numNnzs;
@@ -349,10 +384,10 @@ class RowBlockParam {
         memcpy(&m_buf[l_offset], reinterpret_cast<uint8_t*>(chInfo32Arr), m_channels * 4 * sizeof(uint8_t));
     }
 
-    vector<uint16_t> get_chInfo16(uint32_t p_rbId, uint32_t p_chInfo16Id) {
+    std::vector<uint16_t> get_chInfo16(uint32_t p_rbId, uint32_t p_chInfo16Id) {
         uint32_t l_offset = get_rb_offset(p_rbId);
         l_offset += m_memBytes * (2 + p_chInfo16Id);
-        vector<uint16_t> l_chInfo16;
+        std::vector<uint16_t> l_chInfo16;
         l_chInfo16.resize(m_channels);
         memcpy(&l_chInfo16[0], &m_buf[l_offset], m_channels * sizeof(uint16_t));
         return l_chInfo16;
@@ -366,7 +401,7 @@ class RowBlockParam {
         memcpy(&m_buf[0], reinterpret_cast<uint8_t*>(int32Arr), m_memBytes * sizeof(uint8_t));
     }
 
-    void write_file(string filename) {
+    void write_file(std::string filename) {
         uint32_t int32Arr[m_memBytes / 4];
         memset(int32Arr, 0, m_memBytes / 4 * sizeof(uint32_t));
         int32Arr[0] = m_totalRows;
@@ -377,7 +412,7 @@ class RowBlockParam {
 
    public:
     uint32_t m_memBytes, m_channels = 0;
-    vector<uint8_t, alignedAllocator<uint8_t> > m_buf;
+    std::vector<uint8_t, alignedAllocator<uint8_t> > m_buf;
 };
 
 class ParParam {
@@ -448,19 +483,19 @@ class ParParam {
         return l_offset;
     }
 
-    vector<uint32_t> get_parInfo(uint32_t p_parId) {
+    std::vector<uint32_t> get_parInfo(uint32_t p_parId) {
         uint32_t l_offset = get_par_offset(p_parId);
         l_offset += 4 * m_memBytes;
-        vector<uint32_t> int32Arr;
+        std::vector<uint32_t> int32Arr;
         int32Arr.resize(m_memBytes / 4);
         memcpy(&int32Arr[0], &m_buf[l_offset], m_memBytes / 4 * sizeof(uint32_t));
         return int32Arr;
     }
 
-    vector<uint16_t> get_chInfo16(uint32_t p_parId, uint32_t p_chInfo16Id) {
+    std::vector<uint16_t> get_chInfo16(uint32_t p_parId, uint32_t p_chInfo16Id) {
         uint32_t l_offset = get_par_offset(p_parId);
         l_offset += m_memBytes * (5 + p_chInfo16Id);
-        vector<uint16_t> l_chInfo16;
+        std::vector<uint16_t> l_chInfo16;
         l_chInfo16.resize(m_channels);
         memcpy(&l_chInfo16[0], &m_buf[l_offset], m_channels * sizeof(uint16_t));
         return l_chInfo16;
@@ -472,7 +507,7 @@ class ParParam {
         int32Arr[0] = m_totalPars;
         memcpy(&m_buf[0], reinterpret_cast<uint8_t*>(int32Arr), m_memBytes * sizeof(uint8_t));
     }
-    void write_file(string filename) {
+    void write_file(std::string filename) {
         uint32_t int32Arr[m_memBytes / 4];
         memset(int32Arr, 0, m_memBytes / 4 * sizeof(uint32_t));
         int32Arr[0] = m_totalPars;
@@ -482,15 +517,15 @@ class ParParam {
     }
 
    public:
-    vector<uint8_t, alignedAllocator<uint8_t> > m_buf;
+    std::vector<uint8_t, alignedAllocator<uint8_t> > m_buf;
 };
 
 class NnzStore {
    public:
-    vector<uint32_t> m_totalBks;
-    vector<uint32_t> m_totalRowIdxBks;
-    vector<uint32_t> m_totalColIdxBks;
-    vector<uint32_t> m_totalNnzBks;
+    std::vector<uint32_t> m_totalBks;
+    std::vector<uint32_t> m_totalRowIdxBks;
+    std::vector<uint32_t> m_totalColIdxBks;
+    std::vector<uint32_t> m_totalNnzBks;
     NnzStore() = default;
     NnzStore(uint32_t p_memBits, uint32_t p_parEntries, uint32_t p_accLatency, uint32_t p_channels) {
         m_memBytes = p_memBits / 8;
@@ -557,7 +592,7 @@ class NnzStore {
             memcpy(&m_buf[i][0], reinterpret_cast<uint8_t*>(int32Arr), m_memBytes * sizeof(uint8_t));
         }
     }
-    void write_file(string* filenames) {
+    void write_file(std::string* filenames) {
         for (uint32_t i = 0; i < m_channels; i++) {
             assert(m_totalBks[i] == (m_totalRowIdxBks[i] + m_totalColIdxBks[i] + m_totalNnzBks[i]));
             uint32_t int32Arr[m_memBytes / 4];
@@ -574,7 +609,7 @@ class NnzStore {
 
    public:
     uint32_t m_memBytes, m_parEntries, m_accLatency, m_channels;
-    vector<vector<uint8_t, alignedAllocator<uint8_t> > > m_buf;
+    std::vector<std::vector<uint8_t, alignedAllocator<uint8_t> > > m_buf;
 };
 
 struct CooMat {
@@ -584,7 +619,7 @@ struct CooMat {
 };
 
 struct CooMatInfo {
-    string m_name;
+    std::string m_name;
     uint32_t m_m;
     uint32_t m_n;
     uint32_t m_nnz;
@@ -597,7 +632,7 @@ struct MatPartition {
     uint32_t m_rbParamSize;
     void* m_parParamPtr;
     uint32_t m_parParamSize;
-    vector<void*> m_nnzValPtr;
-    vector<uint32_t> m_nnzValSize;
+    std::vector<void*> m_nnzValPtr;
+    std::vector<uint32_t> m_nnzValSize;
 };
 #endif

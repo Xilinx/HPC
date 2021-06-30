@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Xilinx, Inc.
+ * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,11 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+*/
 
 #include "interface.hpp"
 #include "krnl_timer.hpp"
-using namespace std;
 
 extern "C" void krnl_timer(hls::stream<xf::hpc::Signal_t>& p_signal, hls::stream<xf::hpc::Clock_t>& p_clock) {
     AXIS(p_signal)

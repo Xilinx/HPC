@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Xilinx, Inc.
+ * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
+
 #include "xFpga.hpp"
-using namespace std;
 
 FPGA::FPGA() {}
-FPGA::FPGA(string& deviceName) {
+FPGA::FPGA(std::string& deviceName) {
     getDevices(deviceName);
     m_device = m_Devices[m_id];
     m_id = -1;
@@ -26,7 +26,7 @@ FPGA::FPGA(unsigned int p_id) {
     getDevices("");
     setID(p_id);
 }
-void FPGA::init(int p_id, string& p_xclbinName) {
+void FPGA::init(int p_id, std::string& p_xclbinName) {
     getDevices("");
     setID(p_id);
     xclbin(p_xclbinName);
@@ -35,13 +35,13 @@ void FPGA::init(int p_id, string& p_xclbinName) {
 void FPGA::setID(uint32_t id) {
     m_id = id;
     if (m_id >= m_Devices.size()) {
-        cout << "Device specified by id = " << m_id << " is not found." << endl;
+        std::cout << "Device specified by id = " << m_id << " is not found." << std::endl;
         throw;
     }
     m_device = m_Devices[m_id];
 }
 
-bool FPGA::xclbin(string& binaryFile) {
+bool FPGA::xclbin(std::string& binaryFile) {
     cl_int err;
     // Creating Context
     OCL_CHECK(err, m_context = cl::Context(m_device, NULL, NULL, NULL, &err));
@@ -99,11 +99,11 @@ cl::Buffer FPGA::createDeviceBuffer(cl_mem_flags p_flags, void* p_buffer, size_t
     return m_bufferMap[p_buffer];
 }
 
-vector<cl::Buffer> FPGA::createDeviceBuffer(cl_mem_flags p_flags,
-                                            const vector<void*>& p_buffer,
-                                            const vector<size_t>& p_size) {
+std::vector<cl::Buffer> FPGA::createDeviceBuffer(cl_mem_flags p_flags,
+                                                 const std::vector<void*>& p_buffer,
+                                                 const std::vector<size_t>& p_size) {
     size_t p_hbm_pc = p_buffer.size();
-    vector<cl::Buffer> l_buffer(p_hbm_pc);
+    std::vector<cl::Buffer> l_buffer(p_hbm_pc);
     for (unsigned int i = 0; i < p_hbm_pc; i++) {
         l_buffer[i] = createDeviceBuffer(p_flags, p_buffer[i], p_size[i]);
     }
@@ -114,22 +114,22 @@ bool FPGA::exists(const void* p_ptr) const {
     auto it = m_bufferMap.find(p_ptr);
     return it != m_bufferMap.end();
 }
-void FPGA::getDevices(string deviceName) {
+void FPGA::getDevices(std::string deviceName) {
     cl_int err;
     auto devices = xcl::get_xil_devices();
-    auto regexStr = regex(".*" + deviceName + ".*");
+    auto regexStr = std::regex(".*" + deviceName + ".*");
     for (auto device : devices) {
-        string cl_device_name;
+        std::string cl_device_name;
         OCL_CHECK(err, err = device.getInfo(CL_DEVICE_NAME, &cl_device_name));
         if (regex_match(cl_device_name, regexStr)) m_Devices.push_back(device);
     }
     if (0 == m_Devices.size()) {
-        cout << "Device specified by name == " << deviceName << " is not found." << endl;
+        std::cout << "Device specified by name == " << deviceName << " is not found." << std::endl;
         throw;
     }
 }
 
-FPGA::FPGA(unsigned int p_id, const vector<cl::Device>& devices) {
+FPGA::FPGA(unsigned int p_id, const std::vector<cl::Device>& devices) {
     m_id = p_id;
     m_Devices = devices;
     m_device = m_Devices[m_id];
@@ -143,7 +143,7 @@ void Kernel::fpga(FPGA* p_fpga) {
     m_fpga = p_fpga;
 }
 
-void Kernel::getCU(const string& p_name) {
+void Kernel::getCU(const std::string& p_name) {
     cl_int err;
     OCL_CHECK(err, m_kernel = cl::Kernel(m_fpga->getProgram(), p_name.c_str(), &err));
 }
@@ -161,14 +161,14 @@ void Kernel::finish() {
     m_runEvents.clear();
 }
 
-void Kernel::getBuffer(vector<cl::Memory>& h_m) {
+void Kernel::getBuffer(std::vector<cl::Memory>& h_m) {
     cl_int err;
     cl::Event l_event;
     OCL_CHECK(err, err = m_fpga->getCommandQueue().enqueueMigrateMemObjects(h_m, CL_MIGRATE_MEM_OBJECT_HOST,
                                                                             &m_runEvents, &l_event));
 }
 
-void Kernel::sendBuffer(vector<cl::Memory>& h_m) {
+void Kernel::sendBuffer(std::vector<cl::Memory>& h_m) {
     cl_int err;
     cl::Event l_event;
     OCL_CHECK(err, err = m_fpga->getCommandQueue().enqueueMigrateMemObjects(h_m, 0, nullptr,
@@ -180,8 +180,8 @@ cl::Buffer Kernel::createDeviceBuffer(cl_mem_flags p_flags, void* p_buffer, size
     return m_fpga->createDeviceBuffer(p_flags, p_buffer, p_size);
 }
 
-vector<cl::Buffer> Kernel::createDeviceBuffer(cl_mem_flags p_flags,
-                                              vector<void*>& p_buffer,
-                                              vector<size_t>& p_size) const {
+std::vector<cl::Buffer> Kernel::createDeviceBuffer(cl_mem_flags p_flags,
+                                                   std::vector<void*>& p_buffer,
+                                                   std::vector<size_t>& p_size) const {
     return m_fpga->createDeviceBuffer(p_flags, p_buffer, p_size);
 }
