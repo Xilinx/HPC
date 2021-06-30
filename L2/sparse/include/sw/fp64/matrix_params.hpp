@@ -1,4 +1,19 @@
 /*
+ * Copyright 2019 Xilinx, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+*/
+/*
  * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,33 +54,26 @@ class SparseMatrix {
         m_n = n;
         m_nnz = nnz;
     }
-    void init(uint32_t m, uint32_t n, uint32_t nnz) {
-        m_m = m;
-        m_n = n;
-        m_nnz = nnz;
-        m_row_list.resize(m_nnz);
-        m_col_list.resize(m_nnz);
-        m_data_list.resize(m_nnz);
-    }
     void updateMinIdx() {
         m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
         m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
-    void loadCoo(uint32_t p_m, uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, double* p_data) {
+    void loadCoo(uint32_t p_m, uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx) {
         m_m = p_m;
         m_n = p_n;
         m_nnz = p_nnz;
         m_minRowId = 0;
         m_minColId = 0;
-        m_row_list.insert(m_row_list.end(), p_rowIdx, p_rowIdx+p_nnz);
-        m_col_list.insert(m_col_list.end(), p_colIdx, p_colIdx+p_nnz);
-        m_data_list.insert(m_data_list.end(), p_data, p_data+p_nnz);
+        m_row_list.insert(m_row_list.end(), p_rowIdx, p_rowIdx + p_nnz);
+        m_col_list.insert(m_col_list.end(), p_colIdx, p_colIdx + p_nnz);
+        m_data_list.resize(m_nnz);
+        iota(m_data_list.begin(), m_data_list.end(), 0);
         m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
         m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
-    void loadCscSym(uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr, double* p_data) {
+    void loadCscSym(uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr) {
         m_m = p_n;
         m_n = p_n;
         m_nnz = p_nnz;
@@ -74,7 +82,8 @@ class SparseMatrix {
         m_row_list.resize(m_nnz);
         m_col_list.resize(m_nnz);
         m_data_list.resize(m_nnz);
-        
+        iota(m_data_list.begin(), m_data_list.end(), 0);
+
         uint32_t index = 0;
         for (uint32_t j = 0; j < p_n; j++) {
             for (uint32_t k = p_colPtr[j] - 1; k < p_colPtr[j + 1] - 1; k++) {
@@ -82,12 +91,10 @@ class SparseMatrix {
                 assert(index < m_nnz);
                 m_row_list[index] = i;
                 m_col_list[index] = j;
-                m_data_list[index++] = p_data[k];
                 if (i != j) {
                     assert(index < m_nnz);
                     m_row_list[index] = j;
                     m_col_list[index] = i;
-                    m_data_list[index++] = p_data[k];
                 }
             }
         }
@@ -96,7 +103,7 @@ class SparseMatrix {
         m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
-    void create_matrix(std::vector<uint32_t> p_row, std::vector<uint32_t> p_col, std::vector<double> p_data) {
+    void create_matrix(std::vector<uint32_t> p_row, std::vector<uint32_t> p_col, std::vector<uint32_t> p_data) {
         if (!p_row.empty()) {
             m_nnz = p_row.size();
             m_row_list = p_row;
@@ -125,9 +132,9 @@ class SparseMatrix {
 
     std::vector<uint32_t> getCols() { return m_col_list; }
 
-    double getData(uint32_t index) { return m_data_list[index]; }
+    uint32_t getData(uint32_t index) { return m_data_list[index]; }
 
-    std::vector<double> getDatas() { return m_data_list; }
+    std::vector<uint32_t> getDatas() { return m_data_list; }
 
     uint32_t getM() { return m_m; }
 
@@ -146,8 +153,8 @@ class SparseMatrix {
         std::vector<uint32_t> l_col(m_col_list.begin() + start, m_col_list.begin() + end);
         return l_col;
     }
-    std::vector<double> getSubDatas(uint32_t start, uint32_t end) {
-        std::vector<double> l_data(m_data_list.begin() + start, m_data_list.begin() + end);
+    std::vector<uint32_t> getSubDatas(uint32_t start, uint32_t end) {
+        std::vector<uint32_t> l_data(m_data_list.begin() + start, m_data_list.begin() + end);
         return l_data;
     }
 
@@ -162,7 +169,7 @@ class SparseMatrix {
                   std::vector<uint32_t>& p_list,
                   std::vector<uint32_t>& p_idx) {
         std::vector<unsigned int> l_ids(2, 0);
-        for (auto i = 0; i < p_size; ++i) {
+        for (unsigned int i = 0; i < p_size; ++i) {
             if (l_ids[0] < p_idxArr[0].size()) {
                 if ((l_ids[1] < p_idxArr[1].size()) &&
                     (p_list[p_idxArr[1][l_ids[1]]] < p_list[p_idxArr[0][l_ids[0]]])) {
@@ -181,9 +188,6 @@ class SparseMatrix {
 
     void sort_by_row() {
         std::vector<uint32_t> idx(m_nnz);
-        // iota(idx.begin(), idx.end(), 0);
-        // stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_row_list[i1] <
-        // m_row_list[i2]; });
         std::vector<uint32_t> l_idxArr[2];
         std::thread t1(&SparseMatrix::partialSort, this, 0, m_nnz / 2, ref(m_row_list), ref(l_idxArr[0]));
         std::thread t2(&SparseMatrix::partialSort, this, m_nnz / 2, m_nnz - m_nnz / 2, ref(m_row_list),
@@ -194,7 +198,7 @@ class SparseMatrix {
         // then sort each part using this index
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
-        double* l_data_list = (double*)malloc(m_nnz * sizeof(double));
+        uint32_t* l_data_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         for (uint32_t i = 0; i < m_nnz; i++) {
             l_row_list[i] = m_row_list[idx[i]];
             l_col_list[i] = m_col_list[idx[i]];
@@ -202,7 +206,7 @@ class SparseMatrix {
         }
         memcpy(&m_row_list[0], l_row_list, m_nnz * sizeof(uint32_t));
         memcpy(&m_col_list[0], l_col_list, m_nnz * sizeof(uint32_t));
-        memcpy(&m_data_list[0], l_data_list, m_nnz * sizeof(double));
+        memcpy(&m_data_list[0], l_data_list, m_nnz * sizeof(uint32_t));
         free(l_row_list);
         free(l_col_list);
         free(l_data_list);
@@ -210,8 +214,6 @@ class SparseMatrix {
     void complete_sort_by_row() {
         std::vector<uint32_t> idx(m_nnz);
         iota(idx.begin(), idx.end(), 0);
-        // stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_col_list[i1] <
-        // m_col_list[i2]; });
         stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) {
             return (m_row_list[i1] < m_row_list[i2])
                        ? true
@@ -220,7 +222,7 @@ class SparseMatrix {
         // then sort each part using this index
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
-        double* l_data_list = (double*)malloc(m_nnz * sizeof(double));
+        uint32_t* l_data_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         for (uint32_t i = 0; i < m_nnz; i++) {
             l_row_list[i] = m_row_list[idx[i]];
             l_col_list[i] = m_col_list[idx[i]];
@@ -228,7 +230,7 @@ class SparseMatrix {
         }
         memcpy(&m_row_list[0], l_row_list, m_nnz * sizeof(uint32_t));
         memcpy(&m_col_list[0], l_col_list, m_nnz * sizeof(uint32_t));
-        memcpy(&m_data_list[0], l_data_list, m_nnz * sizeof(double));
+        memcpy(&m_data_list[0], l_data_list, m_nnz * sizeof(uint32_t));
         free(l_row_list);
         free(l_col_list);
         free(l_data_list);
@@ -236,9 +238,6 @@ class SparseMatrix {
 
     void sort_by_col() {
         std::vector<uint32_t> idx(m_nnz);
-        // iota(idx.begin(), idx.end(), 0);
-        // stable_sort(idx.begin(), idx.end(), [this](uint32_t i1, uint32_t i2) { return m_col_list[i1] <
-        // m_col_list[i2]; });
         std::vector<uint32_t> l_idxArr[2];
         std::thread t1(&SparseMatrix::partialSort, this, 0, m_nnz / 2, ref(m_col_list), ref(l_idxArr[0]));
         std::thread t2(&SparseMatrix::partialSort, this, m_nnz / 2, m_nnz - m_nnz / 2, ref(m_col_list),
@@ -249,7 +248,7 @@ class SparseMatrix {
         // then sort each part using this index
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
-        double* l_data_list = (double*)malloc(m_nnz * sizeof(double));
+        uint32_t* l_data_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         for (uint32_t i = 0; i < m_nnz; i++) {
             l_row_list[i] = m_row_list[idx[i]];
             l_col_list[i] = m_col_list[idx[i]];
@@ -257,7 +256,7 @@ class SparseMatrix {
         }
         memcpy(&m_row_list[0], l_row_list, m_nnz * sizeof(uint32_t));
         memcpy(&m_col_list[0], l_col_list, m_nnz * sizeof(uint32_t));
-        memcpy(&m_data_list[0], l_data_list, m_nnz * sizeof(double));
+        memcpy(&m_data_list[0], l_data_list, m_nnz * sizeof(uint32_t));
         free(l_row_list);
         free(l_col_list);
         free(l_data_list);
@@ -267,7 +266,8 @@ class SparseMatrix {
     uint32_t m_m, m_n, m_nnz;
     std::vector<uint32_t> m_row_list;
     std::vector<uint32_t> m_col_list;
-    std::vector<double> m_data_list;
+    std::vector<uint32_t>
+        m_data_list; // stores the idx of the original data array in sparse matrix, value =0 if idx == nnzs
     uint32_t m_minRowId, m_minColId;
 };
 

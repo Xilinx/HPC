@@ -1,4 +1,19 @@
 /*
+ * Copyright 2019 Xilinx, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+*/
+/*
  * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,18 +50,6 @@ CooMatInfo loadMatInfo(std::string path) {
     l_matInfo.m_n = stoi(infos[2]);
     l_matInfo.m_nnz = stoi(infos[3]);
     return l_matInfo;
-} 
-
-void loadMat(std::string path, CooMatInfo& p_matInfo, CooMat& p_mat) {
-    uint32_t l_idxBytes = sizeof(uint32_t)*p_matInfo.m_nnz;
-    uint32_t l_datBytes = sizeof(double)*p_matInfo.m_nnz;
-    std::string l_rowIdxFileName = path+"row.bin";
-    std::string l_colIdxFileName = path+"col.bin";
-    std::string l_datFileName = path+"data.bin";
-    readBin(l_rowIdxFileName, p_mat.m_rowIdxPtr, l_idxBytes);
-    readBin(l_colIdxFileName, p_mat.m_colIdxPtr, l_idxBytes);
-    readBin(l_datFileName, p_mat.m_datPtr, l_datBytes);
-    
 }
 
 void storeMatPar(std::string path, MatPartition& p_matPar) {

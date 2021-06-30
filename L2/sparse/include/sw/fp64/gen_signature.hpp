@@ -1,4 +1,19 @@
 /*
+ * Copyright 2019 Xilinx, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+*/
+/*
  * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +36,6 @@
 #include "signature.hpp"
 
 CooMatInfo loadMatInfo(std::string path);
-void loadMat(std::string path, CooMatInfo& p_matInfo, CooMat& p_mat);
 void storeMatPar(std::string path, MatPartition& p_matPar);
 
 template <typename t_DataType,
@@ -35,29 +49,20 @@ class SpmPar {
    public:
     SpmPar() { m_sig.init(t_ParEntries, t_AccLatency, t_HbmChannels, t_MaxRows, t_MaxCols, t_HbmMemBits); }
 
-    CooMat allocMat(uint32_t p_m, uint32_t p_n, uint32_t p_nnz) {
-        CooMat l_mat;
-        m_spm.init(p_m, p_n, p_nnz);
-        l_mat.m_rowIdxPtr = (void*)(m_spm.m_row_list.data());
-        l_mat.m_colIdxPtr = (void*)(m_spm.m_col_list.data());
-        l_mat.m_datPtr = (void*)(m_spm.m_data_list.data());
-        return l_mat;
-    }
-
-    MatPartition partitionMat() {
-        m_spm.updateMinIdx();
-        MatPartition l_res = m_sig.gen_sig(m_spm);
+    MatPartition partitionCooMat(
+        uint32_t p_m, uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, t_DataType* p_data) {
+        m_spm.loadCoo(p_m, p_n, p_nnz, p_rowIdx, p_colIdx);
+        MatPartition l_res = m_sig.gen_sig(m_spm, p_data);
         return l_res;
     }
-    
-    MatPartition partitionCooMat(uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, t_DataType* p_data) {
-        m_spm.loadCoo(p_dim, p_dim, p_nnz, p_rowIdx, p_colIdx, p_data);
-        MatPartition l_res = m_sig.gen_sig(m_spm);
+    MatPartition partitionCscSymMat(
+        uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr, t_DataType* p_data) {
+        m_spm.loadCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr);
+        MatPartition l_res = m_sig.gen_sig(m_spm, p_data);
         return l_res;
     }
-    MatPartition partitionCscSymMat(uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr, t_DataType* p_data) {
-        m_spm.loadCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
-        MatPartition l_res = m_sig.gen_sig(m_spm);
+    MatPartition updateMat(t_DataType* p_data) {
+        MatPartition l_res = m_sig.update_sig(p_data);
         return l_res;
     }
 
