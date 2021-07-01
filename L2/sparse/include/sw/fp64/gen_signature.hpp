@@ -47,6 +47,12 @@ class SpmPar {
         MatPartition l_res = m_sig.gen_sig(m_spm, p_data);
         return l_res;
     }
+    MatPartition partitionCscSymMat(
+        uint32_t p_dim, uint32_t p_nnz, int64_t* p_rowIdx, int64_t* p_colPtr, t_DataType* p_data) {
+        m_spm.loadCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr);
+        MatPartition l_res = m_sig.gen_sig(m_spm, p_data);
+        return l_res;
+    }
     MatPartition updateMat(t_DataType* p_data) {
         MatPartition l_res = m_sig.update_sig(p_data);
         return l_res;
