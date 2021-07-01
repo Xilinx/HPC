@@ -442,8 +442,76 @@ class Signature {
                 m_nnzStore.m_totalRowIdxBks[c] + m_nnzStore.m_totalColIdxBks[c] + m_nnzStore.m_totalNnzBks[c];
         }
     }
+    void update_nnzStore(double* p_data) {
+        std::vector<uint32_t> l_bufBytes(m_channels); 
+        for (uint32_t c = 0; c < m_channels; c++) {
+            l_bufBytes[c]=m_memBits/8;
+        }
+        uint32_t l_memIdxWidth = m_memBits / 16;
+        uint32_t l_rowIdxGap = m_parEntries * m_accLatency;
+        uint32_t l_rowIdxMod = l_memIdxWidth * l_rowIdxGap;
+        uint32_t l_colIdxMod = l_memIdxWidth * m_parEntries;
+        uint32_t l_sParId = 0;
+
+        for (uint32_t rbId = 0; rbId < m_rbParam.m_totalRbs; rbId++) {
+            std::vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(rbId, 0);
+            uint32_t l_pars = l_rbInfo[3];
+            uint32_t l_sRbRowId = l_rbInfo[0];
+            for (uint32_t parId = 0; parId < l_pars; parId++) {
+                uint32_t l_parId = l_sParId + parId;
+                uint32_t l_sParColId = m_parParam.get_parInfo(l_parId)[0];
+                for (uint32_t c = 0; c < m_channels; c++) {
+                    SparseMatrix l_chParSpm = m_chParSpms[c][l_parId];
+                    m_nnzStore.m_totalRowIdxBks[c] += DIV_CEIL(l_chParSpm.getNnz(), l_rowIdxMod);
+                    m_nnzStore.m_totalColIdxBks[c] += DIV_CEIL(l_chParSpm.getNnz(), l_colIdxMod);
+                    m_nnzStore.m_totalNnzBks[c] += l_chParSpm.getNnz() / m_parEntries;
+                    uint32_t l_sChRbRowId = m_rbParam.get_chInfo16(rbId, 0)[c] + l_sRbRowId;
+                    uint32_t l_sChParColId = m_parParam.get_chInfo16(l_parId, 0)[c] + l_sParColId;
+                    uint32_t l_rowIdx[l_memIdxWidth];
+                    memset(l_rowIdx, 0, l_memIdxWidth * sizeof(uint32_t));
+                    uint32_t l_colIdx[l_memIdxWidth];
+                    memset(l_colIdx, 0, l_memIdxWidth * sizeof(uint32_t));
+                    double l_nnz[m_parEntries];
+                    memset(l_nnz, 0, m_parEntries * sizeof(double));
+                    for (uint32_t i = 0; i < l_chParSpm.getNnz(); i = i + m_parEntries) {
+                        if (i % l_rowIdxMod == 0) {
+                            for (uint32_t j = 0; j < l_memIdxWidth; j++) {
+                                if (i + j * l_rowIdxGap < l_chParSpm.getNnz()) {
+                                    l_rowIdx[j] = l_chParSpm.getRow(i + j * l_rowIdxGap) - l_sChRbRowId;
+                                }
+                            }
+                            m_nnzStore.update_idxArr(c, l_bufBytes[c], l_rowIdx);
+                            l_bufBytes[c] += 32;
+                        }
+                        if (i % l_colIdxMod == 0) {
+                            for (uint32_t j = 0; j < l_memIdxWidth; j++) {
+                                if (i + j * m_parEntries < l_chParSpm.getNnz()) {
+                                    l_colIdx[j] =
+                                        l_chParSpm.getCol(i + j * m_parEntries) / m_parEntries - l_sChParColId;
+                                }
+                            }
+                            m_nnzStore.update_idxArr(c, l_bufBytes[c], l_colIdx);
+                            l_bufBytes[c] += 32;
+                        }
+                        for (uint32_t j = 0; j < m_parEntries; j++) {
+                            uint32_t l_nnzIdx = l_chParSpm.getData(i + j);
+                            l_nnz[j] = (l_nnzIdx == ZERO_VAL) ? 0 : p_data[l_chParSpm.getData(i + j)];
+                        }
+                        m_nnzStore.update_nnzArr(c, l_bufBytes[c], l_nnz);
+                        l_bufBytes[c] += 32;
+                    }
+                }
+            }
+            l_sParId += l_pars;
+        }
+    }
 
     MatPartition gen_sig(SparseMatrix& p_spm, double* p_data) {
+        m_rbParam.m_buf.clear();
+        m_parParam.m_buf.clear();
+        for (unsigned int i=0; i<m_nnzStore.m_buf.size(); ++i) {
+            m_nnzStore.m_buf[i].clear();
+        } 
         m_m = p_spm.m_m;
         m_n = p_spm.m_n;
         m_nnz = p_spm.m_nnz;
@@ -483,7 +551,7 @@ class Signature {
     }
 
     MatPartition update_sig(double* p_data) {
-        gen_nnzStore(p_data);
+        update_nnzStore(p_data);
         MatPartition l_res;
         l_res.m_rbParamPtr = (void*)(&(m_rbParam.m_buf[0]));
         l_res.m_rbParamSize = m_rbParam.m_buf.size();
@@ -522,6 +590,15 @@ class Signature {
         int32Arr[5] = m_nnzPad;
         std::ofstream outFile(filename, std::ios::binary);
         outFile.write((char*)&int32Arr[0], sizeof(uint32_t) * 6);
+    }
+    int checkUpdateDim(uint32_t p_m, uint32_t p_n, uint32_t p_nnz) {
+        if ((p_m == m_m) && (p_n == m_n) && (p_nnz == m_nnz)) {
+            return 0;
+        }
+        else {
+            std::cout << "ERROR: update dimensions are not the same as the stored dimensions" << std::endl;
+            return -1;
+        }
     }
 
    private:

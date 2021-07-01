@@ -599,6 +599,13 @@ class NnzStore {
         m_buf[p_chId].resize(old_size + m_memBytes);
         memcpy(&m_buf[p_chId][old_size], reinterpret_cast<uint8_t*>(int16Arr), m_memBytes * sizeof(uint8_t));
     }
+    void update_idxArr(uint32_t p_chId, uint32_t p_byteLoc, uint32_t* p_idxArr) {
+        uint16_t int16Arr[m_memBytes / 2];
+        for (uint32_t i = 0; i < m_memBytes / 2; i++) {
+            int16Arr[i] = p_idxArr[i];
+        }
+        memcpy(&m_buf[p_chId][p_byteLoc], reinterpret_cast<uint8_t*>(int16Arr), m_memBytes * sizeof(uint8_t));
+    }
 
     void add_nnzArr(uint32_t p_chId, double* p_nnzArr) {
         double float64Arr[m_memBytes / 8];
@@ -609,6 +616,14 @@ class NnzStore {
         m_buf[p_chId].resize(old_size + m_memBytes);
         memcpy(&m_buf[p_chId][old_size], reinterpret_cast<uint8_t*>(float64Arr), m_memBytes * sizeof(uint8_t));
     }
+    void update_nnzArr(uint32_t p_chId, uint32_t p_byteLoc, double* p_nnzArr) {
+        double float64Arr[m_memBytes / 8];
+        for (uint32_t i = 0; i < m_memBytes / 8; i++) {
+            float64Arr[i] = p_nnzArr[i];
+        }
+        memcpy(&m_buf[p_chId][p_byteLoc], reinterpret_cast<uint8_t*>(float64Arr), m_memBytes * sizeof(uint8_t));
+    }
+    
 
     void update_buf() {
         for (uint32_t i = 0; i < m_channels; i++) {

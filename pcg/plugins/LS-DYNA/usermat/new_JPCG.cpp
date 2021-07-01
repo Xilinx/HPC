@@ -108,6 +108,7 @@ double fpga_JPCG(FortranInteger* handle,
                  FortranReal* prelres,
                  FortranReal* pflops) {
     PCG_TYPE& l_pcg = *(PCG_TYPE*)(*handle);
+    std::cout << "FPGA handle value" << *handle << std::endl;
     double t_sec;
     std::cout << "running fpga_JPCG..." << std::endl;
     TimePointType l_timer[3];
@@ -179,7 +180,7 @@ void userle_jpcg_update_matrix_(FortranInteger* handle,
     FortranReal* matA;
     matA = (FortranReal*)malloc(nnz * sizeof(FortranReal));
     getCOODat(n, nnz, colptr, rowind, values, matA);
-    l_pcg.updateMat(matA);
+    l_pcg.updateMat(n, nnz, matA);
     free(matA);
 #endif
 }

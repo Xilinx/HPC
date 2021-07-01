@@ -13,7 +13,7 @@ while read -r line; do
   filename=$(basename -- $name)
   mtxname=${filename%%.*}
   echo "=======Running $mtxname=========="
-  ./build_dir.hw.xilinx_u280_xdma_201920_3/host.exe ./build_dir.hw.xilinx_u280_xdma_201920_3/cgSolver.xclbin 5000 1e-12 build_dir.hw.xilinx_u280_xdma_201920_3/data $mtxname 1 |& tee log$n.txt
+  ./build_dir.hw.xilinx_u280_xdma_201920_3/host.exe ./build_dir.hw.xilinx_u280_xdma_201920_3/cgSolver.xclbin 5000 1e-12 build_dir.hw.xilinx_u280_xdma_201920_3/data $mtxname 1 1 |& tee log$n.txt
   logs="$logs log$n.txt"
   n=$((n+1))
 done < "$file"

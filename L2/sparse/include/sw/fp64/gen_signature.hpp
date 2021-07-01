@@ -53,6 +53,9 @@ class SpmPar {
         MatPartition l_res = m_sig.gen_sig(m_spm, p_data);
         return l_res;
     }
+    int checkUpdateDim(uint32_t p_m, uint32_t p_n, uint32_t p_nnz) {
+        return m_sig.checkUpdateDim(p_m, p_n, p_nnz);
+    }
     MatPartition updateMat(t_DataType* p_data) {
         MatPartition l_res = m_sig.update_sig(p_data);
         return l_res;
