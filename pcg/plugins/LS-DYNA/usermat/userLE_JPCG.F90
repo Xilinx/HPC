@@ -152,8 +152,8 @@ contains
 
 ! Get iteration control parameters
 
-  maxit = 10000 ! icntl(5)
-  tol   = 1e-16  ! rcntl(1)
+  maxit = icntl(5)
+  tol   = rcntl(1)
 
 #if 1
   call userLE_JPCG (jpcg_handle, niq,   nzlK,   colptrK, rowindK, valsK, &
