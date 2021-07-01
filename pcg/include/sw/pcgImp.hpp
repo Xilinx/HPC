@@ -55,10 +55,16 @@ class PCGImpl {
         m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
                           m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
     }
-    void updateMat(t_DataType* p_data) {
-        m_matPar = m_spmPar.updateMat(p_data);
-        m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
+    int updateMat(uint32_t p_dim, uint32_t p_nnz, t_DataType* p_data) {
+        if (m_spmPar.checkUpdateDim(p_dim, p_dim, p_nnz) == 0) {
+            m_matPar = m_spmPar.updateMat(p_data);
+            m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
                           m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+            return 0;
+        }
+        else {
+            return -1;
+        }
     }
 
     void setVec(uint32_t p_dim, t_DataType* p_b, t_DataType* p_diagA) {

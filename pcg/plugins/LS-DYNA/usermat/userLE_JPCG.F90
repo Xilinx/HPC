@@ -74,7 +74,7 @@ contains
   save    first_call
   data    first_call /.true./
 !
-  integer*8 jpcg_handle, device_id
+  integer*8, save :: jpcg_handle, device_id
 !-------------------------------------------------------------------------------
 !
   irc = 0
@@ -110,16 +110,13 @@ contains
   end if
 
 ! If option < 1, then matrix structure has changed.
+! If option < 3, then matrix has changed in value, and must be reloaded.
 
   if ( option .eq. 0 ) then
     write(msgunit,'(''userLESolve update structure'')')
     option = 2
     call userLE_JPCG_set_matrix(jpcg_handle, niq, nzlk, colptrK, rowindK, valsK)
-  end if
-
-! If option < 3, then matrix has changed in value, and must be reloaded.
-
-  if ( option .ne. 3 ) then
+  else if ( option .ne. 3 ) then
     write(msgunit,'(''userLESolve update values'')')
     call userLE_JPCG_update_matrix(jpcg_handle, niq, nzlk, colptrK, rowindK, valsK)
   end if

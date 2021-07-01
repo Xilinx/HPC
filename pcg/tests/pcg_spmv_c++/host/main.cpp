@@ -46,7 +46,7 @@
 int main(int argc, char** argv) {
     if (argc < 6 || argc > 8) {
         std::cout << "Usage: " << argv[0] << " <XCLBIN File> <Max Iteration> <Tolerence> <data_path> "
-                                             "<mtx_name> [--debug] [device id]"
+                                             "<mtx_name> <number_of_runs> [--debug] [device id]"
                   << std::endl;
         return EXIT_FAILURE;
     }
@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
     CG_dataType l_tol = atof(argv[l_idx++]);
     std::string l_datPath = argv[l_idx++];
     std::string l_mtxName = argv[l_idx++];
+    int l_numRuns = atoi(argv[l_idx++]);
     int l_deviceId = 0;
     bool l_debug = false;
     if (argc > l_idx) {
@@ -93,13 +94,24 @@ int main(int argc, char** argv) {
     l_pcg.setCooMat(l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data());
     double l_mat_partition_time = 0;
     showTimeData("Matrix partition and transmission time: ", l_timer[1], l_timer[2], &l_mat_partition_time);
+    double l_runTime = 1;
+    double l_h2d_time = 0;
+    Results<CG_dataType> l_res;
     l_pcg.setVec(l_matInfo.m_m, l_b.data(), l_diagA.data());
     showTimeData("Vector initialization & transmission time: ", l_timer[2], l_timer[3]);
-    Results<CG_dataType> l_res = l_pcg.run(l_maxIter, l_tol);
-    double l_runTime = 1;
+    l_res = l_pcg.run(l_maxIter, l_tol);
     showTimeData("PCG run time: ", l_timer[3], l_timer[4], &l_runTime);
-    double l_h2d_time = 0;
     showTimeData("Host to device data transfer time: ", l_timer[2], l_timer[3], &l_h2d_time);
+    for (int i=1; i<l_numRuns; ++i) {
+        if (l_pcg.updateMat(l_matInfo.m_m, l_matInfo.m_nnz, l_data.data()) != 0) {
+            return EXIT_FAILURE;
+        }
+        l_pcg.setVec(l_matInfo.m_m, l_b.data(), l_diagA.data());
+        showTimeData("Vector initialization & transmission time: ", l_timer[2], l_timer[3]);
+        l_res = l_pcg.run(l_maxIter, l_tol);
+        showTimeData("PCG run time: ", l_timer[3], l_timer[4], &l_runTime);
+        showTimeData("Host to device data transfer time: ", l_timer[2], l_timer[3], &l_h2d_time);
+    }
 
     std::vector<uint32_t> l_info = l_pcg.getMatInfo();
     float l_padRatio = (float)(l_info[5]) / (float)(l_info[2]);
