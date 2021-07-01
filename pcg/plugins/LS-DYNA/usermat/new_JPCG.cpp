@@ -108,7 +108,6 @@ double fpga_JPCG(FortranInteger* handle,
                  FortranReal* prelres,
                  FortranReal* pflops) {
     PCG_TYPE& l_pcg = *(PCG_TYPE*)(*handle);
-    std::cout << "FPGA handle value" << *handle << std::endl;
     double t_sec;
     std::cout << "running fpga_JPCG..." << std::endl;
     TimePointType l_timer[3];

@@ -74,7 +74,7 @@ contains
   save    first_call
   data    first_call /.true./
 !
-  integer*8 jpcg_handle, device_id
+  integer*8, save :: jpcg_handle, device_id
 !-------------------------------------------------------------------------------
 !
   irc = 0
@@ -118,7 +118,7 @@ contains
     call userLE_JPCG_set_matrix(jpcg_handle, niq, nzlk, colptrK, rowindK, valsK)
   else if ( option .ne. 3 ) then
     write(msgunit,'(''userLESolve update values'')')
-!    call userLE_JPCG_update_matrix(jpcg_handle, niq, nzlk, colptrK, rowindK, valsK)
+    call userLE_JPCG_update_matrix(jpcg_handle, niq, nzlk, colptrK, rowindK, valsK)
   end if
 
 !-------------------------------------------------------------------------------
