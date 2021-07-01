@@ -51,7 +51,7 @@ def report(targets):
 
 
 def main(model_path):
-    targets = ['fpga', 'csc', 'coo']
+    targets = ['fpga', 'csc']
     for target in targets:
         filename = os.path.join("build_output.%s" % target, "benchmark.csv")
         if os.path.exists(filename):

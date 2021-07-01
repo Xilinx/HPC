@@ -118,7 +118,7 @@ double fpga_JPCG(FortranInteger* handle,
     *pniter = l_res.m_nIters;
     memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_res.m_x), pn * sizeof(FortranReal));
     *pflops = l_res.m_nIters * (2 * pnz + 16 * pn) - 2 * pn;
-    return t_sec * 1e3;
+    return t_sec;
 }
 #endif
 

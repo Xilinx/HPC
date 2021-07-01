@@ -147,6 +147,7 @@ OBJS += $(BUILD_DIR)/cgHost.o
 endif
 
 EXE := $(BUILD_DIR)/mppdyna
+BENCHMAKR = $(XF_PROJ_ROOT)/pcg/plugins/LS-DYNA/benchmark.py
 
 $(EXE): $(OBJS)
 	$(LD) -o $@ $(LDFLAGS) $(OBJS) $(LIBS) $(LMATH) $(LF)
@@ -155,6 +156,9 @@ run: $(EXE)
 	cd $(BUILD_DIR) && \
 	$(EXE) i=$(MODEL_PATH) memory=1G ncpu=1 impcon=1
 	cd ..
+
+benchmark: $(EXE)
+	$(BENCHMAKR) --model_path $(MODEL_PATH)
 
 clean:
 	rm -rf build_output*
@@ -179,7 +183,7 @@ $(BUILD_DIR)/cgHost.o:
 	$(CC) -c $(CF)  $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp -o '$@'
 endif
 
-$(BUILD_DIR)/userLE_JPCG.o: ../..//usermat/userLE_JPCG.F90
+$(BUILD_DIR)/userLE_JPCG.o: ../../usermat/userLE_JPCG.F90
 	mkdir -p ${BUILD_DIR}
 	$(FC) -c $(FF) -I$(LS_DYNA_PATH)/usermat $^ -o '$@'
 $(BUILD_DIR)/userinterface.o: $(LS_DYNA_PATH)/usermat/userinterface.f90
