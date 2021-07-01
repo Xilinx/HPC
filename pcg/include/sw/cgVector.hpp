@@ -144,7 +144,7 @@ class GenCgVector {
     std::vector<t_DataType, alignedAllocator<t_DataType> > m_zk;
 };
 
-template <typename t_DataType, unsigned int t_ParEntries, unsigned int t_InstrBytes>
+template <typename t_DataType, unsigned int t_InstrBytes>
 class GenCgInstr {
    public:
     GenCgInstr(){};

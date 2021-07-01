@@ -74,7 +74,7 @@ contains
   save    first_call
   data    first_call /.true./
 !
-  integer*8 jpcg_handle
+  integer*8 jpcg_handle, device_id
 !-------------------------------------------------------------------------------
 !
   irc = 0
@@ -105,7 +105,8 @@ contains
     write(msgunit,'(''userLESolve load FPGA circuit'')')
     first_call = .false.
     option     = 0
-    call userLE_JPCG_create_handle (jpcg_handle)
+    device_id = 1
+    call userLE_JPCG_create_handle (jpcg_handle, device_id, '../cgSolver.xclbin')
   end if
 
 ! If option < 1, then matrix structure has changed.
@@ -113,6 +114,7 @@ contains
   if ( option .eq. 0 ) then
     write(msgunit,'(''userLESolve update structure'')')
     option = 2
+    call userLE_JPCG_set_matrix(jpcg_handle, niq, nzlk, colptrK, rowindK, valsK)
   end if
 
 ! If option < 3, then matrix has changed in value, and must be reloaded.
