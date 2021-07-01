@@ -50,6 +50,11 @@ class PCGImpl {
         m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
                           m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
     }
+    void setCscSymMat(uint32_t p_dim, uint32_t p_nnz, int64_t* p_rowIdx, int64_t* p_colPtr, t_DataType* p_data) {
+        m_matPar = m_spmPar.partitionCscSymMat(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
+        m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
+                          m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+    }
     void updateMat(t_DataType* p_data) {
         m_matPar = m_spmPar.updateMat(p_data);
         m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,

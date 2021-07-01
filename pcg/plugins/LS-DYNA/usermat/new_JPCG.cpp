@@ -93,6 +93,8 @@ void userLE_vecsum(FortranInteger n, FortranReal alpha, FortranReal* x, FortranR
 
 template <typename FInt, typename Integer, typename Real>
 void getCOO(FInt n, FInt nz, FInt* colptr, FInt* rowind, Real* values, Real* matA, Integer* rowInd, Integer* colInd);
+template <typename FInt, typename Real>
+void getCOODat(FInt n, FInt nz, FInt* colptr, FInt* rowind, Real* values, Real* matA);
 #ifdef USE_FPGA
 double fpga_JPCG(FortranInteger* handle,
                  FortranInteger pn,
@@ -113,7 +115,7 @@ double fpga_JPCG(FortranInteger* handle,
     l_pcg.setVec(pn, b, matJ);
     showTimeData("Vector initialization & transmission time: ", l_timer[0], l_timer[1]);
     Results<CG_dataType> l_res = l_pcg.run(pmaxit, ptol);
-    showTimeData("PCG run time: ", l_timer[2], l_timer[3], &t_sec);
+    showTimeData("PCG run time: ", l_timer[1], l_timer[2], &t_sec);
     *prelres = sqrt(l_res.m_residual / l_pcg.getDot());
     *pniter = l_res.m_nIters;
     memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_res.m_x), pn * sizeof(FortranReal));
@@ -144,6 +146,11 @@ void userle_jpcg_set_matrix_(FortranInteger* handle,
     FortranInteger nz = *pnz;
     FortranInteger nnz = nz * 2 - n;
     FortranReal* matA;
+    matA = (FortranReal*)malloc(nnz * sizeof(FortranReal));
+    getCOODat(n, nnz, colptr, rowind, values, matA);
+    l_pcg.setCscSymMat(n, nnz, (int64_t*)rowind, (int64_t*)colptr, matA);
+    free(matA);
+    /*FortranReal* matA;
     uint32_t* rowInd;
     uint32_t* colInd;
     matA = (FortranReal*)malloc(nnz * sizeof(FortranReal));
@@ -153,10 +160,30 @@ void userle_jpcg_set_matrix_(FortranInteger* handle,
     l_pcg.setCooMat(n, nnz, rowInd, colInd, matA);
     free(matA);
     free(rowInd);
-    free(colInd);
+    free(colInd);*/
 #endif
 }
 
+void userle_jpcg_update_matrix_(FortranInteger* handle,
+                                FortranInteger* pn,
+                                FortranInteger* pnz,
+                                FortranInteger* colptr,
+                                FortranInteger* rowind,
+                                FortranReal* values) {
+#ifdef USE_FPGA
+    cout << "Updating the matrix value ... " << endl;
+    PCG_TYPE& l_pcg = *(PCG_TYPE*)(*handle);
+    FortranInteger n = *pn;
+    FortranInteger nz = *pnz;
+    FortranInteger nnz = nz * 2 - n;
+    FortranReal* matA;
+    matA = (FortranReal*)malloc(nnz * sizeof(FortranReal));
+    getCOODat(n, nnz, colptr, rowind, values, matA);
+    l_pcg.updateMat(matA);
+    free(matA);
+#endif
+}
+       
 /* -------------------------------------------------------------------------- */
 /* Conjugate Gradients with diagonal preconditioner */
 void userLE_JPCG(FortranInteger* handle,
@@ -330,6 +357,22 @@ void getCOO(FInt n, FInt nz, FInt* colptr, FInt* rowind, Real* values, Real* mat
     assert(index == nz);
 }
 
+template <typename FInt, typename Real>
+void getCOODat(FInt n, FInt nz, FInt* colptr, FInt* rowind, Real* values, Real* matA) {
+    FInt index = 0;
+    for (FInt j = 0; j < n; j++) {
+        for (FInt k = colptr[j] - 1; k < colptr[j + 1] - 1; k++) {
+            FInt i = rowind[k] - 1;
+            assert(index < nz);
+            matA[index++] = values[k];
+            if (i != j) {
+                assert(index < nz);
+                matA[index++] = values[k];
+            }
+        }
+    }
+    assert(index == nz);
+}
 /* -------------------------------------------------------------------------- */
 /* Sparse matrix-vector multiply, y <- beta * y + alpha * A * x  */
 void userLE_spmv(FortranInteger n,

@@ -121,6 +121,7 @@ contains
 
   if ( option .ne. 3 ) then
     write(msgunit,'(''userLESolve update values'')')
+    call userLE_JPCG_update_matrix(jpcg_handle, niq, nzlk, colptrK, rowindK, valsK)
   end if
 
 !-------------------------------------------------------------------------------
