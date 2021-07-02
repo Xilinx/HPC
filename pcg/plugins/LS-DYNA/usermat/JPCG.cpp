@@ -100,13 +100,29 @@ void getCOO(FInt n,
             Integer* rowInd,
             Integer* colInd);
 
+template <typename FInt, typename Real>
+void getCOODat(FInt n, FInt nz, FInt* colptr, FInt* rowind, Real* values, Real* matA) {
+    FInt index = 0;
+    for (FInt j = 0; j < n; j++) {
+        for (FInt k = colptr[j] - 1; k < colptr[j + 1] - 1; k++) {
+            FInt i = rowind[k] - 1;
+            assert(index < nz);
+            matA[index++] = values[k];
+            if (i != j) {
+                assert(index < nz);
+                matA[index++] = values[k];
+            }
+        }
+    }
+    assert(index == nz);
+}
 #ifdef USE_FPGA
 double fpga_JPCG(PCG_TYPE & l_pcg,
         FortranInteger pn,
                  FortranInteger pnz,
-                 uint32_t* rowInd,
-                 uint32_t* colInd,
-                 FortranReal* matA,
+                 FortranInteger* rowind,
+                 FortranInteger* colptr,
+                 FortranReal* values,
                  FortranReal* matJ,
                  FortranInteger pmaxit,
                  FortranReal ptol,
@@ -118,7 +134,11 @@ double fpga_JPCG(PCG_TYPE & l_pcg,
     std::cout << "running fpga_JPCG..." << std::endl;
     TimePointType l_timer[5];
     l_timer[0] = std::chrono::high_resolution_clock::now();
-    l_pcg.setCooMat(pn, pnz, rowInd, colInd, matA);
+    FortranReal* matA;
+    matA = (FortranReal*)malloc(pnz * sizeof(FortranReal));
+    getCOODat(pn, pnz, colptr, rowind, values, matA);
+    l_pcg.setCscSymMat(pn, pnz, (int64_t*)rowind, (int64_t*)colptr, matA);
+    free(matA);
     showTimeData("Matrix partition and transmission time: ", l_timer[0], l_timer[1]);
     l_pcg.setVec(pn, b, matJ);
     showTimeData("Vector initialization & transmission time: ", l_timer[1], l_timer[2]);
@@ -163,7 +183,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     tol = *ptol;
     FortranInteger nnz = nz * 2 - n;
 
-#if defined FORMAT_COO || defined USE_FPGA
+#if defined FORMAT_COO
     FortranReal* matA;
     uint32_t* rowInd;
     uint32_t* colInd;
@@ -180,7 +200,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     TimePointType l_start = std::chrono::high_resolution_clock::now();
 
 #ifdef USE_FPGA
-    double l_hwTime = fpga_JPCG(l_pcg, n, nnz, rowInd, colInd, matA, dprec, maxit, tol, b, x, pniter, prelres, pflops);
+    double l_hwTime = fpga_JPCG(l_pcg, n, nnz, rowind, colptr, values, dprec, maxit, tol, b, x, pniter, prelres, pflops);
 #else
     FortranReal *r, *z, *p, *q;
     /* Allocate local storage */
@@ -262,7 +282,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     *pflops = flops;
 #endif
 
-#if defined FORMAT_COO || defined FPGA
+#if defined FORMAT_COO
     free(matA);
     free(rowInd);
     free(colInd);
