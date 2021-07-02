@@ -22,9 +22,9 @@ dataPath = ./$(BUILD_DIR)/data/
 deviceID = 0
 maxIter = 5000
 tol=1e-12
-mtxName = ted_B
+mtxName = nasa2910
 
-HOST_ARGS += ${maxIter} ${tol} ${dataPath} $(mtxName) ${deviceID}
+HOST_ARGS += ${maxIter} ${tol} ${dataPath} $(mtxName) 1 ${deviceID}
 
 data_gen:
 	rm -rf ${dataPath}

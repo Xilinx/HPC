@@ -78,12 +78,12 @@ HOST_SRCS += $(CUR_DIR)//host/main.cpp
 HOST_SRCS += $(XFLIB_DIR)/L2/sparse/src/sw/c++/gen_signature.cpp
 HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xFPGA.cpp
 HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp
-HOST_SRCS += $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp
+HOST_SRCS += $(XFLIB_DIR)/pcg/sw/src/cgHost.cpp
 
 CXXFLAGS += -DHW_CLK=4e-9 -DCG_numTasks=1 -DCG_dataType=double -DCG_numChannels=16 -DCG_parEntries=4 -DCG_instrBytes=64 -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_accLatency=8 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256
 CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/include
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/include/sw
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/include
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
@@ -123,8 +123,7 @@ endif
 VPP_FLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
 VPP_FLAGS += -I$(XFLIB_DIR)/L1/hpc/include/hw/
 VPP_FLAGS += -I$(XFLIB_DIR)/L1/hpc/include/hw/cgSolver
-VPP_FLAGS += -I$(XFLIB_DIR)/pcg/include
-VPP_FLAGS += -I$(XFLIB_DIR)/pcg/include/hw
+VPP_FLAGS += -I$(XFLIB_DIR)/pcg/hw/include
 VPP_FLAGS += -I$(XFLIB_DIR)/L2/common/include/hw
 VPP_FLAGS += -I$(XFLIB_DIR)/L1/blas/include/hw
 VPP_FLAGS += -I$(XFLIB_DIR)/L1/sparse/include/hw
@@ -196,47 +195,47 @@ xclbin: check_vpp check_sysroot $(BINARY_CONTAINERS)
 build: xclbin
 
 # ################ Setting Rules for Binary Containers (Building Kernels) ################
-$(TEMP_DIR)/krnl_timer.xo: $(XFLIB_DIR)/pcg/src/hw/krnl_timer.cpp
+$(TEMP_DIR)/krnl_timer.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_timer.cpp
 	$(ECHO) "Compiling Kernel: krnl_timer"
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(krnl_timer_VPP_FLAGS) $(VPP_FLAGS) -k krnl_timer -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_duplicate.xo: $(XFLIB_DIR)/pcg/src/hw/krnl_duplicate.cpp
+$(TEMP_DIR)/krnl_duplicate.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_duplicate.cpp
 	$(ECHO) "Compiling Kernel: krnl_duplicate"
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(krnl_duplicate_VPP_FLAGS) $(VPP_FLAGS) -k krnl_duplicate -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_dupTk4.xo: $(XFLIB_DIR)/pcg/src/hw/krnl_dupTk4.cpp
+$(TEMP_DIR)/krnl_dupTk4.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_dupTk4.cpp
 	$(ECHO) "Compiling Kernel: krnl_dupTk4"
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(krnl_dupTk4_VPP_FLAGS) $(VPP_FLAGS) -k krnl_dupTk4 -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_loadArbParam.xo: $(XFLIB_DIR)/pcg/src/hw/krnl_loadArbParam.cpp
+$(TEMP_DIR)/krnl_loadArbParam.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_loadArbParam.cpp
 	$(ECHO) "Compiling Kernel: krnl_loadArbParam"
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(krnl_loadArbParam_VPP_FLAGS) $(VPP_FLAGS) -k krnl_loadArbParam -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_loadAval.xo: $(XFLIB_DIR)/pcg/src/hw/krnl_loadAval.cpp
+$(TEMP_DIR)/krnl_loadAval.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_loadAval.cpp
 	$(ECHO) "Compiling Kernel: krnl_loadAval"
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(krnl_loadAval_VPP_FLAGS) $(VPP_FLAGS) -k krnl_loadAval -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_loadPkApar.xo: $(XFLIB_DIR)/pcg/src/hw/krnl_loadPkApar.cpp
+$(TEMP_DIR)/krnl_loadPkApar.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_loadPkApar.cpp
 	$(ECHO) "Compiling Kernel: krnl_loadPkApar"
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(krnl_loadPkApar_VPP_FLAGS) $(VPP_FLAGS) -k krnl_loadPkApar -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_storeApk.xo: $(XFLIB_DIR)/pcg/src/hw/krnl_storeApk.cpp
+$(TEMP_DIR)/krnl_storeApk.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_storeApk.cpp
 	$(ECHO) "Compiling Kernel: krnl_storeApk"
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(krnl_storeApk_VPP_FLAGS) $(VPP_FLAGS) -k krnl_storeApk -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_update_xk.xo: $(XFLIB_DIR)/pcg/src/hw/krnl_update_xk.cpp
+$(TEMP_DIR)/krnl_update_xk.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_update_xk.cpp
 	$(ECHO) "Compiling Kernel: krnl_update_xk"
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(krnl_update_xk_VPP_FLAGS) $(VPP_FLAGS) -k krnl_update_xk -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_update_rk_jacobi.xo: $(XFLIB_DIR)/pcg/src/hw/krnl_update_rk_jacobi.cpp
+$(TEMP_DIR)/krnl_update_rk_jacobi.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_update_rk_jacobi.cpp
 	$(ECHO) "Compiling Kernel: krnl_update_rk_jacobi"
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(krnl_update_rk_jacobi_VPP_FLAGS) $(VPP_FLAGS) -k krnl_update_rk_jacobi -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_update_pk.xo: $(XFLIB_DIR)/pcg/src/hw/krnl_update_pk.cpp
+$(TEMP_DIR)/krnl_update_pk.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_update_pk.cpp
 	$(ECHO) "Compiling Kernel: krnl_update_pk"
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(krnl_update_pk_VPP_FLAGS) $(VPP_FLAGS) -k krnl_update_pk -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_control.xo: $(XFLIB_DIR)/pcg/src/hw/krnl_control.cpp
+$(TEMP_DIR)/krnl_control.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_control.cpp
 	$(ECHO) "Compiling Kernel: krnl_control"
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(krnl_control_VPP_FLAGS) $(VPP_FLAGS) -k krnl_control -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'

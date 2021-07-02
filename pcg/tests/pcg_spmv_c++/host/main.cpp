@@ -40,7 +40,7 @@
 #include <cassert>
 
 // This file is required for OpenCL C++ wrapper APIs
-#include "pcgImp.hpp"
+#include "pcg.hpp"
 #include "utils.hpp"
 
 int main(int argc, char** argv) {
@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
     if (argc > l_idx) l_deviceId = atoi(argv[l_idx++]);
 
     std::string l_datFilePath = l_datPath + "/" + l_mtxName;
+    std::cout << "l_deviceId" << l_deviceId << "\n";
 
     CooMatInfo l_matInfo = loadMatInfo(l_datFilePath + "/");
     assert(l_matInfo.m_m == l_matInfo.m_n);
@@ -87,9 +88,8 @@ int main(int argc, char** argv) {
     TimePointType l_timer[8];
 
     l_timer[0] = std::chrono::high_resolution_clock::now();
-    PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows,
-            SPARSE_maxCols, SPARSE_hbmMemBits>
-        l_pcg(l_deviceId, binaryFile);
+    struct Options l_option = {l_deviceId, XString(binaryFile)};
+    PCG<CG_dataType> l_pcg(l_option);
     showTimeData("FPGA configuration time: ", l_timer[0], l_timer[1]);
     l_pcg.setCooMat(l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data());
     double l_mat_partition_time = 0;
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
     l_res = l_pcg.run(l_maxIter, l_tol);
     showTimeData("PCG run time: ", l_timer[3], l_timer[4], &l_runTime);
     showTimeData("Host to device data transfer time: ", l_timer[2], l_timer[3], &l_h2d_time);
-    for (int i=1; i<l_numRuns; ++i) {
+    for (int i = 1; i < l_numRuns; ++i) {
         if (l_pcg.updateMat(l_matInfo.m_m, l_matInfo.m_nnz, l_data.data()) != 0) {
             return EXIT_FAILURE;
         }
