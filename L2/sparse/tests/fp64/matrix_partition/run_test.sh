@@ -1,3 +1,3 @@
 make data_gen
 make
-./gen_signature.exe sig_at/nasa2910/
+./gen_signature.exe sig_dat/nasa2910/
