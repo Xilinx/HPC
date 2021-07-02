@@ -37,20 +37,23 @@ class SpmPar {
 
     MatPartition partitionCooMat(
         uint32_t p_m, uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, t_DataType* p_data) {
-        m_spm.loadCoo(p_m, p_n, p_nnz, p_rowIdx, p_colIdx);
-        MatPartition l_res = m_sig.gen_sig(m_spm, p_data);
+        SparseMatrix l_spm;
+        l_spm.loadCoo(p_m, p_n, p_nnz, p_rowIdx, p_colIdx);
+        MatPartition l_res = m_sig.gen_sig(l_spm, p_data);
         return l_res;
     }
     MatPartition partitionCscSymMat(
         uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr, t_DataType* p_data) {
-        m_spm.loadCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr);
-        MatPartition l_res = m_sig.gen_sig(m_spm, p_data);
+        SparseMatrix l_spm;
+        l_spm.loadCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr);
+        MatPartition l_res = m_sig.gen_sig(l_spm, p_data);
         return l_res;
     }
     MatPartition partitionCscSymMat(
         uint32_t p_dim, uint32_t p_nnz, int64_t* p_rowIdx, int64_t* p_colPtr, t_DataType* p_data) {
-        m_spm.loadCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr);
-        MatPartition l_res = m_sig.gen_sig(m_spm, p_data);
+        SparseMatrix l_spm;
+        l_spm.loadCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr);
+        MatPartition l_res = m_sig.gen_sig(l_spm, p_data);
         return l_res;
     }
     int checkUpdateDim(uint32_t p_m, uint32_t p_n, uint32_t p_nnz) {
@@ -62,7 +65,6 @@ class SpmPar {
     }
 
    private:
-    SparseMatrix m_spm;
     Signature m_sig;
 };
 

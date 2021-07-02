@@ -134,7 +134,7 @@ class SparseMatrix {
         m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
-    void create_matrix(std::vector<uint32_t> p_row, std::vector<uint32_t> p_col, std::vector<uint32_t> p_data) {
+    void create_matrix(std::vector<uint32_t>& p_row, std::vector<uint32_t>& p_col, std::vector<uint32_t>& p_data) {
         if (!p_row.empty()) {
             m_nnz = p_row.size();
             m_row_list = p_row;

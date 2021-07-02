@@ -82,9 +82,9 @@ class Signature {
         m_chParSpms.resize(m_channels);
     }
 
-    SparseMatrix add_spm(std::vector<uint32_t> p_row,
-                         std::vector<uint32_t> p_col,
-                         std::vector<uint32_t> p_data,
+    SparseMatrix add_spm(std::vector<uint32_t>& p_row,
+                         std::vector<uint32_t>& p_col,
+                         std::vector<uint32_t>& p_data,
                          uint32_t& p_m,
                          uint32_t& p_n,
                          uint32_t& p_nnz,
