@@ -69,7 +69,6 @@ int main(int argc, char** argv) {
     if (argc > l_idx) l_deviceId = atoi(argv[l_idx++]);
 
     std::string l_datFilePath = l_datPath + "/" + l_mtxName;
-    std::cout << "l_deviceId" << l_deviceId << "\n";
 
     CooMatInfo l_matInfo = loadMatInfo(l_datFilePath + "/");
     assert(l_matInfo.m_m == l_matInfo.m_n);

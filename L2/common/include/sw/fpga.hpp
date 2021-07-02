@@ -42,7 +42,7 @@
 #include "xcl2.hpp"
 
 template <typename T>
-using host_buffer_t = std::std::vector<T, aligned_allocator<T> >;
+using host_buffer_t = std::vector<T, aligned_allocator<T> >;
 
 class FPGA {
    public:
