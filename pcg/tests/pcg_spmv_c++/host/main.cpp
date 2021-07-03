@@ -98,19 +98,19 @@ int main(int argc, char** argv) {
     double l_h2d_time = 0;
     Results<CG_dataType> l_res;
     l_pcg.setVec(l_matInfo.m_m, l_b.data(), l_diagA.data());
-    showTimeData("Vector initialization & transmission time: ", l_timer[2], l_timer[3]);
+    showTimeData("Vector initialization & transmission time: ", l_timer[2], l_timer[3], &l_h2d_time);
     l_res = l_pcg.run(l_maxIter, l_tol);
     showTimeData("PCG run time: ", l_timer[3], l_timer[4], &l_runTime);
-    showTimeData("Host to device data transfer time: ", l_timer[2], l_timer[3], &l_h2d_time);
     for (int i=1; i<l_numRuns; ++i) {
+        l_timer[0] = std::chrono::high_resolution_clock::now();
         if (l_pcg.updateMat(l_matInfo.m_m, l_matInfo.m_nnz, l_data.data()) != 0) {
             return EXIT_FAILURE;
         }
+        showTimeData("Matrix update time: ", l_timer[0], l_timer[1]);
         l_pcg.setVec(l_matInfo.m_m, l_b.data(), l_diagA.data());
-        showTimeData("Vector initialization & transmission time: ", l_timer[2], l_timer[3]);
+        showTimeData("Vector initialization & transmission time: ", l_timer[1], l_timer[2], &l_h2d_time);
         l_res = l_pcg.run(l_maxIter, l_tol);
-        showTimeData("PCG run time: ", l_timer[3], l_timer[4], &l_runTime);
-        showTimeData("Host to device data transfer time: ", l_timer[2], l_timer[3], &l_h2d_time);
+        showTimeData("PCG run time: ", l_timer[2], l_timer[3], &l_runTime);
     }
 
     std::vector<uint32_t> l_info = l_pcg.getMatInfo();

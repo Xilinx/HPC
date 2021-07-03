@@ -68,7 +68,12 @@ class PCGImpl {
     }
 
     void setVec(uint32_t p_dim, t_DataType* p_b, t_DataType* p_diagA) {
-        m_genCgVec.loadVec(p_dim, p_b, p_diagA);
+        if (p_dim != m_genCgVec.getDim()) {
+            m_genCgVec.loadVec(p_dim, p_b, p_diagA);
+        }
+        else {
+            m_genCgVec.updateVec(p_dim, p_b, p_diagA);
+        }
         m_genCgVec.init();
         this->sendVec();
     }
