@@ -24,8 +24,8 @@
 #include <cassert>
 
 // This file is required for OpenCL C++ wrapper APIs
-#include "cgInstr.hpp"
-#include "cgHost.hpp"
+#include "impl/cgInstr.hpp"
+#include "impl/cgHost.hpp"
 #include "utils.hpp"
 #include "binFiles.hpp"
 
@@ -133,10 +133,11 @@ int main(int argc, char** argv) {
 
     xCgHost l_cgHost;
     l_cgHost.init(l_deviceId, binaryFile);
-    l_cgHost.sendDat(h_nnzValPtr, h_nnzValSize,
+    l_cgHost.sendMatDat(h_nnzValPtr, h_nnzValSize,
                      h_parParam.data(), h_parParam.size(),
-                     h_pk.data(), h_pk.size()*sizeof(CG_dataType),
-                     h_rbParam.data(), h_rbParam.size(),
+                     h_rbParam.data(), h_rbParam.size()
+                     );
+    l_cgHost.sendVecDat(h_pk.data(), h_pk.size()*sizeof(CG_dataType),
                      h_Apk.data(), h_Apk.size()*sizeof(CG_dataType),
                      h_zk.data(), h_zk.size()*sizeof(CG_dataType),
                      h_rk.data(), h_rk.size()*sizeof(CG_dataType),
