@@ -30,7 +30,7 @@
 */
 
 #include <algorithm>
-#include <ctring>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -40,8 +40,8 @@
 #include <cassert>
 
 // This file is required for OpenCL C++ wrapper APIs
-#include "cgInstr.hpp"
-#include "cgSolverKernel.hpp"
+#include "impl/cgInstr.hpp"
+#include "impl/cgSolverKernel.hpp"
 #include "utils.hpp"
 #include "binFiles.hpp"
 #include "spmvKernel.hpp"
@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
     l_bytes = getBinBytes(l_sigFilePath + "/rbParam.dat");
     readBin<uint8_t, aligned_allocator<uint8_t> >(l_sigFilePath + "/rbParam.dat", l_bytes, h_rbParam);
     for (unsigned int i = 0; i < CG_numChannels; ++i) {
-        std::string l_nnzFileName = l_sigFilePath + "/nnzVal_" + to_std::string(i) + ".dat";
+        std::string l_nnzFileName = l_sigFilePath + "/nnzVal_" + std::to_string(i) + ".dat";
         l_bytes = getBinBytes(l_nnzFileName);
         readBin<uint8_t, aligned_allocator<uint8_t> >(l_nnzFileName, l_bytes, h_nnzVal[i]);
     }

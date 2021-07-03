@@ -13,21 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-/*
- * Copyright 2019 Xilinx, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
+
 #include "fpga.hpp"
 
 class CGKernelControl : public Kernel {
@@ -62,8 +48,8 @@ class CGKernelGemv : public Kernel {
     CGKernelGemv(FPGA* p_fpga = nullptr) : Kernel(p_fpga) {}
     void setMem(host_buffer_t<T>& h_A, host_buffer_t<T>& h_pk, host_buffer_t<T>& h_Apk) {
         cl_int err;
-        vector<cl::Memory> l_buffers;
-        vector<host_buffer_t<T> > h_As(t_NumChannels);
+        std::vector<cl::Memory> l_buffers;
+        std::vector<host_buffer_t<T> > h_As(t_NumChannels);
         uint32_t l_vecSize = h_pk.size();
         // Running the kernel
 
@@ -111,7 +97,7 @@ class CGKernelGemv : public Kernel {
 
    private:
     cl::Buffer m_buffer_pk, m_buffer_Apk;
-    vector<cl::Buffer> m_buffer_A;
+    std::vector<cl::Buffer> m_buffer_A;
 };
 
 template <typename T>
@@ -176,7 +162,7 @@ class CGKernelUpdateRkJacobi : public Kernel {
     CGKernelUpdateRkJacobi(FPGA* p_fpga = nullptr) : Kernel(p_fpga) {}
     void setMem(host_buffer_t<T>& h_rk, host_buffer_t<T>& h_zk, host_buffer_t<T>& h_jacobi, host_buffer_t<T>& h_Apk) {
         cl_int err;
-        vector<cl::Memory> l_buffers;
+        std::vector<cl::Memory> l_buffers;
         // Running the kernel
         m_buffer_rk = createDeviceBuffer(CL_MEM_READ_WRITE, h_rk);
         m_buffer_zk = createDeviceBuffer(CL_MEM_READ_WRITE, h_zk);
@@ -217,7 +203,7 @@ class CGKernelUpdateRk : public Kernel {
     CGKernelUpdateRk(FPGA* p_fpga = nullptr) : Kernel(p_fpga) {}
     void setMem(host_buffer_t<T>& h_rk, host_buffer_t<T>& h_Apk) {
         cl_int err;
-        vector<cl::Memory> l_buffers;
+        std::vector<cl::Memory> l_buffers;
         // Running the kernel
         m_buffer_rk = createDeviceBuffer(CL_MEM_READ_WRITE, h_rk);
         m_buffer_Apk = createDeviceBuffer(CL_MEM_READ_WRITE, h_Apk);
@@ -253,7 +239,7 @@ class CGKernelUpdateXk : public Kernel {
     CGKernelUpdateXk(FPGA* p_fpga = nullptr) : Kernel(p_fpga) {}
     void setMem(host_buffer_t<T>& h_xk, host_buffer_t<T>& h_pk) {
         cl_int err;
-        vector<cl::Memory> l_buffers;
+        std::vector<cl::Memory> l_buffers;
         // Running the kernel
         m_buffer_xk = createDeviceBuffer(CL_MEM_READ_WRITE, h_xk);
         m_buffer_pk = createDeviceBuffer(CL_MEM_READ_WRITE, h_pk);
@@ -294,7 +280,7 @@ class CGKernelGemvSeq : public Kernel {
                 host_buffer_t<T>& h_rk,
                 host_buffer_t<T>& h_pk) {
         cl_int err;
-        vector<cl::Memory> l_buffers;
+        std::vector<cl::Memory> l_buffers;
         // Running the kernel
         m_buffer_instr = createDeviceBuffer(CL_MEM_READ_WRITE, h_instr);
         m_buffer_xk = createDeviceBuffer(CL_MEM_READ_WRITE, h_xk);
@@ -357,7 +343,7 @@ class CGKernelGemvJacobiSeq : public Kernel {
                 host_buffer_t<T>& h_jacobi,
                 host_buffer_t<T>& h_pk) {
         cl_int err;
-        vector<cl::Memory> l_buffers;
+        std::vector<cl::Memory> l_buffers;
         // Running the kernel
         m_buffer_instr = createDeviceBuffer(CL_MEM_READ_WRITE, h_instr);
         m_buffer_xk = createDeviceBuffer(CL_MEM_READ_WRITE, h_xk);
