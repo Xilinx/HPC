@@ -3,6 +3,8 @@ import subprocess
 import argparse
 import shlex
 import os
+import sys
+import re
 import pdb
 from multiprocessing import Pool
 import pandas as pd
@@ -20,61 +22,86 @@ def run(target, model):
     subprocess.run(args)
 
 
-def report(targets):
-    t = 'fpga'
-    filename = os.path.join("build_output.%s" % t, "benchmark.csv")
-    df = pd.read_csv(filename)
-    df.sort_values(by=['Dim'], inplace=True, ignore_index=True)
-    df = df.rename(columns={'API GFLOPS': '%s API GFLOPS' % t,
-                            'HW GFLOPS': '%s HW GFLOPS' % t,
-                            'HW Time [ms]': '%s HW Time [ms]' % t,
-                            'API Time [ms]': '%s API Time [ms]' % t})
-    for t in targets:
-        if t == 'fpga':
-            continue
-        filename = os.path.join("build_output.%s" % t, "benchmark.csv")
-        df_t = pd.read_csv(filename)
-        df_t.sort_values(by=['Dim'], inplace=True, ignore_index=True)
-        df['%s API Time [ms]' % t] = df_t['API Time [ms]']
-        df['%s API GFLOPS' % t] = df_t['API GFLOPS']
-
-    df['Perf. fpga_API/csc_API'] = round(df['fpga API GFLOPS'] /
-                                         df['csc API GFLOPS'], 5)
-    df['Perf. fpga_HW/csc_API'] = round(df['fpga HW GFLOPS'] /
-                                        df['csc API GFLOPS'], 5)
-
-    df['Time csc_API/fpga_API'] = round(df['csc API Time [ms]'] /
-                                        df['fpga API Time [ms]'], 5)
-    df['Time csc_API/fpga_HW'] = round(df['csc API Time [ms]'] /
-                                       df['fpga HW Time [ms]'], 5)
-    df.to_csv("benchmark.csv", index=False)
+def report(tables, model_name, model_tables, targets):
+    for tn in tables.keys():
+        tab = pd.concat([model_tables[t][tn] for t in targets], axis=1,
+                        ignore_index=True)
+        tab.columns = targets
+        tab.insert(0, 'model_name', model_name)
+        tables[tn] = tables[tn].append(tab)
 
 
-def main(model_path):
-    targets = ['fpga', 'csc']
-    for target in targets:
-        filename = os.path.join("build_output.%s" % target, "benchmark.csv")
-        if os.path.exists(filename):
-            os.remove(filename)
+def parse(target, table_names):
+    tables = {n: pd.DataFrame(columns=[target])
+              for n in table_names}
 
+    filename = os.path.join("build_output.%s" % target, "mes0000")
+    if not os.path.exists(filename):
+        sys.exit(1)
+
+    wct_pattern = 'WCT & GFlop'
+    total_pattern = '  T o t a l s'
+    iter_pattern = 'userLE Jacobi PCG iteration'
+    res_pattern = 'two norm of the residual'
+    number = r'[+\-\.\d]+E?[+\-\d]*'
+
+    with open(filename, 'r') as fr:
+        lines = fr.readlines()
+        for line in lines:
+            res = re.findall(number, line)
+            if line.startswith(total_pattern):
+                tables['Totals'] = tables['Totals'].append({target: res[0]},
+                                                           ignore_index=True)
+                break
+            if line.startswith(wct_pattern):
+                tables['WCT'] = tables['WCT'].append({target: res[0]},
+                                                     ignore_index=True)
+                tables['GFLOPS'] = tables['GFLOPS'].append({target: res[1]},
+                                                           ignore_index=True)
+            if line.startswith(iter_pattern):
+                tables['Iteration'] = tables['Iteration'].append({target: res[0]},
+                                                                 ignore_index=True)
+            if line.startswith(res_pattern):
+                tables['Residual'] = tables['Residual'].append({target: res[0]},
+                                                               ignore_index=True)
+    os.remove(filename)
+    return tables
+
+
+def main(model_path, log_path):
+    targets = ['fpga', 'cpu']
     if not os.path.isdir(model_path):
-        return
+        sys.exit(1)
     model_names = os.listdir(model_path)
 
     with Pool(8) as p:
         p.map(build, targets)
+        pass
 
-    for t in targets:
-        for m in model_names:
+    table_names = ['Totals', 'WCT', 'GFLOPS', 'Iteration', 'Residual']
+    tables = {n: pd.DataFrame(
+        columns=['model_name'] + targets) for n in table_names}
+
+    for m in model_names:
+        model_tables = {}
+        for t in targets:
             run(t, os.path.join(model_path, m, "%s.k" % m))
-    report(targets)
+            model_tables[t] = parse(t, table_names)
+        report(tables, m, model_tables, targets)
+
+    with pd.ExcelWriter(log_path) as writer:
+        for tn, tab in tables.items():
+            tab.to_excel(writer, sheet_name=tn, index=False)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("benchmark multiple targets and models")
-    parser.add_argument('--model_path', type=str, help="path to model files")
+    parser.add_argument('--model_path', required=True,
+                        type=str, help="path tlog files")
+    parser.add_argument('--log_path', type=str, default='log.xlsx',
+                        help="path to model files")
     args = parser.parse_args()
     if args.model_path is None:
         print(parser.print_help())
     else:
-        main(args.model_path)
+        main(args.model_path, args.log_path)
