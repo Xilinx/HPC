@@ -293,6 +293,22 @@ class SparseMatrix {
         free(l_data_list);
     }
 
+    void clearRowIdx() {
+        m_row_list.clear();
+        m_row_list.shrink_to_fit();
+    }
+    void clearColIdx() {
+        m_col_list.clear();
+        m_col_list.shrink_to_fit();
+    }
+    void clearAll() {
+        m_row_list.clear();
+        m_row_list.shrink_to_fit();
+        m_col_list.clear();
+        m_col_list.shrink_to_fit();
+        m_data_list.clear();
+        m_data_list.shrink_to_fit();
+    }
    public:
     uint32_t m_m, m_n, m_nnz;
     std::vector<uint32_t> m_row_list;
@@ -580,6 +596,11 @@ class NnzStore {
         m_totalColIdxBks.resize(m_channels);
         m_totalNnzBks.resize(m_channels);
         m_buf.resize(m_channels);
+    }
+    void reserveMem(unsigned int p_nnzs) {
+        for (unsigned int c=0; c<m_channels; ++c) {
+            m_buf[c].reserve(p_nnzs);
+        }
     }
 
     void add_dummyInfo(uint32_t p_chId) {

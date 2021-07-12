@@ -380,6 +380,7 @@ class Signature {
     }
 
     void gen_nnzStore(double* p_data) {
+        m_nnzStore.reserveMem(m_nnzPad);
         for (uint32_t c = 0; c < m_channels; c++) {
             m_nnzStore.add_dummyInfo(c);
         }
@@ -387,16 +388,17 @@ class Signature {
         uint32_t l_rowIdxGap = m_parEntries * m_accLatency;
         uint32_t l_rowIdxMod = l_memIdxWidth * l_rowIdxGap;
         uint32_t l_colIdxMod = l_memIdxWidth * m_parEntries;
-        uint32_t l_sParId = 0;
 
-        for (uint32_t rbId = 0; rbId < m_rbParam.m_totalRbs; rbId++) {
-            std::vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(rbId, 0);
-            uint32_t l_pars = l_rbInfo[3];
-            uint32_t l_sRbRowId = l_rbInfo[0];
-            for (uint32_t parId = 0; parId < l_pars; parId++) {
-                uint32_t l_parId = l_sParId + parId;
-                uint32_t l_sParColId = m_parParam.get_parInfo(l_parId)[0];
-                for (uint32_t c = 0; c < m_channels; c++) {
+        for (uint32_t c = 0; c < m_channels; c++) {
+            uint32_t l_sParId = 0;
+            for (uint32_t rbId = 0; rbId < m_rbParam.m_totalRbs; rbId++) {
+                std::vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(rbId, 0);
+                uint32_t l_pars = l_rbInfo[3];
+                uint32_t l_sRbRowId = l_rbInfo[0];
+                for (uint32_t parId = 0; parId < l_pars; parId++) {
+                    uint32_t l_parId = l_sParId + parId;
+                    uint32_t l_sParColId = m_parParam.get_parInfo(l_parId)[0];
+
                     SparseMatrix l_chParSpm = m_chParSpms[c][l_parId];
                     m_nnzStore.m_totalRowIdxBks[c] += DIV_CEIL(l_chParSpm.getNnz(), l_rowIdxMod);
                     m_nnzStore.m_totalColIdxBks[c] += DIV_CEIL(l_chParSpm.getNnz(), l_colIdxMod);
@@ -434,8 +436,8 @@ class Signature {
                         m_nnzStore.add_nnzArr(c, l_nnz);
                     }
                 }
+                l_sParId += l_pars;
             }
-            l_sParId += l_pars;
         }
         for (uint32_t c = 0; c < m_channels; c++) {
             m_nnzStore.m_totalBks[c] =
@@ -451,16 +453,16 @@ class Signature {
         uint32_t l_rowIdxGap = m_parEntries * m_accLatency;
         uint32_t l_rowIdxMod = l_memIdxWidth * l_rowIdxGap;
         uint32_t l_colIdxMod = l_memIdxWidth * m_parEntries;
-        uint32_t l_sParId = 0;
 
-        for (uint32_t rbId = 0; rbId < m_rbParam.m_totalRbs; rbId++) {
-            std::vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(rbId, 0);
-            uint32_t l_pars = l_rbInfo[3];
-            uint32_t l_sRbRowId = l_rbInfo[0];
-            for (uint32_t parId = 0; parId < l_pars; parId++) {
-                uint32_t l_parId = l_sParId + parId;
-                uint32_t l_sParColId = m_parParam.get_parInfo(l_parId)[0];
-                for (uint32_t c = 0; c < m_channels; c++) {
+        for (uint32_t c = 0; c < m_channels; c++) {
+            uint32_t l_sParId = 0;
+            for (uint32_t rbId = 0; rbId < m_rbParam.m_totalRbs; rbId++) {
+                std::vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(rbId, 0);
+                uint32_t l_pars = l_rbInfo[3];
+                uint32_t l_sRbRowId = l_rbInfo[0];
+                for (uint32_t parId = 0; parId < l_pars; parId++) {
+                    uint32_t l_parId = l_sParId + parId;
+                    uint32_t l_sParColId = m_parParam.get_parInfo(l_parId)[0];
                     SparseMatrix l_chParSpm = m_chParSpms[c][l_parId];
                     double l_nnz[m_parEntries];
                     memset(l_nnz, 0, m_parEntries * sizeof(double));
@@ -479,8 +481,8 @@ class Signature {
                         l_bufBytes[c] += 32;
                     }
                 }
+                l_sParId += l_pars;
             }
-            l_sParId += l_pars;
         }
     }
 
@@ -498,12 +500,24 @@ class Signature {
         assert(m_rbParam.m_totalRows == p_spm.getM());
         std::vector<SparseMatrix> l_paddedParSpms;
         gen_paddedPars(l_rbSpms, l_paddedParSpms); // write into l_paddedParSpms
+        for (unsigned int i=0; i<l_rbSpms.size(); ++i) {
+            l_rbSpms[i].clearAll();
+        }
         for (unsigned int i = 0; i < m_channels; ++i) {
             m_chParSpms[i].clear();
         }
         gen_chPars(l_paddedParSpms, m_chParSpms); // write into m_chParSpms
+        for (unsigned int i=0; i<l_paddedParSpms.size(); ++i) {
+            l_paddedParSpms[i].clearAll();
+        }
         update_rbParams(m_chParSpms);
         gen_nnzStore(p_data);
+        for (unsigned int c = 0; c < m_channels; ++c) {
+            for (unsigned int i=0; i<m_chParSpms[c].size(); ++i) {
+                m_chParSpms[c][i].clearRowIdx();
+                m_chParSpms[c][i].clearColIdx();
+            }
+        }
         m_rbParam.update_buf();
         m_parParam.update_buf();
         m_nnzStore.update_buf();
