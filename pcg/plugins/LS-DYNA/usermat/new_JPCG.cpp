@@ -25,7 +25,7 @@
 #include "utils.hpp"
 
 #ifdef USE_FPGA
-#include "pcgImp.hpp"
+#include "pcg.hpp"
 #include "cgHost.hpp"
 typedef PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
 #endif
@@ -208,12 +208,8 @@ extern "C" void userLE_JPCG(FortranInteger* handle,
 
 #ifdef USE_FPGA
     PCG_TYPE* l_pcg = (PCG_TYPE*)(*handle);
-#endif
-
-    TimePointType l_start = std::chrono::high_resolution_clock::now();
-
-#ifdef USE_FPGA
     double l_hwTime = fpga_JPCG(l_pcg, *select_call, n, nnz, rowind, colptr, values, dprec, maxit, tol, b, x, pniter, prelres, pflops);
+    //double l_hwTime = fpga_JPCG(handle, n, nnz, dprec, maxit, tol, b, x, pniter, prelres, pflops);
 #else
     FortranReal *r, *z, *p, *q;
     /* Allocate local storage */
@@ -294,52 +290,6 @@ extern "C" void userLE_JPCG(FortranInteger* handle,
     *prelres = sqrt(rTr) / rnrm0;
     *pflops = flops;
 #endif
-
-#if defined FORMAT_COO || defined FPGA
-    free(matA);
-    free(rowInd);
-    free(colInd);
-#endif
-
-    auto l_stop = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> l_durationSec = l_stop - l_start;
-    double l_timeMs = l_durationSec.count() * 1e3;
-
-    string filename = "benchmark.csv";
-    bool header = std::experimental::filesystem::exists(filename);
-
-    fstream fs;
-    fs.open("benchmark.csv", ios::out | ios::app);
-    if(!header) {
-        fs << "Dim" << ","
-            << "NNZ" << ","
-            << "Niter" << ","
-            << "Relres" << ","
-            <<"MFLOP" << ","
-#ifdef USE_FPGA
-            << "PCG Time [ms]" << ","
-            << "PCG GFLOPS" << ","
-            << "PCG&Matrix Partition Time [ms]" << ","
-            << "PCG&Matrix Partition GFLOPS"
-#else
-            << "PCG API Time [ms]" << ","
-            << "PCG API GFLOPS"
-#endif
-            << endl;
-    } 
-
-    fs << n << ","
-        << nnz << ","
-        << *pniter << ","
-        << *prelres << ","
-        << *pflops/1e6 << ","
-#ifdef USE_FPGA
-        << l_hwTime << ","
-        << *pflops/1e6/l_hwTime << ","
-#endif
-        << l_timeMs << ","
-        << *pflops/1e6/l_timeMs << std::endl;
-    fs.close();
     return;
 }
 

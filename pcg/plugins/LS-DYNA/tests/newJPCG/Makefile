@@ -10,7 +10,7 @@ XF_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/pcg
 CUR_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
 XFLIB_DIR = $(XF_PROJ_ROOT)
 TEMP_DIR := $(CUR_DIR)/_x_temp
-TARGET?=csc
+TARGET?=cpu
 MODEL_PATH?=$(LS_DYNA_PATH)/small_tbc/small_tbc.k
 BUILD_DIR := $(CUR_DIR)/build_output.$(TARGET)
 FC=mpiifort
@@ -20,8 +20,9 @@ FF=-O2 -safe-cray-ptr -assume byterecl,buffered_io,protect_parens -warn nousage 
 
 CXXFLAGS += -DHW_CLK=4e-9 -DCG_numTasks=1 -DCG_dataType=double -DCG_numChannels=16 -DCG_parEntries=4 -DCG_instrBytes=64 -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_accLatency=8 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256
 CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/include
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/include/sw
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/include
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include/
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include/impl
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
@@ -180,7 +181,7 @@ $(BUILD_DIR)/xcl2.o:
 	$(CC) -c $(CF)  $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp -o '$@'
 $(BUILD_DIR)/cgHost.o:
 	mkdir -p ${BUILD_DIR}
-	$(CC) -c $(CF)  $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp -o '$@'
+	$(CC) -c $(CF)  $(XFLIB_DIR)/pcg/sw/src/cgHost.cpp -o '$@'
 endif
 
 $(BUILD_DIR)/userLE_JPCG.o: ../../usermat/userLE_JPCG.F90

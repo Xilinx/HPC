@@ -42,12 +42,12 @@
                 "LIB_DIR/L2/sparse/src/sw/c++/gen_signature.cpp",
                 "LIB_DIR/L2/common/src/sw/xFPGA.cpp", 
                 "LIB_DIR/L2/common/src/sw/xcl2.cpp",
-                "LIB_DIR/pcg/src/sw/c++/cgHost.cpp"
+                "LIB_DIR/pcg/sw/src/cgHost.cpp"
             ], 
             "includepaths": [
                 "LIB_DIR/L1/hpc/include/",
-                "LIB_DIR/pcg/include", 
-                "LIB_DIR/pcg/include/sw", 
+                "LIB_DIR/pcg/hw/include", 
+                "LIB_DIR/pcg/sw/include", 
                 "LIB_DIR/L2/common/include/sw", 
                 "LIB_DIR/L2/sparse/include/sw/fp64",
                 "LIB_DIR/utils/include/sw"
@@ -96,8 +96,7 @@
                 "LIB_DIR/L1/hpc/include/", 
                 "LIB_DIR/L1/hpc/include/hw/", 
                 "LIB_DIR/L1/hpc/include/hw/cgSolver", 
-                "LIB_DIR/pcg/include", 
-                "LIB_DIR/pcg/include/hw", 
+                "LIB_DIR/pcg/hw/include",  
                 "LIB_DIR/L2/common/include/hw",
                 "LIB_DIR/L1/blas/include/hw", 
                 "LIB_DIR/L1/sparse/include/hw",
@@ -112,57 +111,57 @@
             "accelerators": [
                 {
                     "name": "krnl_timer", 
-                    "location": "LIB_DIR/pcg/src/hw/krnl_timer.cpp", 
+                    "location": "LIB_DIR/pcg/hw/src/krnl_timer.cpp", 
                     "frequency": 333
                 }, 
                 {
                     "name": "krnl_duplicate", 
-                    "location": "LIB_DIR/pcg/src/hw/krnl_duplicate.cpp", 
+                    "location": "LIB_DIR/pcg/hw/src/krnl_duplicate.cpp", 
                     "frequency": 333
                 }, 
                 {
                     "name": "krnl_dupTk4", 
-                    "location": "LIB_DIR/pcg/src/hw/krnl_dupTk4.cpp", 
+                    "location": "LIB_DIR/pcg/hw/src/krnl_dupTk4.cpp", 
                     "frequency": 333
                 }, 
                 {
                     "name": "krnl_loadArbParam", 
-                    "location": "LIB_DIR/pcg/src/hw/krnl_loadArbParam.cpp", 
+                    "location": "LIB_DIR/pcg/hw/src/krnl_loadArbParam.cpp", 
                     "frequency": 333
                 }, 
                 {
                     "name": "krnl_loadAval", 
-                    "location": "LIB_DIR/pcg/src/hw/krnl_loadAval.cpp", 
+                    "location": "LIB_DIR/pcg/hw/src/krnl_loadAval.cpp", 
                     "frequency": 333
                 }, 
                 {
                     "name": "krnl_loadPkApar", 
-                    "location": "LIB_DIR/pcg/src/hw/krnl_loadPkApar.cpp", 
+                    "location": "LIB_DIR/pcg/hw/src/krnl_loadPkApar.cpp", 
                     "frequency": 333
                 }, 
                 {
                     "name": "krnl_storeApk", 
-                    "location": "LIB_DIR/pcg/src/hw/krnl_storeApk.cpp", 
+                    "location": "LIB_DIR/pcg/hw/src/krnl_storeApk.cpp", 
                     "frequency": 333
                 }, 
                 {
                     "name": "krnl_update_xk", 
-                    "location": "LIB_DIR/pcg/src/hw/krnl_update_xk.cpp", 
+                    "location": "LIB_DIR/pcg/hw/src/krnl_update_xk.cpp", 
                     "frequency": 333
                 }, 
                 {
                     "name": "krnl_update_rk_jacobi", 
-                    "location": "LIB_DIR/pcg/src/hw/krnl_update_rk_jacobi.cpp", 
+                    "location": "LIB_DIR/pcg/hw/src/krnl_update_rk_jacobi.cpp", 
                     "frequency": 333
                 }, 
                 {
                     "name": "krnl_update_pk", 
-                    "location": "LIB_DIR/pcg/src/hw/krnl_update_pk.cpp", 
+                    "location": "LIB_DIR/pcg/hw/src/krnl_update_pk.cpp", 
                     "frequency": 333
                 }, 
                 {
                     "name": "krnl_control", 
-                    "location": "LIB_DIR/pcg/src/hw/krnl_control.cpp", 
+                    "location": "LIB_DIR/pcg/hw/src/krnl_control.cpp", 
                     "frequency": 333
                 }, 
                 {

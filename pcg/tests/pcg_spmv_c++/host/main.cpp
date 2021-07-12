@@ -40,7 +40,7 @@
 #include <cassert>
 
 // This file is required for OpenCL C++ wrapper APIs
-#include "pcgImp.hpp"
+#include "pcg.hpp"
 #include "utils.hpp"
 
 int main(int argc, char** argv) {
@@ -87,9 +87,8 @@ int main(int argc, char** argv) {
     TimePointType l_timer[8];
 
     l_timer[0] = std::chrono::high_resolution_clock::now();
-    PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows,
-            SPARSE_maxCols, SPARSE_hbmMemBits>
-        l_pcg(l_deviceId, binaryFile);
+    struct Options l_option = {l_deviceId, XString(binaryFile)};
+    PCG<CG_dataType> l_pcg(l_option);
     showTimeData("FPGA configuration time: ", l_timer[0], l_timer[1]);
     l_pcg.setCooMat(l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data());
     double l_mat_partition_time = 0;

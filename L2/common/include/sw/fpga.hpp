@@ -1,19 +1,4 @@
 /*
- * Copyright 2019 Xilinx, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-/*
  * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +27,7 @@
 #include "xcl2.hpp"
 
 template <typename T>
-using host_buffer_t = std::std::vector<T, aligned_allocator<T> >;
+using host_buffer_t = std::vector<T, aligned_allocator<T> >;
 
 class FPGA {
    public:
@@ -67,7 +52,7 @@ class FPGA {
     void setID(uint32_t id) {
         m_id = id;
         if (m_id >= m_Devices.size()) {
-            cout << "Device specified by id = " << m_id << " is not found." << endl;
+            std::cout << "Device specified by id = " << m_id << " is not found." << std::endl;
             throw;
         }
         m_device = m_Devices[m_id];
@@ -135,14 +120,14 @@ class FPGA {
     void getDevices(std::string deviceName) {
         cl_int err;
         auto devices = xcl::get_xil_devices();
-        auto regexStr = regex(".*" + deviceName + ".*");
+        auto regexStr = std::regex(".*" + deviceName + ".*");
         for (auto device : devices) {
             std::string cl_device_name;
             OCL_CHECK(err, err = device.getInfo(CL_DEVICE_NAME, &cl_device_name));
             if (regex_match(cl_device_name, regexStr)) m_Devices.push_back(device);
         }
         if (0 == m_Devices.size()) {
-            cout << "Device specified by name == " << deviceName << " is not found." << endl;
+            std::cout << "Device specified by name == " << deviceName << " is not found." << std::endl;
             throw;
         }
     }
@@ -185,11 +170,11 @@ class Kernel {
     void finish() const { m_fpga->finish(); }
 
     static double run(const std::vector<Kernel>& p_kernels) {
-        auto start = chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
         for (auto ker : p_kernels) ker.enqueueTask();
         for (auto ker : p_kernels) ker.finish();
-        auto finish = chrono::high_resolution_clock::now();
-        chrono::duration<double> elapsed = finish - start;
+        auto finish = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = finish - start;
         double t_sec = elapsed.count();
         return t_sec;
     }
