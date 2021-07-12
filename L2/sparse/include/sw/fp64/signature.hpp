@@ -82,9 +82,9 @@ class Signature {
         m_chParSpms.resize(m_channels);
     }
 
-    SparseMatrix add_spm(std::vector<uint32_t> p_row,
-                         std::vector<uint32_t> p_col,
-                         std::vector<uint32_t> p_data,
+    SparseMatrix add_spm(std::vector<uint32_t>& p_row,
+                         std::vector<uint32_t>& p_col,
+                         std::vector<uint32_t>& p_data,
                          uint32_t& p_m,
                          uint32_t& p_n,
                          uint32_t& p_nnz,
@@ -462,35 +462,13 @@ class Signature {
                 uint32_t l_sParColId = m_parParam.get_parInfo(l_parId)[0];
                 for (uint32_t c = 0; c < m_channels; c++) {
                     SparseMatrix l_chParSpm = m_chParSpms[c][l_parId];
-                    m_nnzStore.m_totalRowIdxBks[c] += DIV_CEIL(l_chParSpm.getNnz(), l_rowIdxMod);
-                    m_nnzStore.m_totalColIdxBks[c] += DIV_CEIL(l_chParSpm.getNnz(), l_colIdxMod);
-                    m_nnzStore.m_totalNnzBks[c] += l_chParSpm.getNnz() / m_parEntries;
-                    uint32_t l_sChRbRowId = m_rbParam.get_chInfo16(rbId, 0)[c] + l_sRbRowId;
-                    uint32_t l_sChParColId = m_parParam.get_chInfo16(l_parId, 0)[c] + l_sParColId;
-                    uint32_t l_rowIdx[l_memIdxWidth];
-                    memset(l_rowIdx, 0, l_memIdxWidth * sizeof(uint32_t));
-                    uint32_t l_colIdx[l_memIdxWidth];
-                    memset(l_colIdx, 0, l_memIdxWidth * sizeof(uint32_t));
                     double l_nnz[m_parEntries];
                     memset(l_nnz, 0, m_parEntries * sizeof(double));
                     for (uint32_t i = 0; i < l_chParSpm.getNnz(); i = i + m_parEntries) {
                         if (i % l_rowIdxMod == 0) {
-                            for (uint32_t j = 0; j < l_memIdxWidth; j++) {
-                                if (i + j * l_rowIdxGap < l_chParSpm.getNnz()) {
-                                    l_rowIdx[j] = l_chParSpm.getRow(i + j * l_rowIdxGap) - l_sChRbRowId;
-                                }
-                            }
-                            m_nnzStore.update_idxArr(c, l_bufBytes[c], l_rowIdx);
                             l_bufBytes[c] += 32;
                         }
                         if (i % l_colIdxMod == 0) {
-                            for (uint32_t j = 0; j < l_memIdxWidth; j++) {
-                                if (i + j * m_parEntries < l_chParSpm.getNnz()) {
-                                    l_colIdx[j] =
-                                        l_chParSpm.getCol(i + j * m_parEntries) / m_parEntries - l_sChParColId;
-                                }
-                            }
-                            m_nnzStore.update_idxArr(c, l_bufBytes[c], l_colIdx);
                             l_bufBytes[c] += 32;
                         }
                         for (uint32_t j = 0; j < m_parEntries; j++) {

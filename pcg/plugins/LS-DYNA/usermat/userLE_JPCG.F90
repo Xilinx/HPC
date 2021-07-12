@@ -73,6 +73,9 @@ contains
   logical first_call
   save    first_call
   data    first_call /.true./
+  integer select_call
+  save    select_call
+  data    select_call /0/
 !
   integer*8, save :: jpcg_handle, device_id
 !-------------------------------------------------------------------------------
@@ -110,15 +113,16 @@ contains
   end if
 
 ! If option < 1, then matrix structure has changed.
-! If option < 3, then matrix has changed in value, and must be reloaded.
 
   if ( option .eq. 0 ) then
     write(msgunit,'(''userLESolve update structure'')')
     option = 2
-    call userLE_JPCG_set_matrix(jpcg_handle, niq, nzlk, colptrK, rowindK, valsK)
-  else if ( option .ne. 3 ) then
+  end if
+
+! If option < 3, then matrix has changed in value, and must be reloaded.
+
+  if ( option .ne. 3 ) then
     write(msgunit,'(''userLESolve update values'')')
-    call userLE_JPCG_update_matrix(jpcg_handle, niq, nzlk, colptrK, rowindK, valsK)
   end if
 
 !-------------------------------------------------------------------------------
@@ -149,13 +153,19 @@ contains
 
 ! Get iteration control parameters
 
-  maxit = icntl(5)
-  tol   = rcntl(1)
+  maxit = icntl(5) ! icntl(5)
+  tol   = rcntl(1) ! rcntl(1)
 
 #if 1
-  call userLE_JPCG (jpcg_handle, niq,   nzlK,   colptrK, rowindK, valsK, &
+  call userLE_JPCG (jpcg_handle,  select_call, niq, nzlK,   colptrK, rowindK, valsK, &
                     dprec, maxit,  tol,     valsB,   valsX, &
                     niter, relres, flops )
+
+  if ( select_call .eq. 0 ) then
+    select_call = 2
+  else if (select_call .eq. 2) then
+    select_call = 3
+  end if
 #else
   irc = - 1
 #endif
@@ -263,5 +273,4 @@ contains
 !
 !=======================================================================
 end module
-
 

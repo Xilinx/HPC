@@ -45,8 +45,9 @@ int main(int argc, char** argv) {
     readBin(dataPath + "col.bin", l_colIdx.data(), l_matInfo.m_nnz * sizeof(uint32_t));
     readBin(dataPath + "data.bin", l_data.data(), l_matInfo.m_nnz * sizeof(SPARSE_dataType));
 
-    SpmPar<SPARSE_dataType> l_spmPar(SPARSE_parEntries, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows,
-                                     SPARSE_maxCols, SPARSE_hbmMemBits);
+    SpmPar<SPARSE_dataType> l_spmPar(SPARSE_parEntries, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols,
+           SPARSE_hbmMemBits);
+  
     l_timer[0] = chrono::high_resolution_clock::now();
     MatPartition l_matPar = l_spmPar.partitionCooMat(l_matInfo.m_m, l_matInfo.m_n, l_matInfo.m_nnz, l_rowIdx.data(),
                                                      l_colIdx.data(), l_data.data());
