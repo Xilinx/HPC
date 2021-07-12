@@ -23,9 +23,10 @@
 #include <assert.h>
 #include <sys/time.h>
 #include "utils.hpp"
+#include "binFiles.hpp"
 
 #ifdef USE_FPGA
-#include "pcgImp.hpp"
+#include "pcg.hpp"
 #include "cgHost.hpp"
 typedef PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
 #endif
@@ -191,6 +192,15 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     rowInd = (uint32_t*) malloc(nnz * sizeof(uint32_t));
     colInd = (uint32_t*) malloc(nnz * sizeof(uint32_t));
     getCOO(n, nnz, colptr, rowind, values, matA, rowInd, colInd);
+    cout << "dim : " << n << ", NNZ: " << nnz << endl;
+    cout << "maxIter : " << maxit << ", tol: " << tol << endl;
+    writeBin("./row.bin", nnz * sizeof(uint32_t), rowInd);
+    writeBin("./col.bin", nnz * sizeof(uint32_t), colInd);
+    writeBin("./data.bin", nnz * sizeof(double), matA);
+    writeBin("./b.mat", n * sizeof(double), b);
+    writeBin("./A_diag.mat", n * sizeof(double), dprec);
+    exit(1);
+
 #endif
 
 #ifdef USE_FPGA

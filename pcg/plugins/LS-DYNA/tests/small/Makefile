@@ -20,8 +20,9 @@ FF=-O2 -safe-cray-ptr -assume byterecl,buffered_io,protect_parens -warn nousage 
 
 CXXFLAGS += -DHW_CLK=4e-9 -DCG_numTasks=1 -DCG_dataType=double -DCG_numChannels=16 -DCG_parEntries=4 -DCG_instrBytes=64 -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_accLatency=8 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256
 CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/include
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/include/sw
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/include
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include/
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include/impl
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
@@ -40,7 +41,7 @@ ifeq ($(TARGET), coo)
 	CF += -DFORMAT_COO
 else
 ifeq ($(TARGET), fpga)
-	CF += -DFORMAT_COO -DUSE_FPGA
+	CF += -DUSE_FPGA
 endif
 endif
 #
@@ -178,7 +179,7 @@ $(BUILD_DIR)/xcl2.o:
 	$(CC) -c $(CF)  $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp -o '$@'
 $(BUILD_DIR)/cgHost.o:
 	mkdir -p ${BUILD_DIR}
-	$(CC) -c $(CF)  $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp -o '$@'
+	$(CC) -c $(CF)  $(XFLIB_DIR)/pcg/sw/src/cgHost.cpp -o '$@'
 endif
 
 $(BUILD_DIR)/userLE_JPCG.o: $(LS_DYNA_PATH)/usermat/userLE_JPCG.F90
