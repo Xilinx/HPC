@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Xilinx, Inc.
+ * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+*/
+
 #include <algorithm>
 #include <cstring>
 #include <iostream>
@@ -131,19 +132,14 @@ int main(int argc, char** argv) {
 
     if (argc > l_idx) l_deviceId = atoi(argv[l_idx++]);
 
-    xCgHost l_cgHost;
+    xilinx_apps::pcg::xCgHost l_cgHost;
     l_cgHost.init(l_deviceId, binaryFile);
-    l_cgHost.sendMatDat(h_nnzValPtr, h_nnzValSize,
-                     h_parParam.data(), h_parParam.size(),
-                     h_rbParam.data(), h_rbParam.size()
-                     );
-    l_cgHost.sendVecDat(h_pk.data(), h_pk.size()*sizeof(CG_dataType),
-                     h_Apk.data(), h_Apk.size()*sizeof(CG_dataType),
-                     h_zk.data(), h_zk.size()*sizeof(CG_dataType),
-                     h_rk.data(), h_rk.size()*sizeof(CG_dataType),
-                     h_jacobi.data(), h_jacobi.size()*sizeof(CG_dataType),
-                     h_xk.data(), h_xk.size()*sizeof(CG_dataType) 
-                    );
+    l_cgHost.sendMatDat(h_nnzValPtr, h_nnzValSize, h_parParam.data(), h_parParam.size(), h_rbParam.data(),
+                        h_rbParam.size());
+    l_cgHost.sendVecDat(h_pk.data(), h_pk.size() * sizeof(CG_dataType), h_Apk.data(),
+                        h_Apk.size() * sizeof(CG_dataType), h_zk.data(), h_zk.size() * sizeof(CG_dataType), h_rk.data(),
+                        h_rk.size() * sizeof(CG_dataType), h_jacobi.data(), h_jacobi.size() * sizeof(CG_dataType),
+                        h_xk.data(), h_xk.size() * sizeof(CG_dataType));
     l_cgHost.sendInstr(h_instr.data(), h_instr.size());
     auto l_start = chrono::high_resolution_clock::now();
     l_cgHost.run();

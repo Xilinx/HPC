@@ -21,6 +21,9 @@
 #include "cgVector.hpp"
 #include "cgHost.hpp"
 
+namespace xilinx_apps {
+namespace pcg {
+
 template <typename t_DataType>
 struct Results {
     void* m_x;
@@ -69,8 +72,7 @@ class PCGImpl {
     void setVec(uint32_t p_dim, t_DataType* p_b, t_DataType* p_diagA) {
         if (p_dim != m_genCgVec.getDim()) {
             m_genCgVec.loadVec(p_dim, p_b, p_diagA);
-        }
-        else {
+        } else {
             m_genCgVec.updateVec(p_dim, p_b, p_diagA);
         }
         m_genCgVec.init();
@@ -144,5 +146,6 @@ class PCGImpl {
     xCgHost m_host;
     MatPartition m_matPar;
 };
-
+}
+}
 #endif

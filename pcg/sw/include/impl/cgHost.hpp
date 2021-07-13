@@ -19,6 +19,9 @@
 
 #include "xFpga.hpp"
 
+namespace xilinx_apps {
+namespace pcg {
+
 class CGKernelControl : public Kernel {
    public:
     CGKernelControl(FPGA* p_fpga = nullptr);
@@ -151,4 +154,6 @@ class xCgHost {
     CGKernelUpdateRkJacobi m_krnUpdateRkJacobi;
     CGKernelUpdateXk m_krnUpdateXk;
 };
+}
+}
 #endif

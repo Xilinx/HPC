@@ -31,6 +31,8 @@
 
 #include "impl/cgHost.hpp"
 
+namespace xilinx_apps {
+namespace pcg {
 CGKernelControl::CGKernelControl(FPGA* p_fpga) : Kernel(p_fpga) {}
 void CGKernelControl::setMem(void* p_instr, unsigned int p_instrBytes) {
     cl_int err;
@@ -311,4 +313,6 @@ void xCgHost::finish() {
     m_krnUpdatePk.finish();
     m_krnUpdateXk.finish();
     m_krnUpdateRkJacobi.finish();
+}
+}
 }

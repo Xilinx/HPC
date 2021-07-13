@@ -45,6 +45,7 @@
                 "LIB_DIR/L1/hpc/include/",
                 "LIB_DIR/pcg/sw/include", 
                 "LIB_DIR/pcg/hw/include", 
+                "LIB_DIR/pcg/tests/pcg_spmv_jacobi_16ch/host"
                 "LIB_DIR/L2/common/include/sw", 
                 "LIB_DIR/L2/sparse/include/sw/fp64",
                 "LIB_DIR/utils/include/sw"

@@ -87,20 +87,20 @@ int main(int argc, char** argv) {
     TimePointType l_timer[8];
 
     l_timer[0] = std::chrono::high_resolution_clock::now();
-    struct Options l_option = {l_deviceId, XString(binaryFile)};
-    PCG<CG_dataType> l_pcg(l_option);
+    struct xilinx_apps::pcg::Options l_option = {l_deviceId, xilinx_apps::pcg::XString(binaryFile)};
+    xilinx_apps::pcg::PCG<CG_dataType> l_pcg(l_option);
     showTimeData("FPGA configuration time: ", l_timer[0], l_timer[1]);
     l_pcg.setCooMat(l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data());
     double l_mat_partition_time = 0;
     showTimeData("Matrix partition and transmission time: ", l_timer[1], l_timer[2], &l_mat_partition_time);
     double l_runTime = 1;
     double l_h2d_time = 0;
-    Results<CG_dataType> l_res;
+    xilinx_apps::pcg::Results<CG_dataType> l_res;
     l_pcg.setVec(l_matInfo.m_m, l_b.data(), l_diagA.data());
     showTimeData("Vector initialization & transmission time: ", l_timer[2], l_timer[3], &l_h2d_time);
     l_res = l_pcg.run(l_maxIter, l_tol);
     showTimeData("PCG run time: ", l_timer[3], l_timer[4], &l_runTime);
-    for (int i=1; i<l_numRuns; ++i) {
+    for (int i = 1; i < l_numRuns; ++i) {
         l_timer[0] = std::chrono::high_resolution_clock::now();
         if (l_pcg.updateMat(l_matInfo.m_m, l_matInfo.m_nnz, l_data.data()) != 0) {
             return EXIT_FAILURE;
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
     float l_padRatio = (float)(l_info[5]) / (float)(l_info[2]);
 
     if (l_debug) {
-        CgVector l_resVec = l_pcg.getRes();
+        xilinx_apps::pcg::CgVector l_resVec = l_pcg.getRes();
         saveBin(l_datFilePath + "/rk.dat", l_resVec.h_rk, l_matInfo.m_m * sizeof(CG_dataType));
         saveBin(l_datFilePath + "/xk.dat", l_resVec.h_xk, l_matInfo.m_m * sizeof(CG_dataType));
     }

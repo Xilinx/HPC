@@ -19,6 +19,9 @@
 
 #include "impl/pcgImp.hpp"
 
+namespace xilinx_apps {
+namespace pcg {
+
 /**
  * @brief Simple string class for avoiding ABI problems
  *
@@ -123,5 +126,8 @@ class PCG {
    private:
     PCGImpl<t_DataType, 4, 64, 8, 16, 4096, 4096, 256> pImpl;
 };
+
+}
+}
 
 #endif

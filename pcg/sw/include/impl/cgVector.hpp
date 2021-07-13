@@ -23,6 +23,9 @@
 
 using namespace xf::hpc;
 
+namespace xilinx_apps {
+namespace pcg {
+
 struct CgInputVec {
     unsigned int vecBytes;
     void* h_b;
@@ -162,4 +165,6 @@ class GenCgInstr {
     std::vector<uint8_t, alignedAllocator<uint8_t> > m_instr;
     cg::CGSolverInstr<CG_dataType> m_cgInstr;
 };
+}
+}
 #endif

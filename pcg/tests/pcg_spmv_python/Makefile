@@ -81,6 +81,7 @@ CXXFLAGS += -DHW_CLK=4e-9 -DCG_numTasks=1 -DCG_dataType=double -DCG_numChannels=
 CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
 CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include
 CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/include
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/tests/pcg_spmv_jacobi_16ch/host
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw

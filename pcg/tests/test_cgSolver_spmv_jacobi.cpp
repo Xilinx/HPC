@@ -41,7 +41,7 @@
 
 // This file is required for OpenCL C++ wrapper APIs
 #include "impl/cgInstr.hpp"
-#include "impl/cgSolverKernel.hpp"
+#include "cgSolverKernel.hpp"
 #include "utils.hpp"
 #include "binFiles.hpp"
 #include "spmvKernel.hpp"
