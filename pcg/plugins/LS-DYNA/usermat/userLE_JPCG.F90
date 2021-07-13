@@ -47,7 +47,9 @@ contains
 !----------------------------------------------------------------------
 !
   implicit none
+#ifdef MPP
   include 'mpif.h'
+#endif
 !
 !----------------------------------------------------------------------
 !
@@ -57,13 +59,14 @@ contains
 !
   integer indIq(niq), colptrK(niq+1), rowindK(nzlK)
 !
-  real*8  valsK(nzlK), rcntl(*), valsB(*)
+  real    rcntl(*)
+  real*8  valsK(nzlK), valsB(*)
 !
 ! local variables
   integer i, j, k
-  integer npes, maxit,  niter, error
-  real*8  tol,  relres, flops, nrm2,  nrmB
-  real*8, POINTER_CONTIGUOUS :: valsX(:), valsY(:), dprec(:)
+  integer npes, maxit,  niter
+  real    tol,  relres, flops, nrm2,  nrmB
+  real,   POINTER_CONTIGUOUS :: valsX(:), valsY(:), dprec(:)
   character*24 operation
 !
 ! wall clock timing
@@ -82,7 +85,7 @@ contains
 !
   irc = 0
   call wallclock(wtime0)
- 
+
 #ifdef AUTODOUBLE
   if ( msglvl .ge. 2 ) write(msgunit,'(''entering userLESolve'', i8)') option
 #else
@@ -90,20 +93,24 @@ contains
   write(msgunit,'(''userLE_JPCG only works with autodouble'')')
   call adios(TC_ERROR)
 #endif
- 
+
 ! Sanity check for MPP
 
+#ifdef MPP
   if (world .ne. MPI_COMM_NULL) then
-    call mf2CommSize (world, npes, error)
-    if (error .ne. 0) go to 9000
+    call mf2CommSize (world, npes, irc)
+    if (irc .ne. 0) go to 9000
 
     if (npes .ne. 1) then
       write(msgunit,'(''userLE Jacobi PCG MPP error'', i8)') npes
+      irc = 12345
       go to 9000
     end if
   end if
+#endif
 
-! If option < 1, then matrix structure has changed.
+! The first time in, we need to attach to the FPGA, and load the PCG circuit.
+
   if (first_call) then
     write(msgunit,'(''userLESolve load FPGA circuit'')')
     first_call = .false.
@@ -113,29 +120,27 @@ contains
   end if
 
 ! If option < 1, then matrix structure has changed.
+! If option < 3, then matrix has changed in value, and must be reloaded.
 
+  select_call = option
   if ( option .eq. 0 ) then
     write(msgunit,'(''userLESolve update structure'')')
     option = 2
-  end if
-
-! If option < 3, then matrix has changed in value, and must be reloaded.
-
-  if ( option .ne. 3 ) then
+  else if ( option .ne. 3 ) then
     write(msgunit,'(''userLESolve update values'')')
   end if
 
 !-------------------------------------------------------------------------------
 !
 ! Solve Phase
- 
+
   operation = 'userLE_JPCG'
   if ( msglvl .ge. 1 ) call wallclock(wtime0)
 
-  allocate (valsX(niq), stat = error)
-  if (error .ne. 0) go to 9000
-  allocate (dprec(niq), stat = error)
-  if (error .ne. 0) go to 9000
+  allocate (valsX(niq), stat = irc)
+  if (irc .ne. 0) go to 9000
+  allocate (dprec(niq), stat = irc)
+  if (irc .ne. 0) go to 9000
 
 ! Form the Jacobi preconditioner
 
@@ -153,25 +158,24 @@ contains
 
 ! Get iteration control parameters
 
-  maxit = icntl(5) ! icntl(5)
-  tol   = rcntl(1) ! rcntl(1)
+  maxit = icntl(1)
+  tol   = rcntl(1)
 
-#if 1
+  if (maxit .le. 0)   maxit = min(niq, 10000)
+  if (tol   .le. 0.0) tol   = 1.0E-8
+
+#ifdef AUTODOUBLE
   call userLE_JPCG (jpcg_handle,  select_call, niq, nzlK,   colptrK, rowindK, valsK, &
                     dprec, maxit,  tol,     valsB,   valsX, &
                     niter, relres, flops )
-
-  if ( select_call .eq. 0 ) then
-    select_call = 2
-  else if (select_call .eq. 2) then
-    select_call = 3
-  end if
 #else
+  write(msgunit,'(''userLE_JPCG expects double precision'')')
   irc = - 1
 #endif
   if ( irc .lt. 0 ) go to 9000
 
   if ( msglvl .ge. 1 ) then
+    write(msgunit,'(''userLE Jacobi PCG dim :'', 2i12)')     niq, 2 * nzlK - niq
     write(msgunit,'(''userLE Jacobi PCG iteration :'', 2i12)')     niter,  maxit
     write(msgunit,'(''userLE Jacobi PCG residual  :'', 1P2E12.4)') relres, tol
     write(msgunit,'(''userLE Jacobi PCG operations:'', 1P2E12.4)') flops
@@ -181,8 +185,8 @@ contains
 !
 ! Double check the result
 !
-  allocate (valsY(niq), stat = error)
-  if (error .ne. 0) go to 9000
+  allocate (valsY(niq), stat = irc)
+  if (irc .ne. 0) go to 9000
 
   do i = 1, niq
     valsY(i) = 0.0

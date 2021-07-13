@@ -8,6 +8,7 @@ import re
 import pdb
 from multiprocessing import Pool
 import pandas as pd
+import numpy as np
 
 
 def build(target):
@@ -23,46 +24,64 @@ def run(target, model):
 
 
 def report(tables, model_name, model_tables, targets):
+    column_names = ['model_name',  'Calls', 'dim', 'nnz', 'fpga',
+                    'cpu']
     for tn in tables.keys():
-        tab = pd.concat([model_tables[t][tn] for t in targets], axis=1,
-                        ignore_index=True)
-        tab.columns = targets
+        tab = pd.concat([model_tables[t][tn] for t in targets], axis=1)
         tab.insert(0, 'model_name', model_name)
+        if tn != 'Totals':
+            tab['Calls'] = np.arange(1, tab.shape[0] + 1)
+            tab = tab.loc[:, ~tab.columns.duplicated()]
+            tab = tab.reindex(columns=column_names)
+        if tn == 'Totals' or tn == 'WCT':
+            tab['speed_up'] = tab['cpu'].astype(
+                float) / tab['fpga'].astype(float)
         tables[tn] = tables[tn].append(tab)
 
 
 def parse(target, table_names):
-    tables = {n: pd.DataFrame(columns=[target])
-              for n in table_names}
+    tables = {n: pd.DataFrame() for n in table_names}
 
     filename = os.path.join("build_output.%s" % target, "mes0000")
     if not os.path.exists(filename):
         sys.exit(1)
 
-    wct_pattern = 'WCT & GFlop'
-    total_pattern = '  T o t a l s'
+    wct_pattern = 'WCT'
+    dim_pattern = 'userLE Jacobi PCG dim'
+    total_pattern = 'T o t a l s'
     iter_pattern = 'userLE Jacobi PCG iteration'
     res_pattern = 'two norm of the residual'
     number = r'[+\-\.\d]+E?[+\-\d]*'
 
     with open(filename, 'r') as fr:
         lines = fr.readlines()
+        dim = 0
+        nnz = 0
         for line in lines:
+            line = line.strip()
             res = re.findall(number, line)
+            if line.startswith(dim_pattern):
+                dim = res[0]
+                nnz = res[1]
+
             if line.startswith(total_pattern):
                 tables['Totals'] = tables['Totals'].append({target: res[0]},
                                                            ignore_index=True)
                 break
             if line.startswith(wct_pattern):
-                tables['WCT'] = tables['WCT'].append({target: res[0]},
+                tables['WCT'] = tables['WCT'].append({'dim': dim,
+                                                      'nnz': nnz,
+                                                      target: res[0]},
                                                      ignore_index=True)
-                tables['GFLOPS'] = tables['GFLOPS'].append({target: res[1]},
-                                                           ignore_index=True)
             if line.startswith(iter_pattern):
-                tables['Iteration'] = tables['Iteration'].append({target: res[0]},
+                tables['Iteration'] = tables['Iteration'].append({'dim': dim,
+                                                                  'nnz': nnz,
+                                                                  target: res[0]},
                                                                  ignore_index=True)
             if line.startswith(res_pattern):
-                tables['Residual'] = tables['Residual'].append({target: res[0]},
+                tables['Residual'] = tables['Residual'].append({'dim': dim,
+                                                                'nnz': nnz,
+                                                                target: res[0]},
                                                                ignore_index=True)
     os.remove(filename)
     return tables
@@ -78,15 +97,21 @@ def main(model_path, log_path):
         p.map(build, targets)
         pass
 
-    table_names = ['Totals', 'WCT', 'GFLOPS', 'Iteration', 'Residual']
-    tables = {n: pd.DataFrame(
-        columns=['model_name'] + targets) for n in table_names}
+    table_names = ['Totals', 'WCT', 'Iteration', 'Residual']
+    tables = {n: pd.DataFrame() for n in table_names}
 
     for m in model_names:
         model_tables = {}
         for t in targets:
+            tmp_path = os.path.join("build_output.%s" % t, 'tmp')
+            if not os.path.exists(tmp_path):
+                os.makedirs(tmp_path)
             run(t, os.path.join(model_path, m, "%s.k" % m))
-            model_tables[t] = parse(t, table_names)
+            table_dict = parse(t, table_names)
+            for k, v in table_dict.items():
+                v.to_csv(os.path.join(tmp_path, "log_%s_%s_%s" % (m, t, k)),
+                         index=False)
+            model_tables[t] = table_dict
         report(tables, m, model_tables, targets)
 
     with pd.ExcelWriter(log_path) as writer:
