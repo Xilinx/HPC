@@ -150,17 +150,18 @@ double fpga_JPCG(PCG_TYPE* l_pcg,
     std::cout << "callSelector = " << callSelector << std::endl;
     TimePointType l_timer[5];
     l_timer[0] = std::chrono::high_resolution_clock::now();
-    if (callSelector == 0) {
-        set_matrix(l_pcg, pn, pnz, colptr, rowind, values);
-        showTimeData("Matrix partition and transmission time: ", l_timer[0], l_timer[1]);
+    switch(callSelector){
+        case 0:
+            set_matrix(l_pcg, pn, pnz, colptr, rowind, values);
+            break;
+        case 1:
+        case 2:
+            update_matrix(l_pcg, pn, pnz, colptr, rowind, values);
+            break;
+        default:
+            break;
     }
-    else if (callSelector != 3) {
-        update_matrix(l_pcg, pn, pnz, colptr, rowind, values);
-        showTimeData("Matrix partition and transmission time: ", l_timer[0], l_timer[1]);
-    }
-    else {
-        showTimeData("Matrix partition and transmission time: ", l_timer[0], l_timer[1]);
-    }
+    showTimeData("Matrix partition and transmission time: ", l_timer[0], l_timer[1]);
     l_pcg->setVec(pn, b, matJ);
     showTimeData("Vector initialization & transmission time: ", l_timer[1], l_timer[2]);
     xilinx_apps::pcg::Results<CG_dataType> l_res = l_pcg->run(pmaxit, ptol);
