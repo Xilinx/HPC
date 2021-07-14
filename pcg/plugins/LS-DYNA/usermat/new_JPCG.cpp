@@ -27,7 +27,7 @@
 #ifdef USE_FPGA
 #include "pcg.hpp"
 #include "cgHost.hpp"
-typedef PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
+typedef xilinx_apps::pcg::PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
 #endif
 
 using namespace std;
@@ -163,7 +163,7 @@ double fpga_JPCG(PCG_TYPE* l_pcg,
     }
     l_pcg->setVec(pn, b, matJ);
     showTimeData("Vector initialization & transmission time: ", l_timer[1], l_timer[2]);
-    Results<CG_dataType> l_res = l_pcg->run(pmaxit, ptol);
+    xilinx_apps::pcg::Results<CG_dataType> l_res = l_pcg->run(pmaxit, ptol);
     showTimeData("PCG run time: ", l_timer[2], l_timer[3]);
     cout << "Residual value " << l_res.m_residual << endl;
     *prelres = sqrt(l_res.m_residual / l_pcg->getDot());
@@ -209,7 +209,6 @@ extern "C" void userLE_JPCG(FortranInteger* handle,
 #ifdef USE_FPGA
     PCG_TYPE* l_pcg = (PCG_TYPE*)(*handle);
     double l_hwTime = fpga_JPCG(l_pcg, *select_call, n, nnz, rowind, colptr, values, dprec, maxit, tol, b, x, pniter, prelres, pflops);
-    //double l_hwTime = fpga_JPCG(handle, n, nnz, dprec, maxit, tol, b, x, pniter, prelres, pflops);
 #else
     FortranReal *r, *z, *p, *q;
     /* Allocate local storage */

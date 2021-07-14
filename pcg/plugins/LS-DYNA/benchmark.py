@@ -31,8 +31,8 @@ def report(tables, model_name, model_tables, targets):
         tab.insert(0, 'model_name', model_name)
         if tn != 'Totals':
             tab['Calls'] = np.arange(1, tab.shape[0] + 1)
-            tab = tab.loc[:, ~tab.columns.duplicated()]
-            tab = tab.reindex(columns=column_names)
+            tab = tab.loc[:, ~tab.columns.duplicated()].reindex(
+                columns=column_names)
         if tn == 'Totals' or tn == 'WCT':
             tab['speed_up'] = tab['cpu'].astype(
                 float) / tab['fpga'].astype(float)
