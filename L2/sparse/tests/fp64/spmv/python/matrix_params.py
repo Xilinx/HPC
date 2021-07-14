@@ -388,6 +388,21 @@ class sparse_matrix:
         else:
             return False
 
+    def create_matrix_from_files(self, p_rowIdxFile, p_colIdxFile, p_dataFile):
+        self.row = np.fromfile(p_rowIdxFile, dtype=np.uint32)
+        self.col = np.fromfile(p_colIdxFile, dtype=np.uint32)
+        self.data = np.fromfile(p_dataFile, dtype=np.float64)
+        self.nnz = self.row.shape[0]
+        if self.nnz != 0:
+            self.minRowId = np.amin(self.row)
+            self.minColId = np.amin(self.col)
+            self.m = np.amax(self.row)+1-self.minRowId
+            self.n = np.amax(self.col)+1-self.minColId
+        else:
+            self.minRowId = 0 
+            self.minColId = 0
+            self.m,self.n=0,0
+
     def create_matrix(self, p_row, p_col, p_data):
         self.row = np.asarray(p_row).astype(np.uint32)
         self.col = np.asarray(p_col).astype(np.uint32)

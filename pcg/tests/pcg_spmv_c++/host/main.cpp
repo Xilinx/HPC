@@ -102,9 +102,10 @@ int main(int argc, char** argv) {
     showTimeData("PCG run time: ", l_timer[3], l_timer[4], &l_runTime);
     for (int i = 1; i < l_numRuns; ++i) {
         l_timer[0] = std::chrono::high_resolution_clock::now();
-        if (l_pcg.updateMat(l_matInfo.m_m, l_matInfo.m_nnz, l_data.data()) != 0) {
-            return EXIT_FAILURE;
-        }
+        //if (l_pcg.updateMat(l_matInfo.m_m, l_matInfo.m_nnz, l_data.data()) != 0) {
+        //    return EXIT_FAILURE;
+        //}
+        l_pcg.setCooMat(l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data());
         showTimeData("Matrix update time: ", l_timer[0], l_timer[1]);
         l_pcg.setVec(l_matInfo.m_m, l_b.data(), l_diagA.data());
         showTimeData("Vector initialization & transmission time: ", l_timer[1], l_timer[2], &l_h2d_time);

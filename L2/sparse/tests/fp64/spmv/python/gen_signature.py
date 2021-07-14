@@ -29,7 +29,7 @@
 import numpy as np
 import scipy.io as sio
 import scipy.sparse as sp
-from os import path
+import os
 import subprocess
 import argparse
 import math
@@ -51,32 +51,36 @@ def partition_matrix(mtxName, mtxFullName, maxRows, maxCols, channels, parEntrie
     l_sig.store_nnz(l_nnzFileNames)
     l_sig.store_info(l_infoFileName)
     
-def check_signature(mtxName, mtxFullName, maxRows, maxCols, channels, parEntries, accLatency, memBits, mtxSigPath):
-    l_nnzFileNames = []
-    for i in range(channels):
-        l_nnzFileNames.append(mtxSigPath+'/nnzVal_' + str(i) + '.dat')
+def check_signature(mtxName, maxRows, maxCols, channels, parEntries, accLatency, memBits, mtxSigPath):
+    l_pass = True
+    for l_dir in os.listdir(mtxSigPath):
+        l_mtxSigPath = os.path.join(mtxSigPath, l_dir)
+        if os.path.isdir(l_mtxSigPath):
+            l_nnzFileNames = []
+            for i in range(channels):
+                l_nnzFileNames.append(l_mtxSigPath+'/nnzVal_' + str(i) + '.dat')
 
-    l_parParamFileName = mtxSigPath+'/parParam.dat'
-    l_rbParamFileName = mtxSigPath+'/rbParam.dat'
-    l_infoFileName = mtxSigPath+'/info.dat'
-    l_sig = signature(parEntries, accLatency, channels, maxRows, maxCols, memBits)
-    l_sig.load_rbParam(l_rbParamFileName)
-    l_sig.load_parParam(l_parParamFileName)
-    l_sig.load_nnz(l_nnzFileNames)
-    l_sig.load_info(l_infoFileName)
-    if l_sig.check(mtxFullName, mtxName):
-        print("INFO: {} signature verification pass!".format(mtxName))
-        return True 
-    else:
-        print("ERROR: {} signature verification failed!".format(mtxName))
-        return False
+            l_parParamFileName = l_mtxSigPath+'/parParam.dat'
+            l_rbParamFileName = l_mtxSigPath+'/rbParam.dat'
+            l_infoFileName = l_mtxSigPath+'/info.dat'
+            l_sig = signature(parEntries, accLatency, channels, maxRows, maxCols, memBits)
+            l_sig.load_rbParam(l_rbParamFileName)
+            l_sig.load_parParam(l_parParamFileName)
+            l_sig.load_nnz(l_nnzFileNames)
+            l_sig.load_info(l_infoFileName)
+            if l_sig.check(l_mtxSigPath):
+                print("INFO: {} signature in {} verification pass!".format(mtxName, l_mtxSigPath))
+            else:
+                print("ERROR: {} signature in {} verification failed!".format(mtxName, l_mtxSigPath))
+                l_pass = False
+    return l_pass
     
 def process_matrices(isPartition, isClean, isCheck, mtxList, maxRows, maxCols, channels, parEntries, accLatency, memBits, sigPath):
     download_list = open(mtxList, 'r')
     download_names = download_list.readlines()
-    if not path.exists(sigPath):
+    if not os.path.exists(sigPath):
         subprocess.run(["mkdir","-p",sigPath])
-    if not path.exists("./mtx_files"):
+    if not os.path.exists("./mtx_files"):
         subprocess.run(["mkdir", "-p", "./mtx_files"])
     l_equal = True
     for line in download_names:
@@ -87,15 +91,15 @@ def process_matrices(isPartition, isClean, isCheck, mtxList, maxRows, maxCols, c
         mtxName = strList[0]
         mtxFullName = './mtx_files/' + mtxName+'/'+ mtxName + '.mtx'
         mtxSigPath = sigPath+'/'+mtxName
-        if not path.exists(mtxSigPath):
+        if not os.path.exists(mtxSigPath):
             subprocess.run(["mkdir", "-p", mtxSigPath])
-        if not path.exists(mtxFullName):
+        if not os.path.exists(mtxFullName):
             subprocess.run(["wget", mtxHttp, "-P", "./mtx_files"])
             subprocess.run(["tar", "-xzf", './mtx_files/'+mtxFileName, "-C", "./mtx_files"])
         if isPartition:
             partition_matrix(mtxName, mtxFullName, maxRows, maxCols, channels, parEntries, accLatency, memBits, mtxSigPath)
         if isCheck:
-            l_equal = l_equal and check_signature(mtxName, mtxFullName, maxRows, maxCols, channels, parEntries, accLatency, memBits, mtxSigPath)
+            l_equal = l_equal and check_signature(mtxName, maxRows, maxCols, channels, parEntries, accLatency, memBits, mtxSigPath)
         if isClean:
             subprocess.run(["rm", "-rf", './mtx_files/'+mtxName+'/'])
     if isClean:
@@ -104,7 +108,7 @@ def process_matrices(isPartition, isClean, isCheck, mtxList, maxRows, maxCols, c
         print("All check pass!")
 
 def decode_mtx_sig(mtxSigPath, maxRows, maxCols, channels, parEntries, accLatency, memBits, txtPath):
-    if not path.exists(mtxSigPath):
+    if not os.path.exists(mtxSigPath):
         print("ERROR: {} directory doesn't exist.".format(mtxPath))
         return
     subprocess.run(["mkdir", "-p", txtPath])
@@ -132,8 +136,8 @@ def decode_mtx_sig(mtxSigPath, maxRows, maxCols, channels, parEntries, accLatenc
 def main(args):
     if (args.usage):
         print('Usage example:')
-        print('python gen_signature.py --partition [--clean] --mtx_list ./test_matrices.txt --sig_path ./sig_dat')
-        print('python gen_signature.py --check  --mtx_list ./test_matrices.txt --sig_path ./sig_dat')
+        print('python gen_signature.py --partition [--clean] --mtx_list ./test_matrices.txt --sig_path ./sig_dat --runs num_of_runs')
+        print('python gen_signature.py --check --mtx_list ./test_matrices.txt --sig_path ./sig_dat')
         print('python gen_signature.py --decode --mtx_path ./sig_dat/mtx_name  --txt_path ./txt_out/mtx_name')
     elif (args.decode):
         decode_mtx_sig(args.mtx_path, args.max_rows, args.max_cols, args.channels, args.par_entries,args.acc_latency, args.mem_bits, args.txt_path)
@@ -154,6 +158,7 @@ if __name__ == '__main__':
     parser.add_argument('--acc_latency',type=int,default=8,help='number of cycles used for double precision accumulation')
     parser.add_argument('--mem_bits',type=int,default=256,help='number of bits in each HBM channel access')
     parser.add_argument('--sig_path',type=str,default='./sig_dat',help='directory for storing partition results, default value ./sig_dat')
+    parser.add_argument('--runs',type=int,default='1',help='number of partition runs for each matrix, each partittion run uses different data set, default value 1')
     parser.add_argument('--decode',action='store_true',help='print signature files into text files')
     parser.add_argument('--mtx_path',type=str,help='directory for matrix signature data')
     parser.add_argument('--txt_path',type=str,default='./txt_out',help='directory for storing text files, default value ./txt_out')

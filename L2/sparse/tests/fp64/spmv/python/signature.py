@@ -25,7 +25,8 @@
  # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  # See the License for the specific language governing permissions and
  # limitations under the License.
- 
+
+import os 
 import numpy as np
 from collections import Counter
 from matrix_params import * 
@@ -406,8 +407,11 @@ class signature:
         l_spm.create_matrix(l_spmRow,l_spmCol,l_spmData)
         return l_spm
     
-    def check(self, mtxFullName, mtxName):
+    def check(self, mtxSigPath):
+        l_rowIdxFile = os.path.join(mtxSigPath, "row.bin")
+        l_colIdxFile = os.path.join(mtxSigPath, "col.bin")
+        l_dataFile = os.path.join(mtxSigPath, "data.bin")
         l_spm = sparse_matrix()
-        l_spm.read_matrix(mtxFullName, mtxName)
+        l_spm.create_matrix_from_files(l_rowIdxFile, l_colIdxFile, l_dataFile)
         l_sigSpm = self.create_spm()
         return l_spm.is_equal(l_sigSpm)
