@@ -569,10 +569,6 @@ class ParParam {
 
 class NnzStore {
    public:
-    std::vector<uint32_t> m_totalBks;
-    std::vector<uint32_t> m_totalRowIdxBks;
-    std::vector<uint32_t> m_totalColIdxBks;
-    std::vector<uint32_t> m_totalNnzBks;
     NnzStore() = default;
     NnzStore(uint32_t p_memBits, uint32_t p_parEntries, uint32_t p_accLatency, uint32_t p_channels) {
         m_memBytes = p_memBits / 8;
@@ -675,6 +671,10 @@ class NnzStore {
     }
 
    public:
+    std::vector<uint32_t> m_totalBks;
+    std::vector<uint32_t> m_totalRowIdxBks;
+    std::vector<uint32_t> m_totalColIdxBks;
+    std::vector<uint32_t> m_totalNnzBks;
     uint32_t m_memBytes, m_parEntries, m_accLatency, m_channels;
     std::vector<std::vector<uint8_t, alignedAllocator<uint8_t> > > m_buf;
 };

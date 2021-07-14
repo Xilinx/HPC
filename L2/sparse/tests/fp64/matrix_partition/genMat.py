@@ -68,9 +68,13 @@ def main(args):
         col = sparse_mat.col.astype(np.uint32)
         data = sparse_mat.data.astype(dtype)
 
-        row.tofile(os.path.join(args.sig_path+'/'+mtxName+'/', 'row.bin'))
-        col.tofile(os.path.join(args.sig_path+'/'+mtxName+'/', 'col.bin'))
-        data.tofile(os.path.join(args.sig_path+'/'+mtxName+'/', 'data.bin'))
+        for i in range(args.runs):
+            subprocess.run(["mkdir", "-p", args.sig_path+'/'+mtxName+'/'+str(i)+'/'])
+            row.tofile(os.path.join(args.sig_path+'/'+mtxName+'/'+str(i)+'/', 'row.bin'))
+            col.tofile(os.path.join(args.sig_path+'/'+mtxName+'/'+str(i)+'/', 'col.bin'))
+            data.tofile(os.path.join(args.sig_path+'/'+mtxName+'/'+str(i)+'/', 'data.bin'))
+            #for j in range(sparse_mat.nnz):
+             #   data[j] += 1
 
 
         with open(args.sig_path +'/'+mtxName+'/' + "infos.txt", 'w') as info_file:
@@ -86,6 +90,7 @@ if __name__ == "__main__":
         description='Read Sparse Matrix.')
     parser.add_argument('--sig_path',type=str,default='./sig_dat',help='directory for storing partition results, default value ./sig_dat')
     parser.add_argument('--mtx_list',type=str,help='a file containing URLs for downloading sprase matrices')
+    parser.add_argument('--runs',type=int,default=1,help='number of runs, apart from the first run, the other runs scramble the data')
     parser.add_argument(
         '--datatype',
         type=str,

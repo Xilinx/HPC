@@ -491,10 +491,17 @@ class Signature {
         m_parParam.m_buf.clear();
         for (unsigned int i=0; i<m_nnzStore.m_buf.size(); ++i) {
             m_nnzStore.m_buf[i].clear();
+            m_nnzStore.m_totalBks[i] = 0;
+            m_nnzStore.m_totalRowIdxBks[i] = 0;
+            m_nnzStore.m_totalColIdxBks[i] = 0;
+            m_nnzStore.m_totalNnzBks[i] = 0;
         } 
         m_m = p_spm.m_m;
         m_n = p_spm.m_n;
         m_nnz = p_spm.m_nnz;
+        m_mPad = 0;
+        m_nPad = 0;
+        m_nnzPad = 0;
         std::vector<SparseMatrix> l_rbSpms;
         gen_rbs(p_spm, l_rbSpms); // write into l_rbSpms
         assert(m_rbParam.m_totalRows == p_spm.getM());
