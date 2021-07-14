@@ -40,6 +40,9 @@ CF=  -O3 $(CXXFLAGS) -DAUTODOUBLE -DUNSCORE -Wall
 ifeq ($(TARGET), fpga)
 	CF += -DUSE_FPGA
 endif
+ifeq ($(TARGET), coo)
+	CF += -DFORMAT_COO
+endif
 #
 LMATH=$(LS_DYNA_PATH)/usermat/libmkl_scalapack_ilp64.a 
 LMATH+=$(LS_DYNA_PATH)/usermat/libmkl_intel_ilp64.a 

@@ -19,10 +19,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <experimental/filesystem>
 #include <assert.h>
 #include <sys/time.h>
 #include "utils.hpp"
+#include "binFiles.hpp"
 
 #ifdef USE_FPGA
 #include "pcg.hpp"
@@ -200,6 +200,7 @@ extern "C" void userLE_JPCG(FortranInteger* handle,
     FortranReal alpha, beta;
     FortranReal flops = 0;
 
+    FortranInteger option = *select_call;
     /* Fortran passed these parameters by rference */
     n = *pn;
     nz = *pnz;
@@ -209,7 +210,7 @@ extern "C" void userLE_JPCG(FortranInteger* handle,
 
 #ifdef USE_FPGA
     PCG_TYPE* l_pcg = (PCG_TYPE*)(*handle);
-    double l_hwTime = fpga_JPCG(l_pcg, *select_call, n, nnz, rowind, colptr, values, dprec, maxit, tol, b, x, pniter, prelres, pflops);
+    double l_hwTime = fpga_JPCG(l_pcg, option, n, nnz, rowind, colptr, values, dprec, maxit, tol, b, x, pniter, prelres, pflops);
 #else
     FortranReal *r, *z, *p, *q;
     /* Allocate local storage */
@@ -239,12 +240,15 @@ extern "C" void userLE_JPCG(FortranInteger* handle,
     for (niter = 1; niter <= maxit; niter++) {
 /* q = A * p */
 #ifdef FORMAT_COO
-        coo_spmv(n, nnz, rowInd, colInd, matA, p, q);
-        flops += 2.0 * nnz;
-#else
+        cout << "Data: " 
+            << niter << ','
+            << alpha << ','
+            << beta << ','
+            << rTr << ','
+            << rTz << endl;
+#endif
         userLE_spmv(n, nz, colptr, rowind, values, p, q);
         flops += 4.0 * nz - 2.0 * n;
-#endif
 
         /* alpha = ( r^T z ) / ( p^T q ) */
         rTz = userLE_vecdot(n, r, z);
