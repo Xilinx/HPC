@@ -143,6 +143,7 @@ class GenCgInstr {
         unsigned int p_maxIter, unsigned int p_dimAligned, t_DataType p_dot, t_DataType p_tol, t_DataType p_rz) {
         unsigned int l_instrSize = t_InstrBytes * (1 + p_maxIter);
         m_instr.resize(l_instrSize);
+        std::fill(m_instr.begin(), m_instr.end(), 0);
         m_cgInstr.setMaxIter(p_maxIter);
         m_cgInstr.setTols(p_dot * p_tol * p_tol);
         m_cgInstr.setRes(p_dot);

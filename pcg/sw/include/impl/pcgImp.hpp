@@ -94,6 +94,7 @@ class PCGImpl {
         for (unsigned int i = 0; i < p_maxIter; i++) {
             l_res.m_nIters = i;
             l_cgInstr.load((uint8_t*)(l_instr.h_instr) + (i + 1) * t_InstrBytes, l_memInstr);
+            // std::cout << "l_cgInstr: " << std::scientific << l_cgInstr << std::endl;
             if (l_cgInstr.getMaxIter() == 0) {
                 break;
             }
