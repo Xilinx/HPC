@@ -15,7 +15,7 @@
 
 .. meta::
    :keywords: HPC, Library, PCG, Solver
-   :description: Vitis HPC product library release notes.
+   :description: Xilinx HPC product library release notes.
    :xlnxdocumentclass: Document
    :xlnxdocumenttype: Tutorials
 
@@ -29,11 +29,8 @@ Release Note
    :hidden:
    :maxdepth: 1
 
-2021.1
+1.0
 ----
 
-Vitis HPC Libraray release 2021.1 introduces HLS primitives, Vitis kernle level components and software APIs for following HPC products. 
-
+Xilinx HPC product libraray release 1.0 introduces HLS primitives, Vitis kernle level components and software APIs for following HPC products. 
 * PCG (Preconditioned Conjugate Gradient) Solver
-
-* Thermal analysis integrated with LS-DYNA

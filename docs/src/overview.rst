@@ -33,12 +33,6 @@ It is widely used in following simulation systems.
 * Thermal analysis
 * Dynamic fluid simulation
 
-Integrate Xilinx PCG solver into LS-DYNA thermal analysis product
-------------------------------------------------------------------
-Xilinx PCG solver is integrated into the usermats of LS-DYNA thermal analysis product via 
-a C function interface. The low level hardware detail are transparent to LS-DYNA users. The
-C function is provided in this repository and can be called directly from any other libraires
-of the usermat. 
 
 PCG Solver
 ----------
