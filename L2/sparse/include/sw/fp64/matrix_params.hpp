@@ -157,15 +157,15 @@ class SparseMatrix {
 
     uint32_t getRow(uint32_t index) { return m_row_list[index]; }
 
-    std::vector<uint32_t> getRows() { return m_row_list; }
+    const std::vector<uint32_t>& getRows() { return m_row_list; }
 
     uint32_t getCol(uint32_t index) { return m_col_list[index]; }
 
-    std::vector<uint32_t> getCols() { return m_col_list; }
+    const std::vector<uint32_t>& getCols() { return m_col_list; }
 
     uint32_t getData(uint32_t index) { return m_data_list[index]; }
 
-    std::vector<uint32_t> getDatas() { return m_data_list; }
+    const std::vector<uint32_t>& getDatas() { return m_data_list; }
 
     uint32_t getM() { return m_m; }
 
@@ -178,15 +178,15 @@ class SparseMatrix {
 
     std::vector<uint32_t> getSubRows(uint32_t start, uint32_t end) {
         std::vector<uint32_t> l_row(m_row_list.begin() + start, m_row_list.begin() + end);
-        return l_row;
+        return std::move(l_row);
     }
     std::vector<uint32_t> getSubCols(uint32_t start, uint32_t end) {
         std::vector<uint32_t> l_col(m_col_list.begin() + start, m_col_list.begin() + end);
-        return l_col;
+        return std::move(l_col);
     }
     std::vector<uint32_t> getSubDatas(uint32_t start, uint32_t end) {
         std::vector<uint32_t> l_data(m_data_list.begin() + start, m_data_list.begin() + end);
-        return l_data;
+        return std::move(l_data);
     }
 
     void partialSort(uint32_t p_sId, unsigned int p_size, std::vector<uint32_t>& p_list, std::vector<uint32_t>& p_idx) {

@@ -27,7 +27,7 @@ CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
 CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++14  -Wno-unknown-pragmas -Wno-unused-label
-CXXFLAGS += -fmessage-length=0
+CXXFLAGS += -fmessage-length=0 -fopenmp
 
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
 #LDFLAGS += -L$(XILINX_VIVADO)/lnx64/tools/fpo_v7_0 -Wl,--as-needed -lgmp -lmpfr -lIp_floating_point_v7_0_bitacc_cmodel
@@ -158,7 +158,7 @@ $(EXE): $(OBJS)
 
 run: $(EXE)
 	cd $(BUILD_DIR) && \
-	$(EXE) i=$(MODEL_PATH) memory=1G ncpu=1 impcon=1
+	$(EXE) i=$(MODEL_PATH) memory=65M ncpu=1 impcon=1
 	cd ..
 
 benchmark: $(EXE)

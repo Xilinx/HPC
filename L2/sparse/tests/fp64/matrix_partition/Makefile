@@ -17,8 +17,9 @@
 
 
 pyGenMat=genMat.py
+pyGenSig=../spmv/python/gen_signature.py
 SRCS=../../../src/sw/c++/gen_signature.cpp ./main.cpp
-TARGET=gen_signature.exe
+TARGET=./gen_signature.exe
 
 sig_path=./sig_dat/
 mtx_list=test_matrices.txt
@@ -29,7 +30,7 @@ SPARSE_hbmChannels=16
 SPARSE_parEntries=4
 SPARSE_accLatency=8
 SPARSE_hbmMemBits=256
-MTX_NAME=nasa2910
+MTX_NAME=bcsstm39
 
 MACROS +=-D SPARSE_dataType=$(SPARSE_dataType) \
 	 -D SPARSE_maxRows=$(SPARSE_maxRows) \
@@ -39,7 +40,7 @@ MACROS +=-D SPARSE_dataType=$(SPARSE_dataType) \
 	 -D SPARSE_accLatency=$(SPARSE_accLatency) \
 	 -D SPARSE_hbmMemBits=$(SPARSE_hbmMemBits)
 
-HOST_ARGS = ${sig_path}/${MTX_NAME}/
+HOST_ARGS = ${sig_path}/${MTX_NAME}/ 1 0
 
 CXX	= $(XILINX_VIVADO)/tps/lnx64/gcc-6.2.0/bin/g++
 ifeq ($(LD_LIBRARY_PATH),)
@@ -48,7 +49,7 @@ else
 export LD_LIBRARY_PATH := $(XILINX_VIVADO)/tps/lnx64/gcc-6.2.0/lib64:$(LD_LIBRARY_PATH)
 endif
 CFLAGS	= -O3 -std=c++14 -I../../../include/sw/fp64 -I../../../../../utils/include/sw -lpthread 
-CFLAGS += ${MACROS}
+CFLAGS += ${MACROS} -fopenmp
 
 
 ${TARGET}: ${SRCS}
@@ -60,9 +61,12 @@ data_gen:
 	@mkdir -p ${sig_path} 
 	python3 ${pyGenMat} --mtx_list ${mtx_list} --sig_path ${sig_path}
 
-run: ${TARGET} data_gen 
+run: ${TARGET} 
 	@mkdir -p ${sig_path} 
-	./${TARGET} ${HOST_ARGS} 
+	${TARGET} ${HOST_ARGS} 
+
+verify: run
+	python ${pyGenSig} --check --mtx_list test_matrices.txt --sig_path sig_dat/
 
 clean:
 	@rm -rf ${TARGET}

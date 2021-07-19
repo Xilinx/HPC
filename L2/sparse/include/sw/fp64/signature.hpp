@@ -112,14 +112,11 @@ class Signature {
         p_spm.sort_by_row();
         uint32_t l_minRowId = p_spm.getMinRowId();
 
+        const std::vector<uint32_t> &l_tmp = p_spm.getRows();
+        auto l_up = l_tmp.begin();
         while (l_eId < p_spm.getNnz()) {
-            if (p_spm.getRow(p_spm.getNnz() - 1) < (l_minRowId + m_maxRows)) {
-                l_eId = p_spm.getNnz();
-            } else {
-                std::vector<uint32_t> l_tmp = p_spm.getRows();
-                auto l_up = upper_bound(l_tmp.begin(), l_tmp.end(), l_minRowId + m_maxRows, isLessEqual);
-                l_eId = l_up - l_tmp.begin();
-            }
+            l_up = upper_bound(l_up, l_tmp.end(), l_minRowId + m_maxRows, isLessEqual);
+            l_eId = l_up - l_tmp.begin();
             if (l_eId > l_sId) {
                 std::vector<uint32_t> l_row = p_spm.getSubRows(l_sId, l_eId);
                 std::vector<uint32_t> l_col = p_spm.getSubCols(l_sId, l_eId);
@@ -152,14 +149,11 @@ class Signature {
         p_rbSpm.sort_by_col();
         uint32_t l_minColId = (p_rbSpm.getMinColId() / m_parEntries) * m_parEntries;
         uint32_t l_sId = 0, l_eId = 0;
+        const std::vector<uint32_t>& l_tmp = p_rbSpm.getCols();
+        auto l_up = l_tmp.begin();
         while (l_eId < p_rbSpm.getNnz()) {
-            if (p_rbSpm.getCol(p_rbSpm.getNnz() - 1) < l_minColId + m_maxCols) {
-                l_eId = p_rbSpm.getNnz();
-            } else {
-                std::vector<uint32_t> l_tmp = p_rbSpm.getCols();
-                auto l_up = upper_bound(l_tmp.begin(), l_tmp.end(), l_minColId + m_maxCols, isLessEqual);
-                l_eId = l_up - l_tmp.begin();
-            }
+            l_up = upper_bound(l_up, l_tmp.end(), l_minColId + m_maxCols, isLessEqual);
+            l_eId = l_up - l_tmp.begin();
             if (l_eId > l_sId) {
                 std::vector<uint32_t> l_row = p_rbSpm.getSubRows(l_sId, l_eId);
                 std::vector<uint32_t> l_col = p_rbSpm.getSubCols(l_sId, l_eId);
@@ -259,11 +253,11 @@ class Signature {
         std::vector<std::thread> l_threads(l_size);
         for (unsigned int i = 0; i < l_size; i++) {
             /*SparseMatrix l_parSpm = l_parSpms[i];
-            l_parSpm.complete_sort_by_row();
-            SparseMatrix l_paddedParSpm = pad_par(l_parSpm);
-            assert(l_paddedParSpm.getM() <= m_maxRows);
-            assert(l_paddedParSpm.getN() <= m_maxCols);
-            p_paddedParSpms[i] = l_paddedParSpm;*/
+              l_parSpm.complete_sort_by_row();
+              SparseMatrix l_paddedParSpm = pad_par(l_parSpm);
+              assert(l_paddedParSpm.getM() <= m_maxRows);
+              assert(l_paddedParSpm.getN() <= m_maxCols);
+              p_paddedParSpms[i] = l_paddedParSpm;*/
             l_threads[i] =
                 std::thread(&Signature::create_padPar, this, i, std::ref(l_parSpms[i]), std::ref(p_paddedParSpms[i]));
         }
@@ -298,7 +292,7 @@ class Signature {
                     l_eId = l_sId + l_nnzsPerCh;
                 }
                 while ((l_eId > 0) && (l_eId < l_parSpm.getNnz()) &&
-                       (l_parSpm.getRow(l_eId) == l_parSpm.getRow(l_eId - 1))) {
+                        (l_parSpm.getRow(l_eId) == l_parSpm.getRow(l_eId - 1))) {
                     l_eId += 1;
                 }
 
@@ -389,6 +383,7 @@ class Signature {
         uint32_t l_rowIdxMod = l_memIdxWidth * l_rowIdxGap;
         uint32_t l_colIdxMod = l_memIdxWidth * m_parEntries;
 
+#pragma omp parallel for
         for (uint32_t c = 0; c < m_channels; c++) {
             uint32_t l_sParId = 0;
             for (uint32_t rbId = 0; rbId < m_rbParam.m_totalRbs; rbId++) {
