@@ -51,6 +51,18 @@ inline void showTimeData(std::string p_Task, TimePointType& t1, TimePointType& t
     std::cout << p_Task << "  " << std::fixed << std::setprecision(6) << l_timeMs << " msec\n";
 }
 
+inline void timeStamp(std::string p_Task = "") {
+    static int count = 0;
+    static auto TIME_ZERO = std::chrono::high_resolution_clock::now();
+    auto t0 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> l_durationSec = t0 - TIME_ZERO;
+    double l_timeMs = l_durationSec.count() * 1e3;
+    if(p_Task == "")
+        std::cout << "Time stamp " << count++ << ": " << std::fixed << std::setprecision(6) << l_timeMs << " msec\n";
+    else
+        std::cout << p_Task << "  " << std::fixed << std::setprecision(6) << l_timeMs << " msec\n";
+}
+
 template <typename T>
 struct alignedAllocator {
     using value_type = T;
