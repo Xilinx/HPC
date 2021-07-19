@@ -30,7 +30,6 @@
 typedef xilinx_apps::pcg::PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
 #endif
 
-using namespace std;
 #ifdef AUTODOUBLE
 typedef long long FortranMindex; 
 typedef long long FortranInteger;
@@ -111,7 +110,7 @@ void set_matrix(PCG_TYPE* p_pcg,
                 FortranInteger* colptr,
                 FortranInteger* rowind,
                 FortranReal* values) {
-    cout << "Setting and partitioning matrix ... " << endl;
+    std::cout << "Setting and partitioning matrix ... " << std::endl;
     FortranReal* matA;
     matA = (FortranReal*)malloc(nnz * sizeof(FortranReal));
     getCOODat(n, nnz, colptr, rowind, values, matA);
@@ -124,7 +123,7 @@ void update_matrix(PCG_TYPE* p_pcg,
                    FortranInteger* colptr,
                    FortranInteger* rowind,
                    FortranReal* values) {
-    cout << "Updating the matrix value ... " << endl;
+    std::cout << "Updating the matrix value ... " << std::endl;
     FortranReal* matA;
     matA = (FortranReal*)malloc(nnz * sizeof(FortranReal));
     getCOODat(n, nnz, colptr, rowind, values, matA);
@@ -162,16 +161,17 @@ double fpga_JPCG(PCG_TYPE* l_pcg,
             break;
     }
     showTimeData("Matrix partition and transmission time: ", l_timer[0], l_timer[1]);
+    // exit(-1);
     l_pcg->setVec(pn, b, matJ);
     showTimeData("Vector initialization & transmission time: ", l_timer[1], l_timer[2]);
     xilinx_apps::pcg::Results<CG_dataType> l_res = l_pcg->run(pmaxit, ptol);
     showTimeData("PCG run time: ", l_timer[2], l_timer[3]);
-    cout << "Residual value " << l_res.m_residual << endl;
+    std::cout << "Residual value " << l_res.m_residual << std::endl;
     *prelres = sqrt(l_res.m_residual / l_pcg->getDot());
     *pniter = l_res.m_nIters;
     memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_res.m_x), pn * sizeof(FortranReal));
     *pflops = l_res.m_nIters * (2 * pnz + 16 * pn) - 2 * pn;
-    chrono::duration<double> d = l_timer[3] - l_timer[2];
+    std::chrono::duration<double> d = l_timer[3] - l_timer[2];
     return d.count() * 1e3;
 }
 #endif
@@ -240,12 +240,12 @@ extern "C" void userLE_JPCG(FortranInteger* handle,
     for (niter = 1; niter <= maxit; niter++) {
 /* q = A * p */
 #ifdef FORMAT_COO
-        cout << "Data: " 
+        std::cout << "Data: " 
             << niter << ','
             << alpha << ','
             << beta << ','
             << rTr << ','
-            << rTz << endl;
+            << rTz << std::endl;
 #endif
         userLE_spmv(n, nz, colptr, rowind, values, p, q);
         flops += 4.0 * nz - 2.0 * n;
