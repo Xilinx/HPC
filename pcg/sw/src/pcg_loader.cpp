@@ -17,8 +17,7 @@
 
 // Thanks to Aaron Isotton for his dynamic loading ideas in https://tldp.org/HOWTO/pdf/C++-dlopen.pdf
 
-#include "pcg.hpp"
-#include "impl/cgHost.hpp"
+#include "pcg.h"
 #include <string>
 #include <dlfcn.h>
 #include <iostream>
@@ -107,26 +106,32 @@ void *getDynamicFunction(const std::string &funcName) {
 extern "C" {
 
 #ifdef XILINX_PCG_INLINE_IMPL
-#define XILINX_PCG_IMPL_DEF inline
+#define XILINX_PCG_LINKAGE_DEF inline
 #else
-#define XILINX_PCG_IMPL_DEF
+#define XILINX_PCG_LINKAGE_DEF
 #endif
     
-XILINX_PCG_IMPL_DEF
-xilinx_apps::pcg::xCgHost *xilinx_pcg_createCgHost(int p_devId, const char *p_xclbinName)
-{
-    typedef xilinx_apps::pcg::xCgHost * (*CreateFunc)(int, const char *);
-    CreateFunc pCreateFunc = (CreateFunc) getDynamicFunction("xilinx_pcg_createCgHost");
-//    std::cout << "DEBUG: createCgHost handle " << (void *) pCreateFunc << std::endl;
-    return pCreateFunc(p_devId, p_xclbinName);
+XILINX_PCG_LINKAGE_DEF
+void *create_JPCG_handle(int deviceId, const char *xclbinPath) {
+    typedef void *(*CreateFunc)(int, const char *);
+    CreateFunc pCreateFunc = (CreateFunc) getDynamicFunction("create_JPCG_handle");
+    return pCreateFunc(deviceId, xclbinPath);
 }
 
-XILINX_PCG_IMPL_DEF
-void xilinx_pcg_destroyCgHost(xilinx_apps::pcg::xCgHost *pCgHost) {
-    typedef xilinx_apps::pcg::xCgHost * (*DestroyFunc)(xilinx_apps::pcg::xCgHost *);
-    DestroyFunc pDestroyFunc = (DestroyFunc) getDynamicFunction("xilinx_pcg_destroyCgHost");
-    pDestroyFunc(pCgHost);
+XILINX_PCG_LINKAGE_DEF
+void destroy_JPCG_handle(void *handle) {
+    typedef void (*DestroyFunc)(void *);
+    DestroyFunc pDestroyFunc = (DestroyFunc) getDynamicFunction("destroy_JPCG_handle");
+    return pDestroyFunc(handle);
 }
+
+XILINX_PCG_LINKAGE_DEF
+void JPCG_coo(void *handle, JPCG_Mode mode, int dummy) {
+    typedef void (*ApiFunc)(void *, JPCG_Mode, int);
+    ApiFunc pApiFunc = (ApiFunc) getDynamicFunction("JPCG_coo");
+    return pApiFunc(handle, mode, dummy);
+}
+
 
 }  // extern "C"
 

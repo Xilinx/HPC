@@ -214,7 +214,7 @@ doxy-cpp: $(CPP_DOXY_TRIGGER_FILE)
 
 CPP_DOXY_CONFIG_FILE = docs/cpp/DoxyFile
 
-$(CPP_DOXY_TRIGGER_FILE): include/pcg.hpp $(CPP_DOXY_CONFIG_FILE)
+$(CPP_DOXY_TRIGGER_FILE): include/pcg.h $(CPP_DOXY_CONFIG_FILE)
 	@set -e; \
 	if ! [ -x "$$(command -v doxygen)" ]; then \
 	    echo "ERROR: doxygen appears not to be installed.  Please install at least version 1.8.5"; \
@@ -300,8 +300,9 @@ $(foreach src,$(SRCS_python),$(eval $(call BUILD_CPP_RULE,$(src))))
 # XCLBIN
 #
 
-
+# Set this variable to the parent directory of the Vitis build directory (which is build_dir.hw...)
 L2_TOP_DIR = $(HPC_DIR)/pcg/tests/pcg_spmv_c++
+
 L2_XDEVICE = xilinx_u280_xdma_201920_3
 L2_BUILD_DIR = $(L2_TOP_DIR)/build_dir.hw.$(L2_XDEVICE)
 XCLBIN_NAME = cgSolver_ddrParParam_hbmRbParam.xclbin
@@ -340,11 +341,7 @@ STAGE_DIR = staging
 
 STAGE_COPY_FILES = \
     VERSION \
-    include/pcg.hpp \
-    include/impl/cgHost.hpp \
-    include/impl/cgVector.hpp \
-    include/impl/pcgImp.hpp \
-    \
+    include/pcg.h \
     \
     src/pcg_loader.cpp
 
@@ -361,7 +358,9 @@ $(foreach f,$(STAGE_COPY_FILES),$(eval $(call STAGE_COPY_RULE,$(f))))
 # Template-based implementation headers from outside the PCG tree
 
 STAGE_COPY_EXT_IMPL_FILES = \
-    pcg/hw/include/impl/cgInstr.hpp
+
+
+#    pcg/hw/include/impl/cgInstr.hpp
 
 define STAGE_COPY_EXT_IMPL_RULE
 $(2): $(1)
@@ -374,15 +373,17 @@ $(foreach f,$(STAGE_COPY_EXT_IMPL_FILES),$(eval $(call STAGE_COPY_EXT_IMPL_RULE,
 # TODO: work out what to do with these headers
 
 STAGE_COPY_EXT_INCLUDE_FILES = \
-    pcg/hw/include/control.hpp \
-    L1/hpc/include/memInstr.hpp \
-    L2/common/include/sw/xFpga.hpp \
-    L2/common/include/sw/xcl2.hpp \
-    L2/sparse/include/sw/fp64/gen_signature.hpp \
-    L2/sparse/include/sw/fp64/matrix_params.hpp \
-    L2/sparse/include/sw/fp64/signature.hpp \
-    utils/include/sw/utils.hpp \
-    utils/include/sw/binFiles.hpp
+
+
+#    pcg/hw/include/control.hpp \
+#    L1/hpc/include/memInstr.hpp \
+#    L2/common/include/sw/xFpga.hpp \
+#    L2/common/include/sw/xcl2.hpp \
+#    L2/sparse/include/sw/fp64/gen_signature.hpp \
+#    L2/sparse/include/sw/fp64/matrix_params.hpp \
+#    L2/sparse/include/sw/fp64/signature.hpp \
+#    utils/include/sw/utils.hpp \
+#    utils/include/sw/binFiles.hpp
 
 define STAGE_COPY_EXT_INCLUDE_RULE
 $(2): $(1)
@@ -411,7 +412,7 @@ $(foreach f,$(STAGE_LIB_FILES),$(eval $(call STAGE_LIB_RULE,$(f))))
 
 STAGE_EXAMPLE_ZIP = examples.zip
 STAGE_EXAMPLE_FILE_NAMES = \
-    c++/demo.cpp c++/Makefile
+    c/example.c c/Makefile
 
 #    python/pythondemo.py python/run.sh \
 #    python/README.md python/jupyter/jupyter_demo.ipynb
@@ -444,7 +445,7 @@ $(STAGE_XCLBIN_FILE): $(XCLBIN_FILE)
 
 # Top-level packaging rule
 
-STAGE_SUBDIR_NAMES = include include/impl lib src xclbin
+STAGE_SUBDIR_NAMES = include lib src xclbin
 STAGE_SUBDIRS = $(addprefix $(STAGE_DIR)/,$(STAGE_SUBDIR_NAMES))
 STAGE_ALL_FILES = \
     $(addprefix $(STAGE_DIR)/,$(STAGE_COPY_FILES)) \
@@ -472,7 +473,7 @@ LDLIBS_test = \
 	
 
 SRC_FILE_NAMES_test = \
-    pcgtest.cpp
+#    pcgtest.cpp
 
 SRCS_test = $(addprefix $(TEST_DIR)/,$(SRC_FILE_NAMES_test))
 OBJS_test = $(addprefix $(CPP_BUILD_DIR)/,$(notdir $(SRCS_test:.cpp=.o)))
@@ -480,7 +481,7 @@ DEPS_test = $(OBJS_test:.o=.d)
 
 # List of all test executables to build
 EXEC_FILE_NAMES_test = \
-    pcgtest \
+#    pcgtest \
 #    pcgdyntest
 
 EXECS_test = $(addprefix $(CPP_BUILD_DIR)/,$(EXEC_FILE_NAMES_test))

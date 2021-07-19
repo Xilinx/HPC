@@ -39,39 +39,42 @@ endif
 # Location of Alveo product if installed from sources
 MK_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 CUR_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
-XF_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/examples/c++/Makefile}')
+XF_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/examples/c/Makefile}')
 
 LIB_PATH = $(XF_PROJ_ROOT)/staging/lib
 INCLUDE_PATH = $(XF_PROJ_ROOT)/staging/include
+XCLBIN_PATH = $(XF_PROJ_ROOT)/staging/xclbin
 
 ifeq ($(wildcard $(LIB_PATH)/*.so),)
     LIB_PATH = $(XILINX_PCG)/${PROD_VERSION}/lib
     INCLUDE_PATH = $(XILINX_PCG)/${PROD_VERSION}/include
+    XCLBIN_PATH = $(XILINX_PCG)/${PROD_VERSION}/xclbin
 endif
 
 
-CXXFLAGS = -std=c++11 -fPIC -pthread -I$(INCLUDE_PATH) -I$(XILINX_XRT)/include \
-    -Wall -Wextra -Wno-unknown-pragmas 
+#CFLAGS = -fPIC -pthread -I$(INCLUDE_PATH) -I$(XILINX_XRT)/include \
+#    -Wall -Wextra -Wno-unknown-pragmas 
+CFLAGS = -fPIC -pthread -I$(INCLUDE_PATH) -Wall -Wextra
 
 ifdef DEBUG
-CXXFLAGS += -O0 -g
+CFLAGS += -O0 -g
 else
-CXXFLAGS += -O3
+CFLAGS += -O3
 endif
 
 
 LDFLAGS = -L$(LIB_PATH) -lXilinxPcg -lpthread
 
-#$(info PROJ_ROOT="$(XF_PROJ_ROOT)")
-#$(info LIB_PATH="$(LIB_PATH)")
-#$(info INCLUDE_PATH="$(INCLUDE_PATH)")
+$(info PROJ_ROOT="$(XF_PROJ_ROOT)")
+$(info LIB_PATH="$(LIB_PATH)")
+$(info INCLUDE_PATH="$(INCLUDE_PATH)")
 
 
 
 all: example
 
-example: example.cpp
-	g++ $^ -o $@ $(CXXFLAGS) $(LDFLAGS)
+example: example.c
+	gcc $^ -o $@ $(CFLAGS) $(LDFLAGS)
 
 .PHONY: run clean
 
@@ -79,7 +82,7 @@ run:
 	@set -e; \
 	. $(XILINX_XRT)/setup.sh; \
 	export LD_LIBRARY_PATH=$(LIB_PATH):$$LD_LIBRARY_PATH; \
-	./example
+	./example $(DEVICE_ID) $(XCLBIN_PATH)/*.xclbin
 
 clean:
 	rm -f example
