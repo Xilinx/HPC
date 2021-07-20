@@ -31,8 +31,7 @@ using CG_dataType = double;
 
 int main(int argc, char** argv) {
     if (argc < 2 || argc > 3) {
-        std::cout << "Usage: " << argv[0] << " <XCLBIN File> [device id]"
-                  << std::endl;
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File> [device id]" << std::endl;
         return EXIT_FAILURE;
     }
     int l_idx = 1;
@@ -43,7 +42,6 @@ int main(int argc, char** argv) {
         l_deviceId = stoi(l_option);
     }
     if (argc > l_idx) l_deviceId = atoi(argv[l_idx++]);
-
 
     unsigned l_maxIter = 1;
     CG_dataType l_tol = 1e-12;
@@ -66,7 +64,7 @@ int main(int argc, char** argv) {
     l_pcg.setVec(m_m, l_b.data(), l_diagA.data());
     l_res = l_pcg.run(l_maxIter, l_tol);
 
-    //if (l_pcg.updateMat(m_m, m_nnz, l_data.data()) != 0) {
+    // if (l_pcg.updateMat(m_m, m_nnz, l_data.data()) != 0) {
     //    return EXIT_FAILURE;
     //}
     l_pcg.setCooMat(m_m, m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data());
@@ -77,8 +75,7 @@ int main(int argc, char** argv) {
     float l_padRatio = (float)(l_info[5]) / (float)(l_info[2]);
 
     xilinx_apps::pcg::CgVector l_resVec = l_pcg.getRes();
-    (void) l_resVec;  // TODO: determine what to do with the output
-
+    (void)l_resVec; // TODO: determine what to do with the output
 
     std::cout << "DATA_CSV:,dim, original NNZs, padded dim, padded NNZs, padding ratio, ";
     std::cout << std::endl;

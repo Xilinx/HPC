@@ -61,5 +61,6 @@ void JPCG_coo(void* handle,
     xilinx_apps::pcg::Results<double> l_res = pImpl->run(p_maxIter, p_tol);
     *p_res = std::sqrt(l_res.m_residual / pImpl->getDot());
     *p_iter = l_res.m_nIters;
+    memcpy((char*) x, (char*) l_res.m_x, sizeof(double) * p_n);
 }
 }

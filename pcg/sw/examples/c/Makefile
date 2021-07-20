@@ -63,7 +63,7 @@ CFLAGS += -O3
 endif
 
 
-LDFLAGS = -L$(LIB_PATH) -lXilinxPcg -lpthread -lstdc++
+LDFLAGS = -L$(LIB_PATH) -lXilinxPcg -lpthread -lstdc++ -lm
 
 $(info PROJ_ROOT="$(XF_PROJ_ROOT)")
 $(info LIB_PATH="$(LIB_PATH)")
@@ -78,11 +78,20 @@ example: example.c
 
 .PHONY: run clean
 
+
+ifdef DEBUG
+run:
+	@set -e; \
+	. $(XILINX_XRT)/setup.sh; \
+	export LD_LIBRARY_PATH=$(LIB_PATH):$$LD_LIBRARY_PATH; \
+	gdb --args ./example $(DEVICE_ID) $(XCLBIN_PATH)/*.xclbin
+else
 run:
 	@set -e; \
 	. $(XILINX_XRT)/setup.sh; \
 	export LD_LIBRARY_PATH=$(LIB_PATH):$$LD_LIBRARY_PATH; \
 	./example $(DEVICE_ID) $(XCLBIN_PATH)/*.xclbin
+endif
 
 clean:
 	rm -f example
