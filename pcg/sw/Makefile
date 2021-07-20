@@ -125,15 +125,15 @@ SRCS_HPC_NAMES = \
 SRCS_HPC = $(addprefix $(HPC_DIR)/,$(SRCS_HPC_NAMES))
 OBJS_HPC = $(addprefix $(CPP_BUILD_DIR)/,$(notdir $(SRCS_HPC:.cpp=.o)))
 
-SRCS_loader = src/pcg_loader.cpp
-OBJS_loader = $(addprefix $(CPP_BUILD_DIR)/,$(notdir $(SRCS_loader:.cpp=.o)))
+SRCS_loader = src/pcg_loader.c
+OBJS_loader = $(addprefix $(CPP_BUILD_DIR)/,$(notdir $(SRCS_loader:.c=.o)))
 DEPS_loader = $(OBJS_loader:.o=.d)
 
 SRCS_top = $(filter-out $(SRCS_loader),$(wildcard src/*.cpp))
 OBJS_top = $(addprefix $(CPP_BUILD_DIR)/,$(notdir $(SRCS_top:.cpp=.o)))
 
 SRCS_all = $(SRCS_HPC) $(SRCS_top) $(SRCS_loader)
-OBJS_all = $(addprefix $(CPP_BUILD_DIR)/,$(notdir $(SRCS_all:.cpp=.o)))
+OBJS_all = $(addprefix $(CPP_BUILD_DIR)/,$(notdir $(SRCS_all:.cpp=.o) $(SRCS_all:.c=.o)))
 DEPS_all = $(OBJS_all:.o=.d)
 
 OBJS_libPcg = $(OBJS_HPC) $(OBJS_top) 
@@ -343,7 +343,7 @@ STAGE_COPY_FILES = \
     VERSION \
     include/pcg.h \
     \
-    src/pcg_loader.cpp
+    src/pcg_loader.c
 
 #    impl/cgSolverGemv.hpp \
 #    impl/cgSolverKernel.hpp \
@@ -483,7 +483,7 @@ DEPS_test = $(OBJS_test:.o=.d)
 # List of all test executables to build
 EXEC_FILE_NAMES_test = \
     pcgtest \
-#    pcgdyntest
+    pcgdyntest
 
 EXECS_test = $(addprefix $(CPP_BUILD_DIR)/,$(EXEC_FILE_NAMES_test))
 
@@ -503,12 +503,12 @@ $(CPP_BUILD_DIR)/pcgtest: $(CPP_BUILD_DIR)/pcgtest.o $(CPP_BUILD_DIR)/$(LIB_NAME
 	gcc -o $@ $< $(LDFLAGS_test) $(LIB_DEPS)
 
 $(CPP_BUILD_DIR)/pcgdyntest: $(CPP_BUILD_DIR)/pcgtest.o $(CPP_BUILD_DIR)/$(LOADER_NAME) $(CPP_BUILD_DIR)/$(LIB_NAME)
-	gcc -o $@ $< -fPIC -w -L $(CPP_BUILD_DIR) -l$(LOADER_SHORT_NAME) -ldl $(LIB_DEPS)
+	gcc -o $@ $< -fPIC -w -L $(CPP_BUILD_DIR) -l$(LOADER_SHORT_NAME) -ldl -lpthread
 
 # TODO: dynamic exec shouldn't have to link with OpenCL, etc.  Figure out why the link line below
 # causes undefined symbols to OpenCL and others
 
-#	$(LINK.cc) -o $@ $< -fPIC -w -L $(CPP_BUILD_DIR) -l$(LOADER_SHORT_NAME) -ldl -lpthread
+#	gcc -o $@ $< -fPIC -w -L $(CPP_BUILD_DIR) -l$(LOADER_SHORT_NAME) -ldl $(LIB_DEPS)
 
 .PHONY: run-tests run-prep-data run-test run-dyn-test run-long-test
 
