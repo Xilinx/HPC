@@ -497,7 +497,7 @@ cppTest2: $(EXECS_test)
 
 # Test executables
 
-LDFLAGS_test = -fPIC -w -L $(CPP_BUILD_DIR) -l$(LIB_SHORT_NAME)
+LDFLAGS_test = -fPIC -w -L $(CPP_BUILD_DIR) -l$(LIB_SHORT_NAME) -lstdc++
 
 $(CPP_BUILD_DIR)/pcgtest: $(CPP_BUILD_DIR)/pcgtest.o $(CPP_BUILD_DIR)/$(LIB_NAME)
 	gcc -o $@ $< $(LDFLAGS_test) $(LIB_DEPS)

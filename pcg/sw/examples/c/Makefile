@@ -63,7 +63,7 @@ CFLAGS += -O3
 endif
 
 
-LDFLAGS = -L$(LIB_PATH) -lXilinxPcg -lpthread
+LDFLAGS = -L$(LIB_PATH) -lXilinxPcg -lpthread -lstdc++
 
 $(info PROJ_ROOT="$(XF_PROJ_ROOT)")
 $(info LIB_PATH="$(LIB_PATH)")

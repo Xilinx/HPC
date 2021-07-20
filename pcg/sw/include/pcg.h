@@ -1,9 +1,26 @@
+/*
+ * Copyright 2019-2021 Xilinx, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+*/
 /**
  * NOT FOR CHECK-IN!
  */
 
 #ifndef PCG_H
 #define PCG_H
+
+#include <stdint.h>
 
 /**
  * Define this macro to make functions in pcg_loader.cpp inline instead of extern.  You would use this macro
@@ -19,26 +36,32 @@
 extern "C" {
 #endif
 
-typedef enum JPCG_Mode {
-    JPCG_MODE_FULL = 0,
-    JPCG_MODE_KEEP_NZ_LAYOUT = 1,
-    JPCG_MODE_DO_MAGIC = 99
-} JPCG_Mode;
-
+typedef enum JPCG_Mode { JPCG_MODE_FULL = 0, JPCG_MODE_KEEP_NZ_LAYOUT = 1, JPCG_MODE_DO_MAGIC = 99 } JPCG_Mode;
 
 XILINX_PCG_LINKAGE_DECL
-void *create_JPCG_handle(int deviceId, const char *xclbinPath);
+void* create_JPCG_handle(int deviceId, const char* xclbinPath);
 
 XILINX_PCG_LINKAGE_DECL
-void destroy_JPCG_handle(void *handle);
+void destroy_JPCG_handle(void* handle);
 
 XILINX_PCG_LINKAGE_DECL
-void JPCG_coo(void *handle, JPCG_Mode mode, int dummy);
-
+void JPCG_coo(void* handle,
+              JPCG_Mode mode,
+              uint32_t p_n,
+              uint32_t p_nnz,
+              uint32_t* p_rowIdx,
+              uint32_t* p_colIdx,
+              double* p_data,
+              double* matJ,
+              double* b,
+              double* x,
+              uint32_t p_maxIter,
+              double p_tol,
+              uint32_t* p_iter,
+              double* p_res);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* PCG_H */
-
