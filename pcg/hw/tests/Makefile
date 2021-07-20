@@ -104,13 +104,15 @@ endif
 
 # ################### Setting package and image directory #######################
 
+deviceID = 0
+
 EXE_NAME := host.exe
 EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
-HOST_ARGS := $(BUILD_DIR)/cgSolver.xclbin 32 1e-12 $(CUR_DIR)/sig_dat/  $(CUR_DIR)/vec_dat ted_B
+HOST_ARGS := $(BUILD_DIR)/cgSolver.xclbin 32 1e-12 $(CUR_DIR)/sig_dat/  $(CUR_DIR)/vec_dat ted_B ${deviceID} 
 
 # ######################### Setting Targets of Makefile ################################
 
-.PHONY: all clean cleanall docs emconfig
+.PHONY: all clean cleanall docs emconfig xclbin
 all:  $(EXE_FILE) emconfig
 
 .PHONY: host
