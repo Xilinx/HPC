@@ -112,7 +112,7 @@ class Signature {
         p_spm.sort_by_row();
         uint32_t l_minRowId = p_spm.getMinRowId();
 
-        const std::vector<uint32_t> &l_tmp = p_spm.getRows();
+        const std::vector<uint32_t>& l_tmp = p_spm.getRows();
         auto l_up = l_tmp.begin();
         while (l_eId < p_spm.getNnz()) {
             l_up = upper_bound(l_up, l_tmp.end(), l_minRowId + m_maxRows, isLessEqual);
@@ -175,12 +175,9 @@ class Signature {
     void gen_pars(std::vector<SparseMatrix>& p_rbSpms, std::vector<SparseMatrix>& p_parSpms) {
         uint32_t l_totalRbs = p_rbSpms.size();
         std::vector<std::vector<SparseMatrix> > l_parSpms(l_totalRbs);
-        std::vector<std::thread> l_threads(l_totalRbs);
+#pragma omp parallel for
         for (uint32_t i = 0; i < l_totalRbs; ++i) {
-            l_threads[i] = std::thread(&Signature::genPars4Rb, this, i, std::ref(p_rbSpms[i]), std::ref(l_parSpms[i]));
-        }
-        for (auto& th : l_threads) {
-            th.join();
+            genPars4Rb(i, p_rbSpms[i], l_parSpms[i]);
         }
         for (uint32_t i = 0; i < l_totalRbs; ++i) {
             p_parSpms.insert(p_parSpms.end(), l_parSpms[i].begin(), l_parSpms[i].end());
@@ -250,19 +247,9 @@ class Signature {
         unsigned int l_size = l_parSpms.size();
         p_paddedParSpms.resize(l_size);
 
-        std::vector<std::thread> l_threads(l_size);
+#pragma omp parallel for
         for (unsigned int i = 0; i < l_size; i++) {
-            /*SparseMatrix l_parSpm = l_parSpms[i];
-              l_parSpm.complete_sort_by_row();
-              SparseMatrix l_paddedParSpm = pad_par(l_parSpm);
-              assert(l_paddedParSpm.getM() <= m_maxRows);
-              assert(l_paddedParSpm.getN() <= m_maxCols);
-              p_paddedParSpms[i] = l_paddedParSpm;*/
-            l_threads[i] =
-                std::thread(&Signature::create_padPar, this, i, std::ref(l_parSpms[i]), std::ref(p_paddedParSpms[i]));
-        }
-        for (auto& th : l_threads) {
-            th.join();
+            create_padPar(i, l_parSpms[i], p_paddedParSpms[i]);
         }
     }
 
@@ -292,7 +279,7 @@ class Signature {
                     l_eId = l_sId + l_nnzsPerCh;
                 }
                 while ((l_eId > 0) && (l_eId < l_parSpm.getNnz()) &&
-                        (l_parSpm.getRow(l_eId) == l_parSpm.getRow(l_eId - 1))) {
+                       (l_parSpm.getRow(l_eId) == l_parSpm.getRow(l_eId - 1))) {
                     l_eId += 1;
                 }
 
@@ -440,9 +427,9 @@ class Signature {
         }
     }
     void update_nnzStore(double* p_data) {
-        std::vector<uint32_t> l_bufBytes(m_channels); 
+        std::vector<uint32_t> l_bufBytes(m_channels);
         for (uint32_t c = 0; c < m_channels; c++) {
-            l_bufBytes[c]=m_memBits/8;
+            l_bufBytes[c] = m_memBits / 8;
         }
         uint32_t l_memIdxWidth = m_memBits / 16;
         uint32_t l_rowIdxGap = m_parEntries * m_accLatency;
@@ -484,13 +471,13 @@ class Signature {
     MatPartition gen_sig(SparseMatrix& p_spm, double* p_data) {
         m_rbParam.m_buf.clear();
         m_parParam.m_buf.clear();
-        for (unsigned int i=0; i<m_nnzStore.m_buf.size(); ++i) {
+        for (unsigned int i = 0; i < m_nnzStore.m_buf.size(); ++i) {
             m_nnzStore.m_buf[i].clear();
             m_nnzStore.m_totalBks[i] = 0;
             m_nnzStore.m_totalRowIdxBks[i] = 0;
             m_nnzStore.m_totalColIdxBks[i] = 0;
             m_nnzStore.m_totalNnzBks[i] = 0;
-        } 
+        }
         m_m = p_spm.m_m;
         m_n = p_spm.m_n;
         m_nnz = p_spm.m_nnz;
@@ -502,20 +489,20 @@ class Signature {
         assert(m_rbParam.m_totalRows == p_spm.getM());
         std::vector<SparseMatrix> l_paddedParSpms;
         gen_paddedPars(l_rbSpms, l_paddedParSpms); // write into l_paddedParSpms
-        for (unsigned int i=0; i<l_rbSpms.size(); ++i) {
+        for (unsigned int i = 0; i < l_rbSpms.size(); ++i) {
             l_rbSpms[i].clearAll();
         }
         for (unsigned int i = 0; i < m_channels; ++i) {
             m_chParSpms[i].clear();
         }
         gen_chPars(l_paddedParSpms, m_chParSpms); // write into m_chParSpms
-        for (unsigned int i=0; i<l_paddedParSpms.size(); ++i) {
+        for (unsigned int i = 0; i < l_paddedParSpms.size(); ++i) {
             l_paddedParSpms[i].clearAll();
         }
         update_rbParams(m_chParSpms);
         gen_nnzStore(p_data);
         for (unsigned int c = 0; c < m_channels; ++c) {
-            for (unsigned int i=0; i<m_chParSpms[c].size(); ++i) {
+            for (unsigned int i = 0; i < m_chParSpms[c].size(); ++i) {
                 m_chParSpms[c][i].clearRowIdx();
                 m_chParSpms[c][i].clearColIdx();
             }
@@ -588,8 +575,7 @@ class Signature {
     int checkUpdateDim(uint32_t p_m, uint32_t p_n, uint32_t p_nnz) {
         if ((p_m == m_m) && (p_n == m_n) && (p_nnz == m_nnz)) {
             return 0;
-        }
-        else {
+        } else {
             std::cout << "ERROR: update dimensions are not the same as the stored dimensions" << std::endl;
             return -1;
         }
