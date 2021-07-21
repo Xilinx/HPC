@@ -75,82 +75,29 @@ int main(int argc, char** argv) {
     readBin(l_datFilePath + "/A_diag.mat", l_diagA.data(), l_matInfo.m_m * sizeof(CG_dataType));
     readBin(l_datFilePath + "/b.mat", l_b.data(), l_matInfo.m_m * sizeof(CG_dataType));
 
-    TimePointType l_timer[8];
-
-    l_timer[0] = std::chrono::high_resolution_clock::now();
-//    struct xilinx_apps::pcg::Options l_option = {l_deviceId, xilinx_apps::pcg::XString(binaryFile)};
-//    xilinx_apps::pcg::PCG<CG_dataType> l_pcg(l_option);
     void *pHandle = create_JPCG_handle(l_deviceId, binaryFile.c_str());
-    showTimeData("FPGA configuration time: ", l_timer[0], l_timer[1]);
-//    l_pcg.setCooMat(l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data());
-    double l_mat_partition_time = 0;
-    showTimeData("Matrix partition and transmission time: ", l_timer[1], l_timer[2], &l_mat_partition_time);
-    double l_runTime = 1;
-    double l_h2d_time = 0;
-//    xilinx_apps::pcg::Results<CG_dataType> l_res;
-//    l_pcg.setVec(l_matInfo.m_m, l_b.data(), l_diagA.data());
-    showTimeData("Vector initialization & transmission time: ", l_timer[2], l_timer[3], &l_h2d_time);
-//    l_res = l_pcg.run(l_maxIter, l_tolerance);
     uint32_t numIterations = 0;
     double residual = 0.0;
     JPCG_coo(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
         l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, JPCG_MODE_DEFAULT);
-    showTimeData("PCG run time: ", l_timer[3], l_timer[4], &l_runTime);
     
     for (int i = 1; i < l_numRuns; ++i) {
-        l_timer[0] = std::chrono::high_resolution_clock::now();
-//        if (l_pcg.updateMat(l_matInfo.m_m, l_matInfo.m_nnz, l_data.data()) != 0) {
-//            return EXIT_FAILURE;
-//        }
-        showTimeData("Matrix update time: ", l_timer[0], l_timer[1]);
-//        l_pcg.setVec(l_matInfo.m_m, l_b.data(), l_diagA.data());
-        showTimeData("Vector initialization & transmission time: ", l_timer[1], l_timer[2], &l_h2d_time);
-//        l_res = l_pcg.run(l_maxIter, l_tolerance);
-        JPCG_coo(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(),
-            l_data.data(), l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, JPCG_MODE_KEEP_NZ_LAYOUT);
-        showTimeData("PCG run time: ", l_timer[2], l_timer[3], &l_runTime);
+        JPCG_coo(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
+            l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, JPCG_MODE_KEEP_NZ_LAYOUT);
     }
 
-#ifdef TODO    
-    std::vector<uint32_t> l_info = l_pcg.getMatInfo();
-    float l_padRatio = (float)(l_info[5]) / (float)(l_info[2]);
-
-    if (l_debug) {
-        xilinx_apps::pcg::CgVector l_resVec = l_pcg.getRes();
-        saveBin(l_datFilePath + "/rk.dat", l_resVec.h_rk, l_matInfo.m_m * sizeof(CG_dataType));
-        saveBin(l_datFilePath + "/xk.dat", l_resVec.h_xk, l_matInfo.m_m * sizeof(CG_dataType));
-    }
-#endif
 
     int err = 0;
     readBin(l_datFilePath + "/x.mat", h_x.data(), l_matInfo.m_m * sizeof(CG_dataType));
-//    compare<CG_dataType>(l_matInfo.m_m, h_x.data(), (CG_dataType*)(l_res.m_x), err, l_debug);
     compare<CG_dataType>(l_matInfo.m_m, h_x.data(), l_x.data(), err, l_debug);
 
-    std::cout << "DATA_CSV:,matrix_name, dim, original NNZs, padded dim, padded NNZs, padding ratio, ";
-    std::cout
-        << "num of iterations, mat partition time[ms], H2D time[ms], total run time[ms], time[ms]/run, num_mismatches";
-    std::cout << std::endl;
-
-    /*
-    Metrics metric; 
-    JPCG_getMetrics(pHandle, metric);
-    std::cout << metric.m_init << ','
-        << metric.m_matProc << ','
-        << metric.m_vecProc << ','
-        << metric.m_solver 
-        << std::endl;
-   */ 
-
-#ifdef TODO
-    std::cout << "DATA_CSV:," << l_mtxName << "," << l_info[0] << "," << l_info[2];
-    std::cout << "," << l_info[4] << "," << l_info[5] << "," << l_padRatio;
-    std::cout << "," << l_res.m_nIters + 1 << "," << l_mat_partition_time << "," << l_h2d_time << "," << l_runTime
-              << "," << (float)l_runTime / (l_res.m_nIters + 1);
-    std::cout << "," << err << std::endl;
-#endif
+    std::cout << "INFO: matrix_name, dim, NNZs, num of iterations, JPCG residual, num_mismatches" << std::endl;
+    std::cout << "      " << l_matInfo.m_name << ", " << l_matInfo.m_m << ", ";
+    std::cout << l_matInfo.m_nnz << ", " << numIterations << ", ";
+    std::cout << residual  << ", " << err << std::endl;
     
-    if (err == 0) {
+    
+    if ((err == 0) || (numIterations == l_maxIter)){
         std::cout << "Test pass!" << std::endl;
         return EXIT_SUCCESS;
     } else {
