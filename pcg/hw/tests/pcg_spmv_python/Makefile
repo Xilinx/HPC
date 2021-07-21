@@ -72,14 +72,14 @@ EMCONFIG_DIR := $(BUILD_DIR)
 
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
-HOST_SRCS += $(XFLIB_DIR)/pcg/tests/pcg_spmv_python/test_cgSolver_spmv_jacobi.cpp
+HOST_SRCS += $(XFLIB_DIR)/pcg/hw/tests/test_cgSolver_spmv_jacobi.cpp
 HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp
 
 CXXFLAGS += -DHW_CLK=4e-9 -DCG_numTasks=1 -DCG_dataType=double -DCG_numChannels=16 -DCG_parEntries=4 -DCG_instrBytes=64 -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256
 CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
 CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include
 CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/include
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/tests/pcg_spmv_python/host
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/tests/pcg_spmv_jacobi_16ch/host
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
@@ -103,27 +103,34 @@ LDFLAGS += -L$(XILINX_VIVADO)/lnx64/tools/fpo_v7_0 -Wl,--as-needed -lgmp -lmpfr 
 endif
 
 # ################### Setting package and image directory #######################
+USER_BUILT_XCLBIN := ../../build_dir.hw.xilinx_u280_xdma_201920_3/cgSolver.xclbin
+PRE_BUILT_XCLBIN := ../xclbin/cgSolver_ddrParParam_hbmRbParam.xclbin
+
+ifneq (,$(wildcard $(USER_BUILT_XCLBIN)))
+XCLBIN_PATH := $(USER_BUILT_XCLBIN)
+else
+XCLBIN_PATH := $(PRE_BUILT_XCLBIN)
+endif
 
 EXE_NAME := host.exe
 EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
-HOST_ARGS := $(BUILD_DIR)/cgSolver_ddrParParam_hbmRbParam.xclbin
+HOST_ARGS := $(XCLBIN_PATH)
 
 # ######################### Setting Targets of Makefile ################################
-
 -include ./params.mk
 
 .PHONY: all clean cleanall docs emconfig
-all: check_vpp check_platform check_sysroot $(EXE_FILE) emconfig xclbin
+all: check_vpp check_platform check_sysroot $(EXE_FILE) emconfig check_xclbin
 
 .PHONY: host
 host: check_xrt check_sysroot $(EXE_FILE)
 
-.PHONY: build
-build: xclbin
-
-xclbin:
-	mkdir -p $(BUILD_DIR)
-	$(CP) ../../sw/staging/xclbin/cgSolver_ddrParParam_hbmRbParam.xclbin $(BUILD_DIR)/.
+check_xclbin:
+ifeq (,$(wildcard $(USER_BUILT_XCLBIN)))
+ifeq (,$(wildcard $(PRE_BUILT_XCLBIN)))
+	$(error Please build or checkout xclbin)
+endif
+endif
 
 # ################# Setting Rules for Host (Building Host Executable) ################
 $(EXE_FILE): $(HOST_SRCS) | check_xrt

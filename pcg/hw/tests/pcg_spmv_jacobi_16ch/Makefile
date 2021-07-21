@@ -79,7 +79,7 @@ CXXFLAGS += -DHW_CLK=4e-9 -DCG_numTasks=1 -DCG_dataType=double -DCG_numChannels=
 CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
 CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include
 CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/include
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/tests/host
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/tests/pcg_spmv_jacobi_16ch/host
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
@@ -103,27 +103,35 @@ LDFLAGS += -L$(XILINX_VIVADO)/lnx64/tools/fpo_v7_0 -Wl,--as-needed -lgmp -lmpfr 
 endif
 
 # ################### Setting package and image directory #######################
+USER_BUILT_XCLBIN := ../../build_dir.hw.xilinx_u280_xdma_201920_3/cgSolver.xclbin
+PRE_BUILT_XCLBIN := ../xclbin/cgSolver_ddrParParam_hbmRbParam.xclbin
+
+ifneq (,$(wildcard $(USER_BUILT_XCLBIN)))
+XCLBIN_PATH := $(USER_BUILT_XCLBIN)
+else
+XCLBIN_PATH := $(PRE_BUILT_XCLBIN)
+endif
 
 deviceID = 0
 
 EXE_NAME := host.exe
 EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
-HOST_ARGS := $(BUILD_DIR)/cgSolver.xclbin 32 1e-12 $(CUR_DIR)/sig_dat/  $(CUR_DIR)/vec_dat ted_B ${deviceID} 
+HOST_ARGS := $(XCLBIN_PATH) 32 1e-12 $(CUR_DIR)/sig_dat/  $(CUR_DIR)/vec_dat ted_B ${deviceID} 
 
 # ######################### Setting Targets of Makefile ################################
 
-.PHONY: all clean cleanall docs emconfig xclbin
-all:  $(EXE_FILE) emconfig
+.PHONY: all clean cleanall docs emconfig 
+all:  check_xclbin $(EXE_FILE) emconfig 
 
 .PHONY: host
 host: check_xrt check_sysroot $(EXE_FILE)
 
-.PHONY: build
-build: xclbin
-
-xclbin:
-	mkdir -p $(BUILD_DIR)
-	$(CP) ../$(BUILD_DIR)/cgSolver.xclbin $(BUILD_DIR)/.
+check_xclbin:
+ifeq (,$(wildcard $(USER_BUILT_XCLBIN)))
+ifeq (,$(wildcard $(PRE_BUILT_XCLBIN)))
+	$(error Please build or checkout xclbin)
+endif
+endif
 
 # ################# Setting Rules for Host (Building Host Executable) ################
 $(EXE_FILE): $(HOST_SRCS) | check_xrt

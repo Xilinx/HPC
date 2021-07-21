@@ -105,19 +105,34 @@ LDFLAGS += -L$(XILINX_VIVADO)/lnx64/tools/fpo_v7_0 -Wl,--as-needed -lgmp -lmpfr 
 endif
 
 # ################### Setting package and image directory #######################
+USER_BUILT_XCLBIN := ../../build_dir.hw.xilinx_u280_xdma_201920_3/cgSolver.xclbin
+PRE_BUILT_XCLBIN := ../xclbin/cgSolver_ddrParParam_hbmRbParam.xclbin
+
+ifneq (,$(wildcard $(USER_BUILT_XCLBIN)))
+XCLBIN_PATH := $(USER_BUILT_XCLBIN)
+else
+XCLBIN_PATH := $(PRE_BUILT_XCLBIN)
+endif
 
 EXE_NAME := host.exe
 EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
-HOST_ARGS := xclbin/cgSolver_ddrParParam_hbmRbParam.xclbin
+HOST_ARGS := $(XCLBIN_PATH)
 
 # ######################### Setting Targets of Makefile ################################
 -include ./params.mk
 
 .PHONY: all clean cleanall docs emconfig 
-all: check_vpp check_platform check_sysroot $(EXE_FILE) emconfig
+all: check_vpp check_platform check_sysroot check_xclbin $(EXE_FILE) emconfig 
 
 .PHONY: host
 host: check_xrt check_sysroot $(EXE_FILE)
+
+check_xclbin:
+ifeq (,$(wildcard $(USER_BUILT_XCLBIN)))
+ifeq (,$(wildcard $(PRE_BUILT_XCLBIN)))
+	$(error Please build or checkout xclbin)
+endif
+endif
 
 # ################# Setting Rules for Host (Building Host Executable) ################
 $(EXE_FILE): $(HOST_SRCS) | check_xrt
