@@ -169,6 +169,7 @@ class Signature {
             th.join();
         }
 #else
+#pragma omp parallel for
         for (uint32_t i = 0; i < l_totalRbs; ++i) {
             genPars4Rb(i, p_rbSpms[i], l_parSpms[i]);
         }
@@ -257,6 +258,7 @@ class Signature {
             th.join();
         }
 #else
+#pragma omp parallel for
         for (unsigned int i = 0; i < l_size; i++) {
             create_padPar(i, l_parSpms[i], p_paddedParSpms[i]);
         }
@@ -380,6 +382,7 @@ class Signature {
         uint32_t l_rowIdxMod = l_memIdxWidth * l_rowIdxGap;
         uint32_t l_colIdxMod = l_memIdxWidth * m_parEntries;
 
+#pragma omp parallel for
         for (uint32_t c = 0; c < m_channels; c++) {
             uint32_t l_sParId = 0;
             for (uint32_t rbId = 0; rbId < m_rbParam.m_totalRbs; rbId++) {

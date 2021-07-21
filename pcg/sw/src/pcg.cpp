@@ -83,8 +83,8 @@ void JPCG_coo(void* handle,
     pImpl->getMetrics()->m_solver = duration.count();
 }
 void JPCG_getMetrics(void* handle,
-              Metrics & p_metric) {
+              Metrics * p_metric) {
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
-    p_metric = *pImpl->getMetrics();
+    *p_metric = *pImpl->getMetrics();
 }
 }
