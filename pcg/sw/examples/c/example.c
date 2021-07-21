@@ -14,7 +14,6 @@
  * limitations under the License.
 */
 #include "pcg.h"
-#include "spmv.h"
 #include <stdio.h>
 #include <stdlib.h>
 
