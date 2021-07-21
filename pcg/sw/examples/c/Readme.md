@@ -1,10 +1,10 @@
-# Xilinx pcg application C++ example
+# Xilinx pcg application C example
 
 This README files explains how to setup and run pcg example.  
 
 # Compile host:
 ```
-# cppdemo example showing simple API to use pcg.
+# c demo example showing simple API to use pcg.
 make
 
 ```
