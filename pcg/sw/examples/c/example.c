@@ -85,7 +85,6 @@ int main(int argc, const char** argv) {
     }
 
     void* pHandle = create_JPCG_handle(deviceId, xclbinPath);
-    printf("Oha-konban-chiwa World!\n");
     JPCG_coo(pHandle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
              &p_res, JPCG_MODE_DEFAULT);
     printf("First equation is solved in %d iterations with relative residual %e.\n", p_iter, p_res);
