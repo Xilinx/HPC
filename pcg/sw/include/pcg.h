@@ -32,11 +32,20 @@
 #define XILINX_PCG_LINKAGE_DECL extern
 #endif
 
-typedef int JPCG_status_t;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef int JPCG_status_t;
+
+typedef struct Metrics {
+    uint64_t m_n;
+    uint64_t m_nnz;
+    double m_init;
+    double m_matProc;
+    double m_vecProc;
+    double m_solver;
+} JPCG_metric_t;
 
 typedef enum JPCG_Mode { JPCG_MODE_DEFAULT = 0x00, // Used for completely new data
     JPCG_MODE_KEEP_NZ_LAYOUT = 0x01, // Update matrix values only
@@ -101,6 +110,8 @@ JPCG_status_t JPCG_peekAtLastStatus(void* handle);
 XILINX_PCG_LINKAGE_DECL
 const char* JPCG_getLastMessage(void* handle);
 
+XILINX_PCG_LINKAGE_DECL
+JPCG_status_t JPCG_getMetrics(void* handle, JPCG_metric_t *metric);
 #ifdef __cplusplus
         }
 #endif

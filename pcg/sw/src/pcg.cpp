@@ -16,7 +16,6 @@
 
 #include <chrono>
 #include "pcg.h"
-#include "impl/metrics.h"
 #include "impl/pcgImp.hpp"
 
 using PcgImpl = xilinx_apps::pcg::PCGImpl<double, 4, 64, 8, 16, 4096, 4096, 256>;
@@ -24,11 +23,11 @@ using PcgImpl = xilinx_apps::pcg::PCGImpl<double, 4, 64, 8, 16, 4096, 4096, 256>
 extern "C" {
 
 JPCG_status_t create_JPCG_handle(void **handle, const int deviceId, const char* xclbinPath) {
-    auto start = std::chrono::high_resolution_clock::now();
+    auto last = std::chrono::high_resolution_clock::now();
     PcgImpl* pImpl = new PcgImpl();
     pImpl->init(deviceId, xclbinPath);
-    auto finish = std::chrono::high_resolution_clock::now();
-    pImpl->getMetrics()->m_init = (finish - start).count();
+    std::chrono::duration<double> duration = std::chrono::high_resolution_clock::now() - last;
+    pImpl->getMetrics()->m_init = duration.count();
     *handle = pImpl;
     return 0;
 }
@@ -66,6 +65,7 @@ JPCG_status_t JPCG_coo(void* handle,
         default:
             break;
     }
+
     duration = std::chrono::high_resolution_clock::now() - last;
     last = std::chrono::high_resolution_clock::now();
     pImpl->getMetrics()->m_matProc = duration.count();
@@ -84,8 +84,9 @@ JPCG_status_t JPCG_coo(void* handle,
     pImpl->getMetrics()->m_solver = duration.count();
     return 0;
 }
-JPCG_metric_t JPCG_getMetrics(void* handle){
+JPCG_status_t JPCG_getMetrics(void* handle, JPCG_metric_t *metric){
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
-    return *pImpl->getMetrics();
+    *metric = *pImpl->getMetrics();
+    return 0;
 }
 }

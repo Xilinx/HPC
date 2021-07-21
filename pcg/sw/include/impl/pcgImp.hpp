@@ -20,7 +20,7 @@
 #include "gen_signature.hpp"
 #include "cgVector.hpp"
 #include "cgHost.hpp"
-#include "metrics.h"
+#include "pcg.h"
 
 namespace xilinx_apps {
 namespace pcg {

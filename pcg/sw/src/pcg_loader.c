@@ -80,6 +80,16 @@ void destroy_JPCG_handle(void *handle) {
 }
 
 XILINX_PCG_LINKAGE_DEF
+JPCG_status_t JPCG_getMetrics(void* handle, JPCG_metric_t *metric){
+    typedef JPCG_status_t (*GetMetrics)(void *, JPCG_metric_t *);
+    GetMetrics pGetMetrics = (GetMetrics) xilinx_apps_getCDynamicFunction("JPCG_getMetrics");
+    if (pGetMetrics)
+        return pGetMetrics(handle, metric);
+    else
+        return -1;
+}
+
+XILINX_PCG_LINKAGE_DEF
 JPCG_status_t JPCG_coo(void *handle, 
         const uint32_t p_n,
         const uint32_t p_nnz,
