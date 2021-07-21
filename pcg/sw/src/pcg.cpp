@@ -14,7 +14,9 @@
  * limitations under the License.
 */
 
+#include <chrono>
 #include "pcg.h"
+#include "impl/metrics.h"
 #include "impl/pcgImp.hpp"
 
 using PcgImpl = xilinx_apps::pcg::PCGImpl<double, 4, 64, 8, 16, 4096, 4096, 256>;
@@ -22,8 +24,11 @@ using PcgImpl = xilinx_apps::pcg::PCGImpl<double, 4, 64, 8, 16, 4096, 4096, 256>
 extern "C" {
 
 void* create_JPCG_handle(int deviceId, const char* xclbinPath) {
+    auto start = std::chrono::high_resolution_clock::now();
     PcgImpl* pImpl = new PcgImpl();
     pImpl->init(deviceId, xclbinPath);
+    auto finish = std::chrono::high_resolution_clock::now();
+    pImpl->getMetrics()->m_init = (finish - start).count();
     return pImpl;
 }
 
@@ -33,22 +38,25 @@ void destroy_JPCG_handle(void* handle) {
 }
 
 void JPCG_coo(void* handle,
-              JPCG_Mode mode,
-              uint32_t p_n,
-              uint32_t p_nnz,
+              const uint32_t p_n,
+              const uint32_t p_nnz,
               uint32_t* p_rowIdx,
               uint32_t* p_colIdx,
               double* p_data,
               double* matJ,
               double* b,
               double* x,
-              uint32_t p_maxIter,
-              double p_tol,
+              const uint32_t p_maxIter,
+              const double p_tol,
               uint32_t* p_iter,
-              double* p_res) {
+              double* p_res,
+              const JPCG_Mode mode) {
+    auto last = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration;
+
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
-    switch (mode) {
-        case JPCG_MODE_FULL:
+    switch (mode & JPCG_MODE_KEEP_MATRIX) {
+        case JPCG_MODE_DEFAULT:
             pImpl->setCooMat(p_n, p_nnz, p_rowIdx, p_colIdx, p_data);
             break;
         case JPCG_MODE_KEEP_NZ_LAYOUT:
@@ -57,10 +65,26 @@ void JPCG_coo(void* handle,
         default:
             break;
     }
+    duration = std::chrono::high_resolution_clock::now() - last;
+    last = std::chrono::high_resolution_clock::now();
+    pImpl->getMetrics()->m_matProc = duration.count();
+
     pImpl->setVec(p_n, b, matJ);
+    duration = std::chrono::high_resolution_clock::now() - last;
+    last = std::chrono::high_resolution_clock::now();
+    pImpl->getMetrics()->m_vecProc = duration.count();
+
     xilinx_apps::pcg::Results<double> l_res = pImpl->run(p_maxIter, p_tol);
     *p_res = std::sqrt(l_res.m_residual / pImpl->getDot());
     *p_iter = l_res.m_nIters;
     memcpy((char*) x, (char*) l_res.m_x, sizeof(double) * p_n);
+    duration = std::chrono::high_resolution_clock::now() - last;
+    last = std::chrono::high_resolution_clock::now();
+    pImpl->getMetrics()->m_solver = duration.count();
+}
+void JPCG_getMetrics(void* handle,
+              Metrics & p_metric) {
+    auto pImpl = reinterpret_cast<PcgImpl*>(handle);
+    p_metric = *pImpl->getMetrics();
 }
 }
