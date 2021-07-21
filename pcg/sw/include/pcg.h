@@ -39,8 +39,6 @@ extern "C" {
 typedef int JPCG_status_t;
 
 typedef struct Metrics {
-    uint64_t m_n;
-    uint64_t m_nnz;
     double m_init;
     double m_matProc;
     double m_vecProc;
