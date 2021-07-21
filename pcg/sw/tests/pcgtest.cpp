@@ -75,7 +75,8 @@ int main(int argc, char** argv) {
     readBin(l_datFilePath + "/A_diag.mat", l_diagA.data(), l_matInfo.m_m * sizeof(CG_dataType));
     readBin(l_datFilePath + "/b.mat", l_b.data(), l_matInfo.m_m * sizeof(CG_dataType));
 
-    void *pHandle = create_JPCG_handle(l_deviceId, binaryFile.c_str());
+    void *pHandle = nullptr;
+    create_JPCG_handle(&pHandle, l_deviceId, binaryFile.c_str());
     uint32_t numIterations = 0;
     double residual = 0.0;
     JPCG_coo(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),

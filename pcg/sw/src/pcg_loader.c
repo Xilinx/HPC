@@ -63,12 +63,12 @@ void *xilinx_apps_getCDynamicFunction(const char *funcName) {
 //#####################################################################################################################
 
 XILINX_PCG_LINKAGE_DEF
-void *create_JPCG_handle(int deviceId, const char *xclbinPath) {
-    typedef void *(*CreateFunc)(int, const char *);
+JPCG_status_t create_JPCG_handle(void **handle, int deviceId, const char *xclbinPath) {
+    typedef JPCG_status_t (*CreateFunc)(void**, int, const char *);
     CreateFunc pCreateFunc = (CreateFunc) xilinx_apps_getCDynamicFunction("create_JPCG_handle");
     if (!pCreateFunc)
-        return 0;
-    return pCreateFunc(deviceId, xclbinPath);
+        return -1;
+    return pCreateFunc(handle, deviceId, xclbinPath);
 }
 
 XILINX_PCG_LINKAGE_DEF
@@ -80,7 +80,7 @@ void destroy_JPCG_handle(void *handle) {
 }
 
 XILINX_PCG_LINKAGE_DEF
-void JPCG_coo(void *handle, 
+JPCG_status_t JPCG_coo(void *handle, 
         const uint32_t p_n,
         const uint32_t p_nnz,
         const uint32_t *p_rowIdx,
@@ -94,11 +94,11 @@ void JPCG_coo(void *handle,
         uint32_t *p_iter,
         double *p_res,
         const JPCG_Mode mode) {
-    typedef void (*ApiFunc)(void *, uint32_t, uint32_t, const uint32_t*, const uint32_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, JPCG_Mode);
+    typedef JPCG_status_t (*ApiFunc)(void *, uint32_t, uint32_t, const uint32_t*, const uint32_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const JPCG_Mode);
     ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("JPCG_coo");
     if (!pApiFunc)
-        return;
-    pApiFunc(handle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, p_iter, p_res, mode);
+        return -1;
+    return pApiFunc(handle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, p_iter, p_res, mode);
 }
 
 #ifdef __cplusplus

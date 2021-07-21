@@ -32,6 +32,8 @@
 #define XILINX_PCG_LINKAGE_DECL extern
 #endif
 
+typedef int JPCG_status_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,7 +51,7 @@ typedef enum JPCG_Mode { JPCG_MODE_DEFAULT = 0x00, // Used for completely new da
  * return the pointer of created handle
  */
 XILINX_PCG_LINKAGE_DECL
-void* create_JPCG_handle(const int deviceId, const char* xclbinPath);
+JPCG_status_t create_JPCG_handle(void **handle, const int deviceId, const char* xclbinPath);
 
 /** destroy_JPCG_handle destroy given JPCG handle
  *
@@ -78,7 +80,7 @@ void destroy_JPCG_handle(void* handle);
  *
  */
 XILINX_PCG_LINKAGE_DECL
-void JPCG_coo(void* handle,
+JPCG_status_t JPCG_coo(void* handle,
               const uint32_t p_n,
               const uint32_t p_nnz,
               const uint32_t* p_rowIdx,
@@ -93,8 +95,14 @@ void JPCG_coo(void* handle,
               double* p_res,
               const JPCG_Mode mode);
 
+XILINX_PCG_LINKAGE_DECL
+JPCG_status_t JPCG_peekAtLastStatus(void* handle);
+
+XILINX_PCG_LINKAGE_DECL
+const char* JPCG_getLastMessage(void* handle);
+
 #ifdef __cplusplus
-}
+        }
 #endif
 
 #endif /* PCG_H */

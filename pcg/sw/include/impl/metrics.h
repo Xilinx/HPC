@@ -17,11 +17,11 @@
 #ifndef METRICS_H
 #define METRICS_H
 
-struct Metrics {
+typedef struct Metrics {
     double m_init;
     double m_matProc;
     double m_vecProc;
     double m_solver;
-};
+} JPCG_metric_t;
 
 #endif
