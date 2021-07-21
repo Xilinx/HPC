@@ -21,7 +21,7 @@ using PcgImpl = xilinx_apps::pcg::PCGImpl<double, 4, 64, 8, 16, 4096, 4096, 256>
 
 extern "C" {
 
-void* create_JPCG_handle(int deviceId, const char* xclbinPath) {
+void* create_JPCG_handle(const int deviceId, const char* xclbinPath) {
     PcgImpl* pImpl = new PcgImpl();
     pImpl->init(deviceId, xclbinPath);
     return pImpl;
@@ -33,17 +33,17 @@ void destroy_JPCG_handle(void* handle) {
 }
 
 void JPCG_coo(void* handle,
-              JPCG_Mode mode,
-              uint32_t p_n,
-              uint32_t p_nnz,
-              uint32_t* p_rowIdx,
-              uint32_t* p_colIdx,
-              double* p_data,
-              double* matJ,
-              double* b,
+              const JPCG_Mode mode,
+              const uint32_t p_n,
+              const uint32_t p_nnz,
+              const uint32_t* p_rowIdx,
+              const uint32_t* p_colIdx,
+              const double* p_data,
+              const double* matJ,
+              const double* b,
               double* x,
-              uint32_t p_maxIter,
-              double p_tol,
+              const uint32_t p_maxIter,
+              const double p_tol,
               uint32_t* p_iter,
               double* p_res) {
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);

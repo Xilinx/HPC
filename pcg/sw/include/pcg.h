@@ -39,24 +39,24 @@ extern "C" {
 typedef enum JPCG_Mode { JPCG_MODE_FULL = 0, JPCG_MODE_KEEP_NZ_LAYOUT = 1, JPCG_MODE_DO_MAGIC = 99 } JPCG_Mode;
 
 XILINX_PCG_LINKAGE_DECL
-void* create_JPCG_handle(int deviceId, const char* xclbinPath);
+void* create_JPCG_handle(const int deviceId, const char* xclbinPath);
 
 XILINX_PCG_LINKAGE_DECL
 void destroy_JPCG_handle(void* handle);
 
 XILINX_PCG_LINKAGE_DECL
 void JPCG_coo(void* handle,
-              JPCG_Mode mode,
-              uint32_t p_n,
-              uint32_t p_nnz,
-              uint32_t* p_rowIdx,
-              uint32_t* p_colIdx,
-              double* p_data,
-              double* matJ,
-              double* b,
+              const JPCG_Mode mode,
+              const uint32_t p_n,
+              const uint32_t p_nnz,
+              const uint32_t* p_rowIdx,
+              const uint32_t* p_colIdx,
+              const double* p_data,
+              const double* matJ,
+              const double* b,
               double* x,
-              uint32_t p_maxIter,
-              double p_tol,
+              const uint32_t p_maxIter,
+              const double p_tol,
               uint32_t* p_iter,
               double* p_res);
 
