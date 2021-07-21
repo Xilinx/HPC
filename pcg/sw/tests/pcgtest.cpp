@@ -93,8 +93,8 @@ int main(int argc, char** argv) {
 //    l_res = l_pcg.run(l_maxIter, l_tolerance);
     uint32_t numIterations = 0;
     double residual = 0.0;
-    JPCG_coo(pHandle, JPCG_MODE_FULL, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
-        l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual);
+    JPCG_coo(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
+        l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, JPCG_MODE_DEFAULT);
     showTimeData("PCG run time: ", l_timer[3], l_timer[4], &l_runTime);
     
     for (int i = 1; i < l_numRuns; ++i) {
@@ -106,8 +106,8 @@ int main(int argc, char** argv) {
 //        l_pcg.setVec(l_matInfo.m_m, l_b.data(), l_diagA.data());
         showTimeData("Vector initialization & transmission time: ", l_timer[1], l_timer[2], &l_h2d_time);
 //        l_res = l_pcg.run(l_maxIter, l_tolerance);
-        JPCG_coo(pHandle, JPCG_MODE_KEEP_NZ_LAYOUT, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(),
-            l_data.data(), l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual);
+        JPCG_coo(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(),
+            l_data.data(), l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, JPCG_MODE_KEEP_NZ_LAYOUT);
         showTimeData("PCG run time: ", l_timer[2], l_timer[3], &l_runTime);
     }
 
@@ -131,7 +131,17 @@ int main(int argc, char** argv) {
     std::cout
         << "num of iterations, mat partition time[ms], H2D time[ms], total run time[ms], time[ms]/run, num_mismatches";
     std::cout << std::endl;
-    
+
+    /*
+    Metrics metric; 
+    JPCG_getMetrics(pHandle, metric);
+    std::cout << metric.m_init << ','
+        << metric.m_matProc << ','
+        << metric.m_vecProc << ','
+        << metric.m_solver 
+        << std::endl;
+   */ 
+
 #ifdef TODO
     std::cout << "DATA_CSV:," << l_mtxName << "," << l_info[0] << "," << l_info[2];
     std::cout << "," << l_info[4] << "," << l_info[5] << "," << l_padRatio;

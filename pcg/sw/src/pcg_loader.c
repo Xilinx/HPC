@@ -81,7 +81,6 @@ void destroy_JPCG_handle(void *handle) {
 
 XILINX_PCG_LINKAGE_DEF
 void JPCG_coo(void *handle, 
-        JPCG_Mode mode, 
         uint32_t p_n,
         uint32_t p_nnz,
         uint32_t *p_rowIdx,
@@ -93,12 +92,13 @@ void JPCG_coo(void *handle,
         uint32_t p_maxIter,
         double p_tol,
         uint32_t *p_iter,
-        double *p_res) {
-    typedef void (*ApiFunc)(void *, JPCG_Mode, uint32_t, uint32_t, uint32_t*, uint32_t*, double*, double*, double*, double*, uint32_t, double, uint32_t*, double*);
+        double *p_res,
+        JPCG_Mode mode) {
+    typedef void (*ApiFunc)(void *, uint32_t, uint32_t, uint32_t*, uint32_t*, double*, double*, double*, double*, uint32_t, double, uint32_t*, double*, JPCG_Mode);
     ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("JPCG_coo");
     if (!pApiFunc)
         return;
-    pApiFunc(handle, mode, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, p_iter, p_res);
+    pApiFunc(handle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, p_iter, p_res, mode);
 }
 
 #ifdef __cplusplus
