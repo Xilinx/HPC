@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-void genSPD(uint32_t p_n, uint32_t p_nnz, uint32_t * p_rowIdx, uint32_t * p_colIdx, double *p_data, double *matJ){
+void genSPD(uint32_t p_n, uint32_t p_nnz, uint32_t *p_rowIdx, uint32_t *p_colIdx, double *p_data, double *matJ){
     double *tmp = malloc(sizeof(double) * p_n);
 
     uint32_t idx = 0, i = 0;
@@ -88,7 +88,7 @@ int main(int argc, const char** argv) {
     printf("Oha-konban-chiwa World!\n");
     JPCG_coo(pHandle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
              &p_res, JPCG_MODE_DEFAULT);
-    printf("First equation solved in %d iterations with relative residual %e.\n", p_iter, p_res);
+    printf("First equation is solved in %d iterations with relative residual %e.\n", p_iter, p_res);
 
     for (i = 0; i < p_n; i++) {
         int val = rand() % p_n - p_n / 2;
@@ -96,7 +96,7 @@ int main(int argc, const char** argv) {
     }
     JPCG_coo(pHandle, p_n, p_nnz, NULL, NULL, NULL, matJ, b, x, p_maxIter, p_tol, &p_iter,
              &p_res, JPCG_MODE_KEEP_MATRIX);
-    printf("Second equation solved in %d iterations with relative residual %e.\n", p_iter, p_res);
+    printf("Second equation is solved in %d iterations with relative residual %e.\n", p_iter, p_res);
     destroy_JPCG_handle(pHandle);
 
     free(p_rowIdx);
