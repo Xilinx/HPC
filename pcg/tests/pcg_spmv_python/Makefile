@@ -69,19 +69,17 @@ TEMP_REPORT_DIR := $(CUR_DIR)/reports/_x.$(TARGET).$(XDEVICE)
 BUILD_DIR := build_dir.$(TARGET).$(XDEVICE)
 BUILD_REPORT_DIR := $(CUR_DIR)/reports/_build.$(TARGET).$(XDEVICE)
 EMCONFIG_DIR := $(BUILD_DIR)
-XCLBIN_DIR := $(CUR_DIR)/$(BUILD_DIR)
-export XCL_BINDIR = $(XCLBIN_DIR)
 
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
-HOST_SRCS += $(XFLIB_DIR)/pcg/tests/test_cgSolver_spmv_jacobi.cpp
+HOST_SRCS += $(XFLIB_DIR)/pcg/tests/pcg_spmv_python/test_cgSolver_spmv_jacobi.cpp
 HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp
 
 CXXFLAGS += -DHW_CLK=4e-9 -DCG_numTasks=1 -DCG_dataType=double -DCG_numChannels=16 -DCG_parEntries=4 -DCG_instrBytes=64 -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256
 CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
 CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include
 CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/include
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/tests/pcg_spmv_jacobi_16ch/host
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/tests/pcg_spmv_python/host
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
@@ -110,167 +108,22 @@ EXE_NAME := host.exe
 EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
 HOST_ARGS := $(BUILD_DIR)/cgSolver.xclbin
 
-# ##################### Kernel compiler global settings ##########################
-VPP_FLAGS += -t $(TARGET) --platform $(XPLATFORM) --save-temps --optimize 2
-VPP_FLAGS += --hls.jobs 8
-VPP_LDFLAGS += --vivado.synth.jobs 8 --vivado.impl.jobs 8
-ifneq (,$(shell echo $(XPLATFORM) | awk '/u280/'))
-VPP_FLAGS += 
-endif
-
-VPP_FLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
-VPP_FLAGS += -I$(XFLIB_DIR)/L1/hpc/include/hw/
-VPP_FLAGS += -I$(XFLIB_DIR)/L1/hpc/include/hw/cgSolver
-VPP_FLAGS += -I$(XFLIB_DIR)/pcg/hw/include
-VPP_FLAGS += -I$(XFLIB_DIR)/L2/common/include/hw
-VPP_FLAGS += -I$(XFLIB_DIR)/L1/blas/include/hw
-VPP_FLAGS += -I$(XFLIB_DIR)/L1/sparse/include/hw
-VPP_FLAGS += -I$(XFLIB_DIR)/L2/sparse/include/hw/fp64
-
-ifneq (,$(shell echo $(XPLATFORM) | awk '/u280/'))
-VPP_LDFLAGS_cgSolver += --kernel_frequency 333
-else
-krnl_timer_VPP_FLAGS += --hls.clock 333000000:krnl_timer
-krnl_duplicate_VPP_FLAGS += --hls.clock 333000000:krnl_duplicate
-krnl_dupTk4_VPP_FLAGS += --hls.clock 333000000:krnl_dupTk4
-krnl_loadArbParam_VPP_FLAGS += --hls.clock 333000000:krnl_loadArbParam
-krnl_loadAval_VPP_FLAGS += --hls.clock 333000000:krnl_loadAval
-krnl_loadPkApar_VPP_FLAGS += --hls.clock 333000000:krnl_loadPkApar
-krnl_storeApk_VPP_FLAGS += --hls.clock 333000000:krnl_storeApk
-krnl_update_xk_VPP_FLAGS += --hls.clock 333000000:krnl_update_xk
-krnl_update_rk_jacobi_VPP_FLAGS += --hls.clock 333000000:krnl_update_rk_jacobi
-krnl_update_pk_VPP_FLAGS += --hls.clock 333000000:krnl_update_pk
-krnl_control_VPP_FLAGS += --hls.clock 333000000:krnl_control
-fwdParParamKernel_VPP_FLAGS += --hls.clock 333000000:fwdParParamKernel
-moveXkernel_VPP_FLAGS += --hls.clock 333000000:moveXkernel
-selMultXkernel_VPP_FLAGS += --hls.clock 333000000:selMultXkernel
-rowAccKernel_VPP_FLAGS += --hls.clock 333000000:rowAccKernel
-assembleYkernel_VPP_FLAGS += --hls.clock 333000000:assembleYkernel
-endif
-
-VPP_FLAGS += -DCG_numTasks=1 -DCG_dataType=double -DCG_instrBytes=64 -DCG_tkStrWidth=8 -DCG_parEntries=4 -DCG_numChannels=16 -DCG_vecParEntries=4 -DSPARSE_dataType=double -DSPARSE_dataBits=64 -DSPARSE_parEntries=4 -DSPARSE_indexType=uint16_t -DSPARSE_indexBits=16 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_accLatency=8 -DSPARSE_hbmMemBits=256 -DSPARSE_hbmChannels=16 
-
-# Kernel linker flags
-VPP_LDFLAGS_cgSolver_temp := --config $(CUR_DIR)/opts.cfg
-
-ifneq (,$(shell echo $(XPLATFORM) | awk '/u280/'))
-VPP_LDFLAGS_cgSolver_temp += --config $(CUR_DIR)/conn_u280.cfg
-endif
-VPP_LDFLAGS_cgSolver += $(VPP_LDFLAGS_cgSolver_temp)
-
-# ############################ Declaring Binary Containers ##########################
-
-BINARY_CONTAINERS += $(BUILD_DIR)/cgSolver.xclbin
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/krnl_timer.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/krnl_duplicate.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/krnl_dupTk4.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/krnl_loadArbParam.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/krnl_loadAval.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/krnl_loadPkApar.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/krnl_storeApk.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/krnl_update_xk.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/krnl_update_rk_jacobi.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/krnl_update_pk.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/krnl_control.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/fwdParParamKernel.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/moveXkernel.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/selMultXkernel.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/rowAccKernel.xo
-BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/assembleYkernel.xo
-
 # ######################### Setting Targets of Makefile ################################
 
 -include ./params.mk
 
 .PHONY: all clean cleanall docs emconfig
-all: check_vpp check_platform check_sysroot $(EXE_FILE) $(BINARY_CONTAINERS) emconfig
+all: check_vpp check_platform check_sysroot $(EXE_FILE) emconfig xclbin
 
 .PHONY: host
 host: check_xrt check_sysroot $(EXE_FILE)
 
-.PHONY: xclbin
-xclbin: check_vpp check_sysroot $(BINARY_CONTAINERS)
-
 .PHONY: build
 build: xclbin
 
-# ################ Setting Rules for Binary Containers (Building Kernels) ################
-$(TEMP_DIR)/krnl_timer.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_timer.cpp
-	$(ECHO) "Compiling Kernel: krnl_timer"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_timer_VPP_FLAGS) $(VPP_FLAGS) -k krnl_timer -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_duplicate.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_duplicate.cpp
-	$(ECHO) "Compiling Kernel: krnl_duplicate"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_duplicate_VPP_FLAGS) $(VPP_FLAGS) -k krnl_duplicate -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_dupTk4.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_dupTk4.cpp
-	$(ECHO) "Compiling Kernel: krnl_dupTk4"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_dupTk4_VPP_FLAGS) $(VPP_FLAGS) -k krnl_dupTk4 -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_loadArbParam.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_loadArbParam.cpp
-	$(ECHO) "Compiling Kernel: krnl_loadArbParam"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_loadArbParam_VPP_FLAGS) $(VPP_FLAGS) -k krnl_loadArbParam -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_loadAval.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_loadAval.cpp
-	$(ECHO) "Compiling Kernel: krnl_loadAval"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_loadAval_VPP_FLAGS) $(VPP_FLAGS) -k krnl_loadAval -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_loadPkApar.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_loadPkApar.cpp
-	$(ECHO) "Compiling Kernel: krnl_loadPkApar"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_loadPkApar_VPP_FLAGS) $(VPP_FLAGS) -k krnl_loadPkApar -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_storeApk.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_storeApk.cpp
-	$(ECHO) "Compiling Kernel: krnl_storeApk"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_storeApk_VPP_FLAGS) $(VPP_FLAGS) -k krnl_storeApk -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_update_xk.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_update_xk.cpp
-	$(ECHO) "Compiling Kernel: krnl_update_xk"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_update_xk_VPP_FLAGS) $(VPP_FLAGS) -k krnl_update_xk -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_update_rk_jacobi.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_update_rk_jacobi.cpp
-	$(ECHO) "Compiling Kernel: krnl_update_rk_jacobi"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_update_rk_jacobi_VPP_FLAGS) $(VPP_FLAGS) -k krnl_update_rk_jacobi -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_update_pk.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_update_pk.cpp
-	$(ECHO) "Compiling Kernel: krnl_update_pk"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_update_pk_VPP_FLAGS) $(VPP_FLAGS) -k krnl_update_pk -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/krnl_control.xo: $(XFLIB_DIR)/pcg/hw/src/krnl_control.cpp
-	$(ECHO) "Compiling Kernel: krnl_control"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(krnl_control_VPP_FLAGS) $(VPP_FLAGS) -k krnl_control -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/fwdParParamKernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/fwdParParamKernel.cpp
-	$(ECHO) "Compiling Kernel: fwdParParamKernel"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(fwdParParamKernel_VPP_FLAGS) $(VPP_FLAGS) -k fwdParParamKernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/moveXkernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/moveXkernel.cpp
-	$(ECHO) "Compiling Kernel: moveXkernel"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(moveXkernel_VPP_FLAGS) $(VPP_FLAGS) -k moveXkernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/selMultXkernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/selMultXkernel.cpp
-	$(ECHO) "Compiling Kernel: selMultXkernel"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(selMultXkernel_VPP_FLAGS) $(VPP_FLAGS) -k selMultXkernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/rowAccKernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/rowAccKernel.cpp
-	$(ECHO) "Compiling Kernel: rowAccKernel"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(rowAccKernel_VPP_FLAGS) $(VPP_FLAGS) -k rowAccKernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-$(TEMP_DIR)/assembleYkernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/assembleYkernel.cpp
-	$(ECHO) "Compiling Kernel: assembleYkernel"
-	mkdir -p $(TEMP_DIR)
-	$(VPP) -c $(assembleYkernel_VPP_FLAGS) $(VPP_FLAGS) -k assembleYkernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
-
-ifneq (,$(shell echo $(XPLATFORM) | awk '/u280/'))
-
-$(BUILD_DIR)/cgSolver.xclbin: $(BINARY_CONTAINER_cgSolver_OBJS)
+xclbin:
 	mkdir -p $(BUILD_DIR)
-	$(VPP) -l $(VPP_FLAGS) --temp_dir $(TEMP_DIR) --report_dir $(BUILD_REPORT_DIR)/cgSolver $(VPP_LDFLAGS) $(VPP_LDFLAGS_cgSolver) -o '$@' $(+)
-else 
-$(BUILD_DIR)/cgSolver.xclbin: $(BINARY_CONTAINER_cgSolver_OBJS)
-	mkdir -p $(BUILD_DIR)
-	$(VPP) -l $(VPP_FLAGS) --temp_dir $(TEMP_DIR) --report_dir $(BUILD_REPORT_DIR)/cgSolver $(VPP_LDFLAGS) $(VPP_LDFLAGS_cgSolver) -o '$@' $(+)
-endif
-
+	$(CP) ../../sw/staging/xclbin/pcg_xilinx_u280_xdma_201920_3.xclbin $(BUILD_DIR)/.
 
 # ################# Setting Rules for Host (Building Host Executable) ################
 $(EXE_FILE): $(HOST_SRCS) | check_xrt
@@ -280,7 +133,6 @@ $(EXE_FILE): $(HOST_SRCS) | check_xrt
 emconfig:$(EMCONFIG_DIR)/emconfig.json
 $(EMCONFIG_DIR)/emconfig.json:
 	emconfigutil --platform $(XPLATFORM) --od $(EMCONFIG_DIR)
-
 
 # ###############Setting Essential Checks And Running Rules For Vitis Flow #############
 run: all

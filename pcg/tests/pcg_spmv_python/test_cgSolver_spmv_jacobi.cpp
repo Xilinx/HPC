@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
     host_buffer_t<CG_dataType> h_zk(l_vecSize);
     host_buffer_t<CG_dataType> h_jacobi(l_vecSize);
 
-    for (int i = 0; i < l_vecSize; i++) {
+    for (unsigned int i = 0; i < l_vecSize; i++) {
         h_xk[i] = 0;
         h_Apk[i] = 0;
     }
@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
     readBin(l_vecFilePath + "/b.mat", h_b.size() * sizeof(CG_dataType), h_b);
 
     CG_dataType l_dot = 0, l_rz = 0;
-    for (int i = 0; i < l_vecSize; i++) {
+    for (unsigned int i = 0; i < l_vecSize; i++) {
         h_rk[i] = h_b[i];
         h_jacobi[i] = 1.0 / h_diagA[i];
         h_zk[i] = h_jacobi[i] * h_rk[i];
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
 
     int l_deviceId = 0;
     bool l_debug = false;
-    if (argc > l_idx) {
+    if (argc > (int)l_idx) {
         std::string l_option = argv[l_idx++];
         if (l_option == "--debug")
             l_debug = true;
@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
             l_deviceId = stoi(l_option);
     }
 
-    if (argc > l_idx) l_deviceId = atoi(argv[l_idx++]);
+    if (argc > (int)l_idx) l_deviceId = atoi(argv[l_idx++]);
 
     FPGA l_fpga(l_deviceId);
     l_fpga.xclbin(binaryFile);

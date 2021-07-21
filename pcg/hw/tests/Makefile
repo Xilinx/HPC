@@ -123,7 +123,7 @@ build: xclbin
 
 xclbin:
 	mkdir -p $(BUILD_DIR)
-	$(CP) -r ../$(BUILD_DIR)/cgSolver.xclbin $(BUILD_DIR)/.
+	$(CP) ../$(BUILD_DIR)/cgSolver.xclbin $(BUILD_DIR)/.
 
 # ################# Setting Rules for Host (Building Host Executable) ################
 $(EXE_FILE): $(HOST_SRCS) | check_xrt
