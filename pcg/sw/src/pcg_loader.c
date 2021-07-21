@@ -83,18 +83,18 @@ XILINX_PCG_LINKAGE_DEF
 void JPCG_coo(void *handle, 
         uint32_t p_n,
         uint32_t p_nnz,
-        uint32_t *p_rowIdx,
-        uint32_t *p_colIdx,
-        double *p_data,
-        double *matJ,
-        double *b,
-        double *x,
-        uint32_t p_maxIter,
-        double p_tol,
-        uint32_t *p_iter,
+        const uint32_t *p_rowIdx,
+        const uint32_t *p_colIdx,
+        const double *p_data,
+        const double *matJ,
+        const double *b,
+        const double *x,
+        const uint32_t p_maxIter,
+        const double p_tol,
+        const uint32_t *p_iter,
         double *p_res,
         JPCG_Mode mode) {
-    typedef void (*ApiFunc)(void *, uint32_t, uint32_t, uint32_t*, uint32_t*, double*, double*, double*, double*, uint32_t, double, uint32_t*, double*, JPCG_Mode);
+    typedef void (*ApiFunc)(void *, uint32_t, uint32_t, const uint32_t*, const uint32_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, JPCG_Mode);
     ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("JPCG_coo");
     if (!pApiFunc)
         return;
