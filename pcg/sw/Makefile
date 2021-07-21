@@ -468,16 +468,20 @@ $(STAGE_SUBDIRS):
 TEST_DIR = tests
 
 #INCLUDES_test = -I$(STAGE_DIR)/include -I$(XILINX_XRT)/include
-INCLUDES_test = -I$(STAGE_DIR)/include
+INCLUDES_test = \
+    -I$(STAGE_DIR)/include \
+    -I$(HPC_DIR)/utils/include \
+    -I$(HPC_DIR)/utils/include/sw \
+    -I$(HPC_DIR)/L2/sparse/include
 
 LDLIBS_test = \
 	
 
 SRC_FILE_NAMES_test = \
-    pcgtest.c
+    pcgtest.cpp
 
 SRCS_test = $(addprefix $(TEST_DIR)/,$(SRC_FILE_NAMES_test))
-OBJS_test = $(addprefix $(CPP_BUILD_DIR)/,$(notdir $(SRCS_test:.c=.o)))
+OBJS_test = $(addprefix $(CPP_BUILD_DIR)/,$(notdir $(SRCS_test:.cpp=.o)))
 DEPS_test = $(OBJS_test:.o=.d)
 
 # List of all test executables to build
@@ -500,10 +504,10 @@ cppTest2: $(EXECS_test)
 LDFLAGS_test = -fPIC -w -L $(CPP_BUILD_DIR) -l$(LIB_SHORT_NAME) -lstdc++
 
 $(CPP_BUILD_DIR)/pcgtest: $(CPP_BUILD_DIR)/pcgtest.o $(CPP_BUILD_DIR)/$(LIB_NAME)
-	gcc -o $@ $< $(LDFLAGS_test) $(LIB_DEPS)
+	$(LINK.cc) -o $@ $< $(LDFLAGS_test) $(LIB_DEPS)
 
-$(CPP_BUILD_DIR)/pcgdyntest: $(CPP_BUILD_DIR)/pcgtest.o $(CPP_BUILD_DIR)/$(LOADER_NAME) $(CPP_BUILD_DIR)/$(LIB_NAME)
-	gcc -o $@ $< -fPIC -w -L $(CPP_BUILD_DIR) -l$(LOADER_SHORT_NAME) -ldl -lpthread
+$(CPP_BUILD_DIR)/pcgdyntest: $(CPP_BUILD_DIR)/pcgtest.o $(CPP_BUILD_DIR)/gen_signature.o $(CPP_BUILD_DIR)/$(LOADER_NAME) $(CPP_BUILD_DIR)/$(LIB_NAME)
+	$(LINK.cc) -o $@ $< $(CPP_BUILD_DIR)/gen_signature.o -fPIC -w -L $(CPP_BUILD_DIR) -l$(LOADER_SHORT_NAME) -ldl -lpthread
 
 # TODO: dynamic exec shouldn't have to link with OpenCL, etc.  Figure out why the link line below
 # causes undefined symbols to OpenCL and others
@@ -528,17 +532,13 @@ run-test: cppTest run-prep-data
 	@echo "Running statically built pcgtest..."
 	@. $(XILINX_XRT)/setup.sh; \
 	export LD_LIBRARY_PATH=$(PWD)/$(CPP_BUILD_DIR):$$LD_LIBRARY_PATH; \
-	$(CPP_BUILD_DIR)/pcgtest  $(DEVICE_ID) $(STAGE_XCLBIN_FILE)
-
-#	$(CPP_BUILD_DIR)/pcgtest $(STAGE_XCLBIN_FILE) 5000 1e-12 $(TEST_DATA_DIR) nasa2910 1 $(DEVICE_ID)
+	$(CPP_BUILD_DIR)/pcgtest $(STAGE_XCLBIN_FILE) 5000 1e-12 $(TEST_DATA_DIR) nasa2910 1 $(DEVICE_ID)
 
 run-dyn-test: cppTest run-prep-data
 	@echo "Running dynamically loaded pcgdyntest..."
 	@. $(XILINX_XRT)/setup.sh; \
 	export LD_LIBRARY_PATH=$(PWD)/$(CPP_BUILD_DIR):$$LD_LIBRARY_PATH; \
-	$(CPP_BUILD_DIR)/pcgdyntest  $(DEVICE_ID) $(STAGE_XCLBIN_FILE)
-
-#	$(CPP_BUILD_DIR)/pcgdyntest $(STAGE_XCLBIN_FILE) 5000 1e-12 $(TEST_DATA_DIR) nasa2910 1 $(DEVICE_ID)
+	$(CPP_BUILD_DIR)/pcgdyntest $(STAGE_XCLBIN_FILE) 5000 1e-12 $(TEST_DATA_DIR) nasa2910 1 $(DEVICE_ID)
 
 run-long-test: cppTest
 	@echo "Running pcgtest on full data set..."
@@ -550,12 +550,12 @@ run-long-test: cppTest
 define BUILD_CPP_RULE
 
 $(CPP_BUILD_DIR)/$(notdir $(basename $(1)).o): $(1)
-	gcc -c $(INCLUDES_test) -o $$@ $$<
+	$(COMPILE.cc) $(INCLUDES_test) -o $$@ $$<
 
 $(CPP_BUILD_DIR)/$(notdir $(basename $(1)).d): $(1)
 	@set -e; \
 	rm -f $$@; \
-	gcc -MM -MT $(CPP_BUILD_DIR)/$(notdir $(basename $(1)).o) $(INCLUDES_test) -MF $$@.$$$$$$$$ $$<; \
+	$(COMPILE.cc) -MM -MT $(CPP_BUILD_DIR)/$(notdir $(basename $(1)).o) $(INCLUDES_test) -MF $$@.$$$$$$$$ $$<; \
         sed 's,\($(CPP_BUILD_DIR)/$(notdir $(basename $(1)).o)\)[ :]*,\1 $$@ : ,g' < $$@.$$$$$$$$ > $$@; \
 	rm -f $$@.$$$$$$$$
 
