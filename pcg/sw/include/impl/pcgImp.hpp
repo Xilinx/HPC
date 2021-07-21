@@ -20,6 +20,7 @@
 #include "gen_signature.hpp"
 #include "cgVector.hpp"
 #include "cgHost.hpp"
+#include "metrics.h"
 
 namespace xilinx_apps {
 namespace pcg {
@@ -139,6 +140,10 @@ class PCGImpl {
         m_host.sendInstr(l_cgInstr.h_instr, l_cgInstr.h_instrBytes);
     }
 
+    Metrics* getMetrics(){
+        return &m_Metrics;
+    }
+
    private:
     SpmPar<t_DataType> m_spmPar =
         SpmPar<t_DataType>(t_ParEntries, t_AccLatency, t_HbmChannels, t_MaxRows, t_MaxCols, t_HbmMemBits);
@@ -146,6 +151,7 @@ class PCGImpl {
     GenCgInstr<t_DataType, t_InstrBytes> m_genInstr;
     xCgHost m_host;
     MatPartition m_matPar;
+    Metrics m_Metrics;
 };
 }
 }
