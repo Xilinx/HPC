@@ -107,7 +107,7 @@ endif
 
 EXE_NAME := host.exe
 EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
-HOST_ARGS := $(BUILD_DIR)/pcg_xilinx_u280_xdma_201920_3.xclbin 32 1e-12 $(CUR_DIR)/sig_dat/  $(CUR_DIR)/vec_dat ted_B
+HOST_ARGS := $(BUILD_DIR)/cgSolver_ddrParParam_hbmRbParam.xclbin 32 1e-12 $(CUR_DIR)/sig_dat/  $(CUR_DIR)/vec_dat ted_B
 
 # ######################### Setting Targets of Makefile ################################
 
@@ -122,7 +122,7 @@ build: xclbin
 
 xclbin:
 	mkdir -p $(BUILD_DIR)
-	$(CP) ../../sw/staging/xclbin/pcg_xilinx_u280_xdma_201920_3.xclbin $(BUILD_DIR)/.
+	$(CP) ../../sw/staging/xclbin/cgSolver_ddrParParam_hbmRbParam.xclbin $(BUILD_DIR)/.
 
 # ################# Setting Rules for Host (Building Host Executable) ################
 $(EXE_FILE): $(HOST_SRCS) | check_xrt

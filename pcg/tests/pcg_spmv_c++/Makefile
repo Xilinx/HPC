@@ -108,7 +108,7 @@ endif
 
 EXE_NAME := host.exe
 EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
-HOST_ARGS := xclbin/cg_xilinx_u280_xdma_201920_3.xclbin
+HOST_ARGS := xclbin/cgSolver_ddrParParam_hbmRbParam.xclbin
 
 # ######################### Setting Targets of Makefile ################################
 -include ./params.mk
