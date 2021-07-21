@@ -161,7 +161,7 @@ double fpga_JPCG(PCG_TYPE* l_pcg,
             break;
     }
     showTimeData("Matrix partition and transmission time: ", l_timer[0], l_timer[1]);
-    exit(-1);
+    // exit(-1);
     l_pcg->setVec(pn, b, matJ);
     showTimeData("Vector initialization & transmission time: ", l_timer[1], l_timer[2]);
     xilinx_apps::pcg::Results<CG_dataType> l_res = l_pcg->run(pmaxit, ptol);
