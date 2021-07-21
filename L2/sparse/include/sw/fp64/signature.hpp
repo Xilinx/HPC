@@ -370,7 +370,7 @@ class Signature {
         }
     }
 
-    void gen_nnzStore(double* p_data) {
+    void gen_nnzStore(const double* p_data) {
         m_nnzStore.reserveMem(m_nnzPad);
         for (uint32_t c = 0; c < m_channels; c++) {
             m_nnzStore.add_dummyInfo(c);
@@ -435,7 +435,7 @@ class Signature {
                 m_nnzStore.m_totalRowIdxBks[c] + m_nnzStore.m_totalColIdxBks[c] + m_nnzStore.m_totalNnzBks[c];
         }
     }
-    void update_nnzStore(double* p_data) {
+    void update_nnzStore(const double* p_data) {
         std::vector<uint32_t> l_bufBytes(m_channels); 
         for (uint32_t c = 0; c < m_channels; c++) {
             l_bufBytes[c]=m_memBits/8;
@@ -477,7 +477,7 @@ class Signature {
         }
     }
 
-    MatPartition gen_sig(SparseMatrix& p_spm, double* p_data) {
+    MatPartition gen_sig(SparseMatrix& p_spm, const double* p_data) {
         m_rbParam.m_buf.clear();
         m_parParam.m_buf.clear();
         for (unsigned int i=0; i<m_nnzStore.m_buf.size(); ++i) {
@@ -540,7 +540,7 @@ class Signature {
         return l_res;
     }
 
-    MatPartition update_sig(double* p_data) {
+    MatPartition update_sig(const double* p_data) {
         update_nnzStore(p_data);
         MatPartition l_res;
         l_res.m_rbParamPtr = (void*)(&(m_rbParam.m_buf[0]));

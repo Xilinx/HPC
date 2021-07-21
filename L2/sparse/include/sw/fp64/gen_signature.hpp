@@ -36,7 +36,7 @@ class SpmPar {
     }
 
     MatPartition partitionCooMat(
-        uint32_t p_m, uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, t_DataType* p_data) {
+        const uint32_t p_m, const uint32_t p_n, const uint32_t p_nnz, const uint32_t* p_rowIdx, const uint32_t* p_colIdx, const t_DataType* p_data) {
         SparseMatrix l_spm;
         l_spm.loadCoo(p_m, p_n, p_nnz, p_rowIdx, p_colIdx);
         MatPartition l_res = m_sig.gen_sig(l_spm, p_data);
@@ -59,7 +59,7 @@ class SpmPar {
     int checkUpdateDim(uint32_t p_m, uint32_t p_n, uint32_t p_nnz) {
         return m_sig.checkUpdateDim(p_m, p_n, p_nnz);
     }
-    MatPartition updateMat(t_DataType* p_data) {
+    MatPartition updateMat(const t_DataType* p_data) {
         MatPartition l_res = m_sig.update_sig(p_data);
         return l_res;
     }
