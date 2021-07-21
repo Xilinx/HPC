@@ -36,29 +36,62 @@
 extern "C" {
 #endif
 
-typedef enum JPCG_Mode { JPCG_MODE_FULL = 0, JPCG_MODE_KEEP_NZ_LAYOUT = 1, JPCG_MODE_DO_MAGIC = 99 } JPCG_Mode;
+typedef enum JPCG_Mode { JPCG_MODE_DEFAULT = 0x00, // Used for completely new data
+    JPCG_MODE_KEEP_NZ_LAYOUT = 0x01, // Update matrix values only
+    JPCG_MODE_KEEP_MATRIX = 0x03 // Reuse last matrix
+} JPCG_Mode;
 
+/** create_JPCG_handle create a JPCG handle
+ *
+ * deviceId the ID of the device used for JPCG solver
+ * xclbinPath the path to kernel xclbin
+ *
+ * return the pointer of created handle
+ */
 XILINX_PCG_LINKAGE_DECL
 void* create_JPCG_handle(int deviceId, const char* xclbinPath);
 
+/** destroy_JPCG_handle destroy given JPCG handle
+ *
+ * handel pointer to the JPCG handle to be destroyed
+ *
+ */
 XILINX_PCG_LINKAGE_DECL
 void destroy_JPCG_handle(void* handle);
 
+/** JPCG_coo solve equation Ax = b with sparse matrix A in COO format
+ *
+ * handle pointer to a JPCG handle
+ * mode solver modes
+ * p_n dimension of given matrix and vectors
+ * p_nnz number of non-zero entris in sparse matrix A
+ * p_rowIdx row index of matrix A
+ * p_colIdx col index of matrix A
+ * p_data data entries of matrix A
+ * p_diagA diagnal vector of matrix A
+ * p_b right-hand side vector
+ * p_x solution to the equation
+ * p_maxIter maximum number of iteration that solve could run
+ * p_tol the relative tolerence for solver to stop iteration
+ * p_iter the real iterations that solver takes
+ * p_res the relative residual when solver exits
+ *
+ */
 XILINX_PCG_LINKAGE_DECL
 void JPCG_coo(void* handle,
-              JPCG_Mode mode,
-              uint32_t p_n,
-              uint32_t p_nnz,
+              const uint32_t p_n,
+              const uint32_t p_nnz,
               uint32_t* p_rowIdx,
               uint32_t* p_colIdx,
               double* p_data,
-              double* matJ,
-              double* b,
-              double* x,
-              uint32_t p_maxIter,
-              double p_tol,
+              double* p_diagA,
+              double* p_b,
+              double* p_x,
+              const uint32_t p_maxIter,
+              const double p_tol,
               uint32_t* p_iter,
-              double* p_res);
+              double* p_res,
+              const JPCG_Mode mode);
 
 #ifdef __cplusplus
 }
