@@ -45,7 +45,7 @@ class PCGImpl {
     PCGImpl(){};
     PCGImpl(int p_devId, std::string p_xclbinName) { m_host.init(p_devId, p_xclbinName); }
     void init(int p_devId, std::string p_xclbinName) { m_host.init(p_devId, p_xclbinName); }
-    void setCooMat(uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, t_DataType* p_data) {
+    void setCooMat(const uint32_t p_dim, const uint32_t p_nnz, const uint32_t* p_rowIdx, const uint32_t* p_colIdx, const t_DataType* p_data) {
         m_matPar = m_spmPar.partitionCooMat(p_dim, p_dim, p_nnz, p_rowIdx, p_colIdx, p_data);
         m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
                           m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
@@ -60,7 +60,7 @@ class PCGImpl {
         m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
                           m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
     }
-    int updateMat(uint32_t p_dim, uint32_t p_nnz, t_DataType* p_data) {
+    int updateMat(const uint32_t p_dim, const uint32_t p_nnz, const t_DataType* p_data) {
         if (m_spmPar.checkUpdateDim(p_dim, p_dim, p_nnz) == 0) {
             m_matPar = m_spmPar.updateMat(p_data);
             m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr,
@@ -70,7 +70,7 @@ class PCGImpl {
             return -1;
         }
     }
-    void setVec(uint32_t p_dim, t_DataType* p_b, t_DataType* p_diagA) {
+    void setVec(const uint32_t p_dim, const t_DataType* p_b, const t_DataType* p_diagA) {
         if (p_dim != m_genCgVec.getDim()) {
             m_genCgVec.loadVec(p_dim, p_b, p_diagA);
         } else {

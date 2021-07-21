@@ -51,7 +51,7 @@ template <typename t_DataType, unsigned int t_ParEntries>
 class GenCgVector {
    public:
     GenCgVector() : m_dim(0), m_dot(0), m_rz(0){};
-    void loadVec(unsigned int p_dim, t_DataType* p_b, t_DataType* p_diagA) {
+    void loadVec(const unsigned int p_dim, const t_DataType* p_b, const t_DataType* p_diagA) {
         m_diagA.clear();
         m_b.clear();
         m_Apk.clear();
@@ -74,7 +74,7 @@ class GenCgVector {
         m_xk.assign(m_dimAligned, 0);
         m_zk.assign(m_dimAligned, 0);
     }
-    void updateVec(unsigned int p_dim, t_DataType* p_b, t_DataType* p_diagA) {
+    void updateVec(const unsigned int p_dim, const t_DataType* p_b, const t_DataType* p_diagA) {
         std::copy(p_diagA, p_diagA + p_dim, m_diagA.begin());
         std::copy(p_b, p_b + p_dim, m_b.begin());
         std::fill(m_Apk.begin(), m_Apk.end(), 0);

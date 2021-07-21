@@ -44,7 +44,7 @@ class SparseMatrix {
         m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
-    void loadCoo(uint32_t p_m, uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx) {
+    void loadCoo(const uint32_t p_m, const uint32_t p_n, const uint32_t p_nnz, const uint32_t* p_rowIdx, const uint32_t* p_colIdx) {
         m_m = p_m;
         m_n = p_n;
         m_nnz = p_nnz;
