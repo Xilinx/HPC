@@ -23,7 +23,7 @@ using PcgImpl = xilinx_apps::pcg::PCGImpl<double, 4, 64, 8, 16, 4096, 4096, 256>
 
 extern "C" {
 
-void* create_JPCG_handle(int deviceId, const char* xclbinPath) {
+void* create_JPCG_handle(const int deviceId, const char* xclbinPath) {
     auto start = std::chrono::high_resolution_clock::now();
     PcgImpl* pImpl = new PcgImpl();
     pImpl->init(deviceId, xclbinPath);

@@ -49,7 +49,7 @@ typedef enum JPCG_Mode { JPCG_MODE_DEFAULT = 0x00, // Used for completely new da
  * return the pointer of created handle
  */
 XILINX_PCG_LINKAGE_DECL
-void* create_JPCG_handle(int deviceId, const char* xclbinPath);
+void* create_JPCG_handle(const int deviceId, const char* xclbinPath);
 
 /** destroy_JPCG_handle destroy given JPCG handle
  *
