@@ -20,8 +20,8 @@
 
 help::
 	$(ECHO) "Makefile Usage:"
-	$(ECHO) "  make all TARGET=<sw_emu/hw_emu/hw> DEVICE=<FPGA platform> HOST_ARCH=<x86>"
-	$(ECHO) "      Command to generate the design for specified Target and Shell."
+	$(ECHO) "  make all TARGET=<sw_emu/hw_emu/hw> DEVICE=<FPGA platform>"
+	$(ECHO) "       Command to generate the design for specified Target and Shell."
 	$(ECHO) ""
 	$(ECHO) "  make clean "
 	$(ECHO) "      Command to remove the generated non-hardware files."
@@ -29,14 +29,8 @@ help::
 	$(ECHO) "  make cleanall"
 	$(ECHO) "      Command to remove all the generated files."
 	$(ECHO) ""
-	$(ECHO) "  make run TARGET=<sw_emu/hw_emu/hw> DEVICE=<FPGA platform> HOST_ARCH=<x86>"
-	$(ECHO) "      Command to run application in emulation or on board."
-	$(ECHO) ""
-	$(ECHO) "  make build TARGET=<sw_emu/hw_emu/hw> DEVICE=<FPGA platform> HOST_ARCH=<x86>"
+	$(ECHO) "  make build TARGET=<sw_emu/hw_emu/hw> DEVICE=<FPGA platform>"
 	$(ECHO) "      Command to build xclbin application."
-	$(ECHO) ""
-	$(ECHO) "  make host HOST_ARCH=<x86>"
-	$(ECHO) "      Command to build host application."
 	$(ECHO) ""
 
 # ##################### Setting up default value of TARGET ##########################
@@ -44,9 +38,6 @@ TARGET ?= sw_emu
 
 # ################### Setting up default value of DEVICE ##############################
 DEVICE ?= xilinx_u280_xdma_201920_3
-
-# ###################### Setting up default value of HOST_ARCH ####################### 
-HOST_ARCH ?= x86
 
 # #################### Checking if DEVICE in blacklist #############################
 
@@ -68,47 +59,8 @@ TEMP_DIR := _x_temp.$(TARGET).$(XDEVICE)
 TEMP_REPORT_DIR := $(CUR_DIR)/reports/_x.$(TARGET).$(XDEVICE)
 BUILD_DIR := build_dir.$(TARGET).$(XDEVICE)
 BUILD_REPORT_DIR := $(CUR_DIR)/reports/_build.$(TARGET).$(XDEVICE)
-EMCONFIG_DIR := $(BUILD_DIR)
 XCLBIN_DIR := $(CUR_DIR)/$(BUILD_DIR)
 export XCL_BINDIR = $(XCLBIN_DIR)
-
-# ######################### Setting up Host Variables #########################
-#Include Required Host Source Files
-HOST_SRCS += $(XFLIB_DIR)/pcg/tests/test_cgSolver_spmv_jacobi.cpp
-HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp
-
-CXXFLAGS += -DHW_CLK=4e-9 -DCG_numTasks=1 -DCG_dataType=double -DCG_numChannels=16 -DCG_parEntries=4 -DCG_instrBytes=64 -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256
-CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/include
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/tests/pcg_spmv_jacobi_16ch/host
-CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
-CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
-CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
-
-ifeq ($(TARGET),sw_emu)
-CXXFLAGS += -D SW_EMU_TEST
-endif
-
-ifeq ($(TARGET),hw_emu)
-CXXFLAGS += -D HW_EMU_TEST
-endif
-
-# ######################### Host compiler global settings ############################
-CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
-LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
-CXXFLAGS += -fmessage-length=0 -g -O0
-CXXFLAGS += -I$(CUR_DIR)/src/ 
-
-ifeq ($(HOST_ARCH), x86)
-LDFLAGS += -L$(XILINX_VIVADO)/lnx64/tools/fpo_v7_0 -Wl,--as-needed -lgmp -lmpfr -lIp_floating_point_v7_0_bitacc_cmodel
-endif
-
-# ################### Setting package and image directory #######################
-
-EXE_NAME := host.exe
-EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
-HOST_ARGS := $(BUILD_DIR)/cgSolver.xclbin 32 1e-12 $(CUR_DIR)/sig_dat/  $(CUR_DIR)/vec_dat ted_B
 
 # ##################### Kernel compiler global settings ##########################
 VPP_FLAGS += -t $(TARGET) --platform $(XPLATFORM) --save-temps --optimize 2
@@ -128,24 +80,24 @@ VPP_FLAGS += -I$(XFLIB_DIR)/L1/sparse/include/hw
 VPP_FLAGS += -I$(XFLIB_DIR)/L2/sparse/include/hw/fp64
 
 ifneq (,$(shell echo $(XPLATFORM) | awk '/u280/'))
-VPP_LDFLAGS_cgSolver += --kernel_frequency 333
+VPP_LDFLAGS_cgSolver += --kernel_frequency 300
 else
-krnl_timer_VPP_FLAGS += --hls.clock 333000000:krnl_timer
-krnl_duplicate_VPP_FLAGS += --hls.clock 333000000:krnl_duplicate
-krnl_dupTk4_VPP_FLAGS += --hls.clock 333000000:krnl_dupTk4
-krnl_loadArbParam_VPP_FLAGS += --hls.clock 333000000:krnl_loadArbParam
-krnl_loadAval_VPP_FLAGS += --hls.clock 333000000:krnl_loadAval
-krnl_loadPkApar_VPP_FLAGS += --hls.clock 333000000:krnl_loadPkApar
-krnl_storeApk_VPP_FLAGS += --hls.clock 333000000:krnl_storeApk
-krnl_update_xk_VPP_FLAGS += --hls.clock 333000000:krnl_update_xk
-krnl_update_rk_jacobi_VPP_FLAGS += --hls.clock 333000000:krnl_update_rk_jacobi
-krnl_update_pk_VPP_FLAGS += --hls.clock 333000000:krnl_update_pk
-krnl_control_VPP_FLAGS += --hls.clock 333000000:krnl_control
-fwdParParamKernel_VPP_FLAGS += --hls.clock 333000000:fwdParParamKernel
-moveXkernel_VPP_FLAGS += --hls.clock 333000000:moveXkernel
-selMultXkernel_VPP_FLAGS += --hls.clock 333000000:selMultXkernel
-rowAccKernel_VPP_FLAGS += --hls.clock 333000000:rowAccKernel
-assembleYkernel_VPP_FLAGS += --hls.clock 333000000:assembleYkernel
+krnl_timer_VPP_FLAGS += --hls.clock 300000000:krnl_timer
+krnl_duplicate_VPP_FLAGS += --hls.clock 300000000:krnl_duplicate
+krnl_dupTk4_VPP_FLAGS += --hls.clock 300000000:krnl_dupTk4
+krnl_loadArbParam_VPP_FLAGS += --hls.clock 300000000:krnl_loadArbParam
+krnl_loadAval_VPP_FLAGS += --hls.clock 300000000:krnl_loadAval
+krnl_loadPkApar_VPP_FLAGS += --hls.clock 300000000:krnl_loadPkApar
+krnl_storeApk_VPP_FLAGS += --hls.clock 300000000:krnl_storeApk
+krnl_update_xk_VPP_FLAGS += --hls.clock 300000000:krnl_update_xk
+krnl_update_rk_jacobi_VPP_FLAGS += --hls.clock 300000000:krnl_update_rk_jacobi
+krnl_update_pk_VPP_FLAGS += --hls.clock 300000000:krnl_update_pk
+krnl_control_VPP_FLAGS += --hls.clock 300000000:krnl_control
+fwdParParamKernel_VPP_FLAGS += --hls.clock 300000000:fwdParParamKernel
+moveXkernel_VPP_FLAGS += --hls.clock 300000000:moveXkernel
+selMultXkernel_VPP_FLAGS += --hls.clock 300000000:selMultXkernel
+rowAccKernel_VPP_FLAGS += --hls.clock 300000000:rowAccKernel
+assembleYkernel_VPP_FLAGS += --hls.clock 300000000:assembleYkernel
 endif
 
 VPP_FLAGS += -DCG_numTasks=1 -DCG_dataType=double -DCG_instrBytes=64 -DCG_tkStrWidth=8 -DCG_parEntries=4 -DCG_numChannels=16 -DCG_vecParEntries=4 -DSPARSE_dataType=double -DSPARSE_dataBits=64 -DSPARSE_parEntries=4 -DSPARSE_indexType=uint16_t -DSPARSE_indexBits=16 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_accLatency=8 -DSPARSE_hbmMemBits=256 -DSPARSE_hbmChannels=16 
@@ -180,14 +132,11 @@ BINARY_CONTAINER_cgSolver_OBJS += $(TEMP_DIR)/assembleYkernel.xo
 
 # ######################### Setting Targets of Makefile ################################
 
-.PHONY: all clean cleanall docs emconfig
-all: check_vpp check_platform check_sysroot $(EXE_FILE) $(BINARY_CONTAINERS) emconfig
-
-.PHONY: host
-host: check_xrt check_sysroot $(EXE_FILE)
+.PHONY: all clean cleanall docs 
+all: check_vpp check_platform $(BINARY_CONTAINERS) 
 
 .PHONY: xclbin
-xclbin: check_vpp check_sysroot $(BINARY_CONTAINERS)
+xclbin: check_vpp $(BINARY_CONTAINERS)
 
 .PHONY: build
 build: xclbin
@@ -270,28 +219,9 @@ $(BUILD_DIR)/cgSolver.xclbin: $(BINARY_CONTAINER_cgSolver_OBJS)
 endif
 
 
-# ################# Setting Rules for Host (Building Host Executable) ################
-$(EXE_FILE): $(HOST_SRCS) | check_xrt
-	mkdir -p $(BUILD_DIR)
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
-
-emconfig:$(EMCONFIG_DIR)/emconfig.json
-$(EMCONFIG_DIR)/emconfig.json:
-	emconfigutil --platform $(XPLATFORM) --od $(EMCONFIG_DIR)
-
-
-# ###############Setting Essential Checks And Running Rules For Vitis Flow #############
-run: all
-ifeq ($(TARGET),$(filter $(TARGET),sw_emu hw_emu))
-	$(CP) $(EMCONFIG_DIR)/emconfig.json .
-	XCL_EMULATION_MODE=$(TARGET) $(EXE_FILE) $(HOST_ARGS)
-else
-	$(EXE_FILE) $(HOST_ARGS)
-endif
-
 # ################################# Cleaning Rules ##################################
 cleanh:
-	-$(RMDIR) $(EXE_FILE) vitis_* TempConfig system_estimate.xtxt *.rpt .run/
+	-$(RMDIR) vitis_* TempConfig system_estimate.xtxt *.rpt .run/
 	-$(RMDIR) src/*.ll _xocc_* .Xil dltmp* xmltmp* *.log *.jou *.wcfg *.wdb sample_link.ini sample_compile.ini obj* bin* *.csv *.jpg *.jpeg *.png
 
 cleank:
@@ -301,9 +231,10 @@ cleank:
 	-$(RMDIR) _x_temp.* 
 
 cleanall: cleanh cleank
-	-$(RMDIR) $(BUILD_DIR)  build_dir.* emconfig.json *.html $(TEMP_DIR) $(CUR_DIR)/reports *.csv *.run_summary $(CUR_DIR)/*.raw package_* run_script.sh .ipcache *.str
+	-$(RMDIR) $(BUILD_DIR)  build_dir.*  *.html $(TEMP_DIR) $(CUR_DIR)/reports *.csv *.run_summary $(CUR_DIR)/*.raw package_* run_script.sh .ipcache *.str
 	-$(RMDIR) $(XFLIB_DIR)/common/data/*.xe2xd* $(XFLIB_DIR)/common/data/*.orig*
 
 	-$(RMDIR) $(AIE_CONTAINERS) $(CUR_DIR)/Work $(CUR_DIR)/*.xpe $(CUR_DIR)/hw.o $(CUR_DIR)/*.xsa $(CUR_DIR)/xnwOut aiesimulator_output .AIE_SIM_CMD_LINE_OPTIONS
 
 clean: cleanh
+

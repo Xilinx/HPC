@@ -40,7 +40,7 @@ help::
 	$(ECHO) ""
 
 # ##################### Setting up default value of TARGET ##########################
-TARGET ?= sw_emu
+TARGET ?= hw_emu
 
 # ################### Setting up default value of DEVICE ##############################
 DEVICE ?= xilinx_u280_xdma_201920_3
@@ -72,15 +72,14 @@ EMCONFIG_DIR := $(BUILD_DIR)
 
 # ######################### Setting up Host Variables #########################
 #Include Required Host Source Files
-HOST_SRCS += $(CUR_DIR)/main.cpp
-HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xFPGA.cpp
+HOST_SRCS += $(XFLIB_DIR)/pcg/hw/tests/test_cgSolver_spmv_jacobi.cpp
 HOST_SRCS += $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp
-HOST_SRCS += $(XFLIB_DIR)/pcg/sw/src/cgHost.cpp
 
 CXXFLAGS += -DHW_CLK=4e-9 -DCG_numTasks=1 -DCG_dataType=double -DCG_numChannels=16 -DCG_parEntries=4 -DCG_instrBytes=64 -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256
 CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
 CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include
 CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/include
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/tests/host
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
@@ -105,14 +104,16 @@ endif
 
 # ################### Setting package and image directory #######################
 
+deviceID = 0
+
 EXE_NAME := host.exe
 EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
-HOST_ARGS := $(BUILD_DIR)/cgSolver_ddrParParam_hbmRbParam.xclbin 32 1e-12 $(CUR_DIR)/sig_dat/  $(CUR_DIR)/vec_dat ted_B
+HOST_ARGS := $(BUILD_DIR)/cgSolver.xclbin 32 1e-12 $(CUR_DIR)/sig_dat/  $(CUR_DIR)/vec_dat ted_B ${deviceID} 
 
 # ######################### Setting Targets of Makefile ################################
 
-.PHONY: all clean cleanall docs emconfig
-all: check_vpp check_platform check_sysroot $(EXE_FILE) emconfig xclbin
+.PHONY: all clean cleanall docs emconfig xclbin
+all:  $(EXE_FILE) emconfig
 
 .PHONY: host
 host: check_xrt check_sysroot $(EXE_FILE)
@@ -122,7 +123,7 @@ build: xclbin
 
 xclbin:
 	mkdir -p $(BUILD_DIR)
-	$(CP) ../../sw/staging/xclbin/cgSolver_ddrParParam_hbmRbParam.xclbin $(BUILD_DIR)/.
+	$(CP) ../$(BUILD_DIR)/cgSolver.xclbin $(BUILD_DIR)/.
 
 # ################# Setting Rules for Host (Building Host Executable) ################
 $(EXE_FILE): $(HOST_SRCS) | check_xrt
@@ -132,7 +133,6 @@ $(EXE_FILE): $(HOST_SRCS) | check_xrt
 emconfig:$(EMCONFIG_DIR)/emconfig.json
 $(EMCONFIG_DIR)/emconfig.json:
 	emconfigutil --platform $(XPLATFORM) --od $(EMCONFIG_DIR)
-
 
 # ###############Setting Essential Checks And Running Rules For Vitis Flow #############
 run: all

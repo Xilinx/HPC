@@ -1,19 +1,4 @@
 /*
- * Copyright 2019 Xilinx, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-/*
  * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,7 +25,7 @@
 #include <cassert>
 
 // This file is required for OpenCL C++ wrapper APIs
-#include "pcg.hpp"
+#include "impl/pcgImp.hpp"
 #include "utils.hpp"
 
 int main(int argc, char** argv) {
@@ -87,8 +72,7 @@ int main(int argc, char** argv) {
     TimePointType l_timer[8];
 
     l_timer[0] = std::chrono::high_resolution_clock::now();
-    struct xilinx_apps::pcg::Options l_option = {l_deviceId, xilinx_apps::pcg::XString(binaryFile)};
-    xilinx_apps::pcg::PCG<CG_dataType> l_pcg(l_option);
+    xilinx_apps::pcg::PCGImpl<CG_dataType, 4, 64, 8, 16, 4096, 4096, 256> l_pcg(l_deviceId, binaryFile);
     showTimeData("FPGA configuration time: ", l_timer[0], l_timer[1]);
     l_pcg.setCooMat(l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data());
     double l_mat_partition_time = 0;
