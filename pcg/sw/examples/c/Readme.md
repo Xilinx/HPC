@@ -1,10 +1,10 @@
 # Xilinx pcg application C++ example
 
-This README files explains how to setup and run cosinesim example.  
+This README files explains how to setup and run pcg example.  
 
 # Compile host:
 ```
-//cppdemo example showing simple API to use cosinesim.
+# cppdemo example showing simple API to use pcg.
 make
 
 ```
