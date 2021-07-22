@@ -73,7 +73,7 @@ class PCGImpl {
     }
     void setVec(const uint32_t p_dim, const t_DataType* p_b, const t_DataType* p_diagA) {
         if(p_b == nullptr)
-            throw CgInvalidValue("ERROR: p_b is null.");
+            throw CgInvalidValue("p_b is null.");
         if (p_dim != m_genCgVec.getDim()) {
             m_genCgVec.loadVec(p_dim, p_b, p_diagA);
         } else {

@@ -35,17 +35,17 @@ class CgException: public std::exception {
 
 class CgInternalError: public CgException {
     public:
-        CgInternalError(std::string str): CgException(str){}
+        CgInternalError(std::string str): CgException("INTERNAL ERROR: "+str){}
 };
 
 class CgAllocFailed: public CgException  {
     public:
-        CgAllocFailed(std::string str): CgException(str){}
+        CgAllocFailed(std::string str): CgException("Alloc Failed ERROR: "+str){}
 };
 
 class CgInvalidValue: public CgException  {
     public:
-        CgInvalidValue(std::string str): CgException(str){}
+        CgInvalidValue(std::string str): CgException("INVALID VALUE ERROR: "+str){}
 };
 
 }
