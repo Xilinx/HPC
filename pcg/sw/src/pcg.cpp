@@ -23,12 +23,17 @@ using PcgImpl = xilinx_apps::pcg::PCGImpl<double, 4, 64, 8, 16, 4096, 4096, 256>
 extern "C" {
 
 XJPCG_Status_t create_JPCG_handle(void **handle, const int deviceId, const char* xclbinPath) {
-    auto last = std::chrono::high_resolution_clock::now();
-    PcgImpl* pImpl = new PcgImpl();
-    pImpl->init(deviceId, xclbinPath);
-    std::chrono::duration<double> duration = std::chrono::high_resolution_clock::now() - last;
-    pImpl->getMetrics()->m_init = duration.count();
-    *handle = pImpl;
+    PcgImpl* pImpl;
+    try {
+        auto last = std::chrono::high_resolution_clock::now();
+        pImpl = new PcgImpl();
+        pImpl->init(deviceId, xclbinPath);
+        std::chrono::duration<double> duration = std::chrono::high_resolution_clock::now() - last;
+        pImpl->getMetrics()->m_init = duration.count();
+        *handle = pImpl;
+    } catch (xilinx_apps::pcg::CgException & err) {
+        return pImpl -> setStatusMessage(err.getStatus(), err.getMessage());
+    }
     return XJPCG_STATUS_SUCCESS;
 }
 
@@ -41,19 +46,19 @@ XJPCG_Status_t destroy_JPCG_handle(void* handle) {
 }
 
 XJPCG_Status_t xJPCG_coo(void* handle,
-              const uint32_t p_n,
-              const uint32_t p_nnz,
-              const uint32_t* p_rowIdx,
-              const uint32_t* p_colIdx,
-              const double* p_data,
-              const double* matJ,
-              const double* b,
-              const double* x,
-              const uint32_t p_maxIter,
-              const double p_tol,
-              uint32_t* p_iter,
-              double* p_res,
-              const XJPCG_Mode mode) {
+        const uint32_t p_n,
+        const uint32_t p_nnz,
+        const uint32_t* p_rowIdx,
+        const uint32_t* p_colIdx,
+        const double* p_data,
+        const double* matJ,
+        const double* b,
+        const double* x,
+        const uint32_t p_maxIter,
+        const double p_tol,
+        uint32_t* p_iter,
+        double* p_res,
+        const XJPCG_Mode mode) {
     if(handle == nullptr)
         return XJPCG_STATUS_NOT_INITIALIZED;
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
@@ -88,24 +93,30 @@ XJPCG_Status_t xJPCG_coo(void* handle,
         duration = std::chrono::high_resolution_clock::now() - last;
         last = std::chrono::high_resolution_clock::now();
         pImpl->getMetrics()->m_solver = duration.count();
-    } catch (xilinx_apps::pcg::CgInvalidValue & err) {
+    } catch (xilinx_apps::pcg::CgException & err) {
         return pImpl -> setStatusMessage(err.getStatus(), err.getMessage());
     }
     return XJPCG_STATUS_SUCCESS;
 }
 
 XJPCG_Status_t xJPCG_getMetrics(void* handle, XJPCG_Metric_t *metric) {
+    if(handle == nullptr)
+        return XJPCG_STATUS_NOT_INITIALIZED;
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
     *metric = *pImpl->getMetrics();
     return XJPCG_STATUS_SUCCESS;
 }
 
 XJPCG_Status_t xJPCG_peekAtLastStatus(void* handle) {
+    if(handle == nullptr)
+        return XJPCG_STATUS_NOT_INITIALIZED;
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
     return pImpl->getLastStatus();
 }
 
 const char* xJPCG_getLastMessage(void* handle) {
+    if(handle == nullptr)
+        return nullptr;
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
     return pImpl->getLastMessage().c_str();
 }
