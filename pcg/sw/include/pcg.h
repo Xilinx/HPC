@@ -36,19 +36,28 @@
 extern "C" {
 #endif
 
-typedef int JPCG_status_t;
+typedef enum {
+    XJPCG_STATUS_SUCCESS,
+    XJPCG_STATUS_NOT_INITIALIZED, 
+    XJPCG_STATUS_ALLOC_FAILED,
+    XJPCG_STATUS_INVALID_VALUE,
+    XJPCG_STATUS_EXECUTION_FAILED,
+    XJPCG_STATUS_INTERNAL_ERROR,
+    XJPCG_STATUS_NOT_SUPPORTED
+} XJPCG_Status_t;
 
-typedef struct Metrics {
+typedef struct {
     double m_init;
     double m_matProc;
     double m_vecProc;
     double m_solver;
-} JPCG_metric_t;
+} XJPCG_Metric_t;
 
-typedef enum JPCG_Mode { JPCG_MODE_DEFAULT = 0x00, // Used for completely new data
-    JPCG_MODE_KEEP_NZ_LAYOUT = 0x01, // Update matrix values only
-    JPCG_MODE_KEEP_MATRIX = 0x03 // Reuse last matrix
-} JPCG_Mode;
+typedef enum XJPCG_Mode { 
+    XJPCG_MODE_DEFAULT = 0x00, // Used for completely new data
+    XJPCG_MODE_KEEP_NZ_LAYOUT = 0x01, // Update matrix values only
+    XJPCG_MODE_KEEP_MATRIX = 0x03 // Reuse last matrix
+} XJPCG_Mode;
 
 /** create_JPCG_handle create a JPCG handle
  *
@@ -58,7 +67,7 @@ typedef enum JPCG_Mode { JPCG_MODE_DEFAULT = 0x00, // Used for completely new da
  * return the pointer of created handle
  */
 XILINX_PCG_LINKAGE_DECL
-JPCG_status_t create_JPCG_handle(void **handle, const int deviceId, const char* xclbinPath);
+XJPCG_Status_t create_JPCG_handle(void **handle, const int deviceId, const char* xclbinPath);
 
 /** destroy_JPCG_handle destroy given JPCG handle
  *
@@ -68,7 +77,7 @@ JPCG_status_t create_JPCG_handle(void **handle, const int deviceId, const char* 
 XILINX_PCG_LINKAGE_DECL
 void destroy_JPCG_handle(void* handle);
 
-/** JPCG_coo solve equation Ax = b with sparse matrix A in COO format
+/** xJPCG_coo solve equation Ax = b with sparse matrix A in COO format
  *
  * handle pointer to a JPCG handle
  * mode solver modes
@@ -87,7 +96,7 @@ void destroy_JPCG_handle(void* handle);
  *
  */
 XILINX_PCG_LINKAGE_DECL
-JPCG_status_t JPCG_coo(void* handle,
+XJPCG_Status_t xJPCG_coo(void* handle,
               const uint32_t p_n,
               const uint32_t p_nnz,
               const uint32_t* p_rowIdx,
@@ -100,16 +109,17 @@ JPCG_status_t JPCG_coo(void* handle,
               const double p_tol,
               uint32_t* p_iter,
               double* p_res,
-              const JPCG_Mode mode);
+              const XJPCG_Mode mode);
 
 XILINX_PCG_LINKAGE_DECL
-JPCG_status_t JPCG_peekAtLastStatus(void* handle);
+XJPCG_Status_t xJPCG_peekAtLastStatus(void* handle);
 
 XILINX_PCG_LINKAGE_DECL
-const char* JPCG_getLastMessage(void* handle);
+const char* xJPCG_getLastMessage(void* handle);
 
 XILINX_PCG_LINKAGE_DECL
-JPCG_status_t JPCG_getMetrics(void* handle, JPCG_metric_t *metric);
+XJPCG_Status_t xJPCG_getMetrics(void* handle, XJPCG_Metric_t *metric);
+
 #ifdef __cplusplus
         }
 #endif
