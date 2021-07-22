@@ -25,7 +25,7 @@
 #include "binFiles.hpp"
 
 #ifdef USE_FPGA
-#include "pcg.hpp"
+#include "pcgImp.hpp"
 #include "cgHost.hpp"
 typedef xilinx_apps::pcg::PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
 #endif
