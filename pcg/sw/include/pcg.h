@@ -24,7 +24,7 @@
 
 /**
  * Define this macro to make functions in pcg_loader.cpp inline instead of extern.  You would use this macro
- * when including pcg_loader.cpp in a header file, as opposed to linking with libXilinxCosineSim_loader.a.
+ * when including pcg_loader.cpp in a header file, as opposed to linking with libXilinxPcg_loader.a.
  */
 #ifdef XILINX_PCG_INLINE
 #define XILINX_PCG_LINKAGE_DECL inline
