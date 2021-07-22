@@ -100,8 +100,8 @@ int main(int argc, char** argv) {
     readBin(l_datFilePath + "/x.mat", h_x.data(), l_matInfo.m_m * sizeof(CG_dataType));
     compare<CG_dataType>(l_matInfo.m_m, h_x.data(), l_x.data(), err, l_debug);
 
-    std::cout << "INFO: matrix_name, dim, NNZs, num of iterations, JPCG residual, num_mismatches" << std::endl;
-    std::cout << "      " << l_matInfo.m_name << ", " << l_matInfo.m_m << ", ";
+    std::cout << "DATA_CSV:, matrix_name, dim, NNZs, num of iterations, JPCG residual, num_mismatches" << std::endl;
+    std::cout << "DATA_CSV:, " << l_matInfo.m_name << ", " << l_matInfo.m_m << ", ";
     std::cout << l_matInfo.m_nnz << ", " << numIterations << ", ";
     std::cout << residual  << ", " << err << std::endl;
     
