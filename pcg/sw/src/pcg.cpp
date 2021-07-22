@@ -31,9 +31,9 @@ XJPCG_Status_t create_JPCG_handle(void **handle, const int deviceId, const char*
         std::chrono::duration<double> duration = std::chrono::high_resolution_clock::now() - last;
         pImpl->getMetrics()->m_init = duration.count();
         *handle = pImpl;
-    } catch (xilinx_apps::pcg::CgException & err) {
+    } catch (const xilinx_apps::pcg::CgException & err) {
         return pImpl -> setStatusMessage(err.getStatus(), err.what());
-    } catch (std::exception & err ) {
+    } catch (const std::exception & err ) {
         return pImpl -> setStatusMessage(XJPCG_STATUS_OTHER_ERROR, err.what());
     }
     return XJPCG_STATUS_SUCCESS;
@@ -95,9 +95,9 @@ XJPCG_Status_t xJPCG_coo(void* handle,
         duration = std::chrono::high_resolution_clock::now() - last;
         last = std::chrono::high_resolution_clock::now();
         pImpl->getMetrics()->m_solver = duration.count();
-    } catch (xilinx_apps::pcg::CgException & err) {
+    } catch (const xilinx_apps::pcg::CgException & err) {
         return pImpl -> setStatusMessage(err.getStatus(), err.what());
-    } catch (std::exception & err ) {
+    } catch (const std::exception & err ) {
         return pImpl -> setStatusMessage(XJPCG_STATUS_OTHER_ERROR, err.what());
     }
     return XJPCG_STATUS_SUCCESS;
