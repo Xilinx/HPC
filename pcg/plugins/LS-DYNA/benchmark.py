@@ -48,7 +48,7 @@ def parse(target, table_names):
 
     wct_pattern = 'WCT'
     dim_pattern = 'userLE Jacobi PCG dim'
-    total_pattern = 'T o t a l s'
+    total_pattern = 'Elapsed time'
     iter_pattern = 'userLE Jacobi PCG iteration'
     res_pattern = 'two norm of the residual'
     number = r'[+\-\.\d]+E?[+\-\d]*'
