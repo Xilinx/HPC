@@ -24,8 +24,8 @@ class CgException : public std::exception {
    public:
     CgException(std::string str, XJPCG_Status_t p_stat = XJPCG_STATUS_OTHER_ERROR) : m_msg(str), m_status(p_stat) {}
 
-    std::string getMessage() { 
-        return m_msg; 
+    const char* what() const noexcept override { 
+        return m_msg.c_str(); 
     }
 
     XJPCG_Status_t getStatus() { 

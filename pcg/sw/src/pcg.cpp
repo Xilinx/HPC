@@ -23,7 +23,7 @@ using PcgImpl = xilinx_apps::pcg::PCGImpl<double, 4, 64, 8, 16, 4096, 4096, 256>
 extern "C" {
 
 XJPCG_Status_t create_JPCG_handle(void **handle, const int deviceId, const char* xclbinPath) {
-    PcgImpl* pImpl;
+    PcgImpl* pImpl = nullptr;
     try {
         auto last = std::chrono::high_resolution_clock::now();
         pImpl = new PcgImpl();
@@ -32,7 +32,9 @@ XJPCG_Status_t create_JPCG_handle(void **handle, const int deviceId, const char*
         pImpl->getMetrics()->m_init = duration.count();
         *handle = pImpl;
     } catch (xilinx_apps::pcg::CgException & err) {
-        return pImpl -> setStatusMessage(err.getStatus(), err.getMessage());
+        return pImpl -> setStatusMessage(err.getStatus(), err.what());
+    } catch (std::exception & err ) {
+        return pImpl -> setStatusMessage(XJPCG_STATUS_OTHER_ERROR, err.what());
     }
     return XJPCG_STATUS_SUCCESS;
 }
@@ -94,7 +96,9 @@ XJPCG_Status_t xJPCG_coo(void* handle,
         last = std::chrono::high_resolution_clock::now();
         pImpl->getMetrics()->m_solver = duration.count();
     } catch (xilinx_apps::pcg::CgException & err) {
-        return pImpl -> setStatusMessage(err.getStatus(), err.getMessage());
+        return pImpl -> setStatusMessage(err.getStatus(), err.what());
+    } catch (std::exception & err ) {
+        return pImpl -> setStatusMessage(XJPCG_STATUS_OTHER_ERROR, err.what());
     }
     return XJPCG_STATUS_SUCCESS;
 }

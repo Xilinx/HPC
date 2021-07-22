@@ -71,6 +71,7 @@ class PCGImpl {
             return -1;
         }
     }
+
     void setVec(const uint32_t p_dim, const t_DataType* p_b, const t_DataType* p_diagA) {
         if(p_b == nullptr)
             throw CgInvalidValue("p_b is null.");
