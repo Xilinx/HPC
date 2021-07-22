@@ -20,35 +20,37 @@
 namespace xilinx_apps {
 namespace pcg {
 
-class CgException: public std::exception {
-    public:
-        CgException(std::string str): msg(str){
-        }
+class CgException : public std::exception {
+   public:
+    CgException(std::string str, XJPCG_Status_t p_stat = XJPCG_STATUS_OTHER_ERROR) : m_msg(str), m_status(p_stat) {}
 
-        std::string getMessage(){
-            return msg;
-        }
+    std::string getMessage() { 
+        return m_msg; 
+    }
 
-    private: 
-        std::string msg;
+    XJPCG_Status_t getStatus() { 
+        return m_status; 
+    }
+
+   protected:
+    std::string m_msg;
+    XJPCG_Status_t m_status;
 };
 
-class CgInternalError: public CgException {
-    public:
-        CgInternalError(std::string str): CgException("INTERNAL ERROR: "+str){}
+class CgInternalError : public CgException {
+   public:
+    CgInternalError(std::string str) : CgException("INTERNAL ERROR: " + str, XJPCG_STATUS_INTERNAL_ERROR) {}
 };
 
-class CgAllocFailed: public CgException  {
-    public:
-        CgAllocFailed(std::string str): CgException("Alloc Failed ERROR: "+str){}
+class CgAllocFailed : public CgException {
+   public:
+    CgAllocFailed(std::string str) : CgException("Alloc Failed ERROR: " + str, XJPCG_STATUS_ALLOC_FAILED) {}
 };
 
-class CgInvalidValue: public CgException  {
-    public:
-        CgInvalidValue(std::string str): CgException("INVALID VALUE ERROR: "+str){}
+class CgInvalidValue : public CgException {
+   public:
+    CgInvalidValue(std::string str) : CgException("INVALID VALUE ERROR: " + str, XJPCG_STATUS_INVALID_VALUE) {}
 };
-
 }
 }
 #endif
-

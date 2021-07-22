@@ -89,7 +89,7 @@ XJPCG_Status_t xJPCG_coo(void* handle,
         last = std::chrono::high_resolution_clock::now();
         pImpl->getMetrics()->m_solver = duration.count();
     } catch (xilinx_apps::pcg::CgInvalidValue & err) {
-        return pImpl -> setStatusMessage(XJPCG_STATUS_INVALID_VALUE, err.getMessage());
+        return pImpl -> setStatusMessage(err.getStatus(), err.getMessage());
     }
     return XJPCG_STATUS_SUCCESS;
 }
