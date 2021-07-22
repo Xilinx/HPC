@@ -75,7 +75,7 @@ XJPCG_Status_t create_JPCG_handle(void **handle, const int deviceId, const char*
  *
  */
 XILINX_PCG_LINKAGE_DECL
-void destroy_JPCG_handle(void* handle);
+XJPCG_Status_t destroy_JPCG_handle(void* handle);
 
 /** xJPCG_coo solve equation Ax = b with sparse matrix A in COO format
  *

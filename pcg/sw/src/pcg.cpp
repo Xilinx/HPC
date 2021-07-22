@@ -32,9 +32,12 @@ XJPCG_Status_t create_JPCG_handle(void **handle, const int deviceId, const char*
     return XJPCG_STATUS_SUCCESS;
 }
 
-void destroy_JPCG_handle(void* handle) {
+XJPCG_Status_t destroy_JPCG_handle(void* handle) {
+    if(handle == nullptr)
+        return XJPCG_STATUS_INVALID_VALUE;
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
     delete pImpl;
+    return XJPCG_STATUS_SUCCESS;
 }
 
 XJPCG_Status_t xJPCG_coo(void* handle,
@@ -51,37 +54,43 @@ XJPCG_Status_t xJPCG_coo(void* handle,
               uint32_t* p_iter,
               double* p_res,
               const XJPCG_Mode mode) {
-    auto last = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration;
-
+    if(handle == nullptr)
+        return XJPCG_STATUS_NOT_INITIALIZED;
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
-    switch (mode & XJPCG_MODE_KEEP_MATRIX) {
-        case XJPCG_MODE_DEFAULT:
-            pImpl->setCooMat(p_n, p_nnz, p_rowIdx, p_colIdx, p_data);
-            break;
-        case XJPCG_MODE_KEEP_NZ_LAYOUT:
-            pImpl->updateMat(p_n, p_nnz, p_data);
-            break;
-        default:
-            break;
+    try {
+        auto last = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> duration;
+
+        switch (mode & XJPCG_MODE_KEEP_MATRIX) {
+            case XJPCG_MODE_DEFAULT:
+                pImpl->setCooMat(p_n, p_nnz, p_rowIdx, p_colIdx, p_data);
+                break;
+            case XJPCG_MODE_KEEP_NZ_LAYOUT:
+                pImpl->updateMat(p_n, p_nnz, p_data);
+                break;
+            default:
+                break;
+        }
+
+        duration = std::chrono::high_resolution_clock::now() - last;
+        last = std::chrono::high_resolution_clock::now();
+        pImpl->getMetrics()->m_matProc = duration.count();
+
+        pImpl->setVec(p_n, b, matJ);
+        duration = std::chrono::high_resolution_clock::now() - last;
+        last = std::chrono::high_resolution_clock::now();
+        pImpl->getMetrics()->m_vecProc = duration.count();
+
+        xilinx_apps::pcg::Results<double> l_res = pImpl->run(p_maxIter, p_tol);
+        *p_res = std::sqrt(l_res.m_residual / pImpl->getDot());
+        *p_iter = l_res.m_nIters;
+        memcpy((char*) x, (char*) l_res.m_x, sizeof(double) * p_n);
+        duration = std::chrono::high_resolution_clock::now() - last;
+        last = std::chrono::high_resolution_clock::now();
+        pImpl->getMetrics()->m_solver = duration.count();
+    } catch (xilinx_apps::pcg::CgInvalidValue & err) {
+        return pImpl -> setStatusMessage(XJPCG_STATUS_INVALID_VALUE, err.getMessage());
     }
-
-    duration = std::chrono::high_resolution_clock::now() - last;
-    last = std::chrono::high_resolution_clock::now();
-    pImpl->getMetrics()->m_matProc = duration.count();
-
-    pImpl->setVec(p_n, b, matJ);
-    duration = std::chrono::high_resolution_clock::now() - last;
-    last = std::chrono::high_resolution_clock::now();
-    pImpl->getMetrics()->m_vecProc = duration.count();
-
-    xilinx_apps::pcg::Results<double> l_res = pImpl->run(p_maxIter, p_tol);
-    *p_res = std::sqrt(l_res.m_residual / pImpl->getDot());
-    *p_iter = l_res.m_nIters;
-    memcpy((char*) x, (char*) l_res.m_x, sizeof(double) * p_n);
-    duration = std::chrono::high_resolution_clock::now() - last;
-    last = std::chrono::high_resolution_clock::now();
-    pImpl->getMetrics()->m_solver = duration.count();
     return XJPCG_STATUS_SUCCESS;
 }
 

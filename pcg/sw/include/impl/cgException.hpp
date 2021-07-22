@@ -25,6 +25,10 @@ class CgException: public std::exception {
         CgException(std::string str): msg(str){
         }
 
+        std::string getMessage(){
+            return msg;
+        }
+
     private: 
         std::string msg;
 };
