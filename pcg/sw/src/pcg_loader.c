@@ -63,34 +63,55 @@ void *xilinx_apps_getCDynamicFunction(const char *funcName) {
 //#####################################################################################################################
 
 XILINX_PCG_LINKAGE_DEF
-JPCG_status_t create_JPCG_handle(void **handle, int deviceId, const char *xclbinPath) {
-    typedef JPCG_status_t (*CreateFunc)(void**, int, const char *);
+XJPCG_Status_t create_JPCG_handle(void **handle, int deviceId, const char *xclbinPath) {
+    typedef XJPCG_Status_t (*CreateFunc)(void**, int, const char *);
     CreateFunc pCreateFunc = (CreateFunc) xilinx_apps_getCDynamicFunction("create_JPCG_handle");
     if (!pCreateFunc)
-        return -1;
+        return XJPCG_STATUS_NOT_SUPPORTED;
     return pCreateFunc(handle, deviceId, xclbinPath);
 }
 
 XILINX_PCG_LINKAGE_DEF
-void destroy_JPCG_handle(void *handle) {
-    typedef void (*DestroyFunc)(void *);
+XJPCG_Status_t destroy_JPCG_handle(void *handle) {
+    typedef XJPCG_Status_t (*DestroyFunc)(void *);
     DestroyFunc pDestroyFunc = (DestroyFunc) xilinx_apps_getCDynamicFunction("destroy_JPCG_handle");
-    if (pDestroyFunc)
-        pDestroyFunc(handle);
+    if (!pDestroyFunc)
+        return XJPCG_STATUS_NOT_SUPPORTED;
+    return pDestroyFunc(handle);
 }
 
 XILINX_PCG_LINKAGE_DEF
-JPCG_status_t JPCG_getMetrics(void* handle, JPCG_metric_t *metric){
-    typedef JPCG_status_t (*GetMetrics)(void *, JPCG_metric_t *);
-    GetMetrics pGetMetrics = (GetMetrics) xilinx_apps_getCDynamicFunction("JPCG_getMetrics");
+XJPCG_Status_t xJPCG_getMetrics(void* handle, XJPCG_Metric_t *metric){
+    typedef XJPCG_Status_t (*GetMetrics)(void *, XJPCG_Metric_t *);
+    GetMetrics pGetMetrics = (GetMetrics) xilinx_apps_getCDynamicFunction("xJPCG_getMetrics");
     if (pGetMetrics)
         return pGetMetrics(handle, metric);
     else
-        return -1;
+        return XJPCG_STATUS_NOT_SUPPORTED;
 }
 
 XILINX_PCG_LINKAGE_DEF
-JPCG_status_t JPCG_coo(void *handle, 
+XJPCG_Status_t xJPCG_peekAtLastStatus(void* handle) {
+    typedef XJPCG_Status_t (*PeekAtLastStatus)(void *);
+    PeekAtLastStatus pPeekAtLastStatus = (PeekAtLastStatus) xilinx_apps_getCDynamicFunction("xJPCG_peekAtLastStatus");
+    if (pPeekAtLastStatus)
+        return pPeekAtLastStatus(handle);
+    else
+        return XJPCG_STATUS_NOT_SUPPORTED;
+}
+
+XILINX_PCG_LINKAGE_DEF
+const char* xJPCG_getLastMessage(void* handle) {
+    typedef const char* (*GetLastMessage)(void *);
+    GetLastMessage pGetLastMessage = (GetLastMessage) xilinx_apps_getCDynamicFunction("xJPCG_getLastMessage");
+    if (pGetLastMessage)
+        return pGetLastMessage(handle);
+    else
+        return "Function not supported.";
+}
+
+XILINX_PCG_LINKAGE_DEF
+XJPCG_Status_t xJPCG_coo(void *handle, 
         const uint32_t p_n,
         const uint32_t p_nnz,
         const uint32_t *p_rowIdx,
@@ -103,11 +124,11 @@ JPCG_status_t JPCG_coo(void *handle,
         const double p_tol,
         uint32_t *p_iter,
         double *p_res,
-        const JPCG_Mode mode) {
-    typedef JPCG_status_t (*ApiFunc)(void *, uint32_t, uint32_t, const uint32_t*, const uint32_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const JPCG_Mode);
-    ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("JPCG_coo");
+        const XJPCG_Mode mode) {
+    typedef XJPCG_Status_t (*ApiFunc)(void *, uint32_t, uint32_t, const uint32_t*, const uint32_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const XJPCG_Mode);
+    ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("xJPCG_coo");
     if (!pApiFunc)
-        return -1;
+        return XJPCG_STATUS_NOT_SUPPORTED;
     return pApiFunc(handle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, p_iter, p_res, mode);
 }
 

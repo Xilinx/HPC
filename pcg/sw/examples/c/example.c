@@ -86,16 +86,16 @@ int main(int argc, const char** argv) {
 
     void* pHandle = NULL;
     create_JPCG_handle(&pHandle, deviceId, xclbinPath);
-    JPCG_coo(pHandle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
-             &p_res, JPCG_MODE_DEFAULT);
+    xJPCG_coo(pHandle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
+             &p_res, XJPCG_MODE_DEFAULT);
     printf("First equation is solved in %d iterations with relative residual %e.\n", p_iter, p_res);
 
     for (i = 0; i < p_n; i++) {
         int val = rand() % p_n - p_n / 2;
         b[i] = val / 67.0;
     }
-    JPCG_coo(pHandle, p_n, p_nnz, NULL, NULL, NULL, matJ, b, x, p_maxIter, p_tol, &p_iter,
-             &p_res, JPCG_MODE_KEEP_MATRIX);
+    xJPCG_coo(pHandle, p_n, p_nnz, NULL, NULL, NULL, matJ, b, x, p_maxIter, p_tol, &p_iter,
+             &p_res, XJPCG_MODE_KEEP_MATRIX);
     printf("Second equation is solved in %d iterations with relative residual %e.\n", p_iter, p_res);
 
     genSPD(p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ);
@@ -103,8 +103,8 @@ int main(int argc, const char** argv) {
         int val = rand() % p_n - p_n / 2;
         b[i] = val / 97.0;
     }
-    JPCG_coo(pHandle, p_n, p_nnz, NULL, NULL, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
-             &p_res, JPCG_MODE_KEEP_NZ_LAYOUT);
+    xJPCG_coo(pHandle, p_n, p_nnz, NULL, NULL, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
+             &p_res, XJPCG_MODE_KEEP_NZ_LAYOUT);
     printf("Third equation is solved in %d iterations with relative residual %e.\n", p_iter, p_res);
     destroy_JPCG_handle(pHandle);
 

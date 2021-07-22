@@ -21,6 +21,7 @@
 #include "cgVector.hpp"
 #include "cgHost.hpp"
 #include "pcg.h"
+#include "cgException.hpp"
 
 namespace xilinx_apps {
 namespace pcg {
@@ -71,6 +72,8 @@ class PCGImpl {
         }
     }
     void setVec(const uint32_t p_dim, const t_DataType* p_b, const t_DataType* p_diagA) {
+        if(p_b == nullptr)
+            throw CgInvalidValue("p_b is null.");
         if (p_dim != m_genCgVec.getDim()) {
             m_genCgVec.loadVec(p_dim, p_b, p_diagA);
         } else {
@@ -140,8 +143,22 @@ class PCGImpl {
         m_host.sendInstr(l_cgInstr.h_instr, l_cgInstr.h_instrBytes);
     }
 
-    Metrics* getMetrics(){
+    XJPCG_Metric_t* getMetrics(){
         return &m_Metrics;
+    }
+
+    XJPCG_Status_t setStatusMessage(XJPCG_Status_t p_stat, std::string p_str){
+        m_lastStatus = p_stat;
+        m_lastMessage = p_str;
+        return m_lastStatus;
+    }
+
+    XJPCG_Status_t getLastStatus(){
+        return m_lastStatus;
+    }
+
+    std::string getLastMessage(){
+        return m_lastMessage;
     }
 
    private:
@@ -151,8 +168,11 @@ class PCGImpl {
     GenCgInstr<t_DataType, t_InstrBytes> m_genInstr;
     xCgHost m_host;
     MatPartition m_matPar;
-    Metrics m_Metrics;
+    XJPCG_Metric_t m_Metrics;
+    XJPCG_Status_t m_lastStatus;
+    std::string m_lastMessage;
 };
+
 }
 }
 #endif
