@@ -10,6 +10,8 @@
  */
 /* -------------------------------------------------------------------------- */
 
+#include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <vector>
 #include <cassert>
@@ -17,12 +19,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <experimental/filesystem>
 #include <assert.h>
 #include <sys/time.h>
+#include "utils.hpp"
+#include "binFiles.hpp"
+
+#ifdef USE_FPGA
 #include "pcg.hpp"
 #include "cgHost.hpp"
-#include "utils.hpp"
+typedef PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
+#endif
 
+using namespace std;
 #ifdef AUTODOUBLE
 typedef long long FortranMindex; 
 typedef long long FortranInteger;
@@ -45,7 +54,6 @@ typedef float FortranReal;
 #define userLE_vecdot USERLE_VECDOR
 #define userLE_vecsum USERLE_VECSUM
 #endif
-typedef PCG<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
 /* -------------------------------------------------------------------------- */
 /* Prototypes */
 extern "C" void userLE_JPCG(FortranInteger* pn,
@@ -67,9 +75,7 @@ void userLE_spmv(FortranInteger n,
                  FortranInteger* colptr,
                  FortranInteger* rowind,
                  FortranReal* values,
-                 FortranReal alpha,
                  FortranReal* x,
-                 FortranReal beta,
                  FortranReal* y);
 
 FortranReal userLE_vecdot(FortranInteger n, FortranReal* x, FortranReal* y);
@@ -95,12 +101,29 @@ void getCOO(FInt n,
             Integer* rowInd,
             Integer* colInd);
 
+template <typename FInt, typename Real>
+void getCOODat(FInt n, FInt nz, FInt* colptr, FInt* rowind, Real* values, Real* matA) {
+    FInt index = 0;
+    for (FInt j = 0; j < n; j++) {
+        for (FInt k = colptr[j] - 1; k < colptr[j + 1] - 1; k++) {
+            FInt i = rowind[k] - 1;
+            assert(index < nz);
+            matA[index++] = values[k];
+            if (i != j) {
+                assert(index < nz);
+                matA[index++] = values[k];
+            }
+        }
+    }
+    assert(index == nz);
+}
+#ifdef USE_FPGA
 double fpga_JPCG(PCG_TYPE & l_pcg,
         FortranInteger pn,
                  FortranInteger pnz,
-                 uint32_t* rowInd,
-                 uint32_t* colInd,
-                 FortranReal* matA,
+                 FortranInteger* rowind,
+                 FortranInteger* colptr,
+                 FortranReal* values,
                  FortranReal* matJ,
                  FortranInteger pmaxit,
                  FortranReal ptol,
@@ -110,50 +133,27 @@ double fpga_JPCG(PCG_TYPE & l_pcg,
                  FortranReal* prelres,
                  FortranReal* pflops){
     std::cout << "running fpga_JPCG..." << std::endl;
-    TimePointType l_timer[7];
-    CooMat l_mat = l_pcg.allocMat(pn, pn, pnz);
-    l_pcg.allocVec(pn);
-    CgInputVec l_inVecs = l_pcg.getInputVec();
+    TimePointType l_timer[5];
     l_timer[0] = std::chrono::high_resolution_clock::now();
-    memcpy(reinterpret_cast<char*>(l_mat.m_rowIdxPtr), reinterpret_cast<char*>(rowInd), pnz*sizeof(uint32_t));
-    memcpy(reinterpret_cast<uint8_t*>(l_mat.m_colIdxPtr), reinterpret_cast<uint8_t*>(colInd), pnz*sizeof(uint32_t));
-    memcpy(reinterpret_cast<uint8_t*>(l_mat.m_datPtr), reinterpret_cast<uint8_t*>(matA), pnz*sizeof(FortranReal));
-    memcpy(reinterpret_cast<uint8_t*>(l_inVecs.h_b), reinterpret_cast<uint8_t*>(b), pn*sizeof(FortranReal));
-    memcpy(reinterpret_cast<uint8_t*>(l_inVecs.h_diag), reinterpret_cast<uint8_t*>(matJ), pn*sizeof(FortranReal));
-    showTimeData("Input data copying time: ", l_timer[0], l_timer[1]);
-    
-    l_pcg.partitionMat();
-    showTimeData("Matrix partition time: ", l_timer[1], l_timer[2]);
-    l_pcg.initVec();
-    showTimeData("Vector initialization time: ", l_timer[2], l_timer[3]);
-    showTimeData("FPGA configuration time: ", l_timer[3], l_timer[4]);
-    l_pcg.setDat();
-    l_pcg.setInstr(pmaxit, ptol);
-    showTimeData("Host to device data transfer time: ", l_timer[4], l_timer[5]);
-    l_pcg.run();
-    CgVector l_resVec = l_pcg.getRes();
-    showTimeData("PCG run time: ", l_timer[5], l_timer[6]);
-    CgInstr l_instr = l_pcg.getInstr();
-    void* l_xk = l_resVec.h_xk;
-    xf::hpc::MemInstr<CG_instrBytes> l_memInstr;
-    xf::hpc::cg::CGSolverInstr<CG_dataType> l_cgInstr;
-    int lastIter = 0;
-    CG_dataType l_res = 0;
-    for (int i = 0; i < pmaxit; i++) {
-        lastIter = i;
-        l_cgInstr.load((uint8_t*)(l_instr.h_instr) + (i + 1) * CG_instrBytes, l_memInstr);
-        if (l_cgInstr.getMaxIter() == 0) {
-            break;
-        }
-        l_res = l_cgInstr.getRes();
-    }
-    *prelres = sqrt(l_res / l_pcg.getDot());
-    *pniter = lastIter;
-    memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_xk), pn*sizeof(FortranReal));
-    *pflops = lastIter * (2 * pnz + 16 * pn) - 2 * pn;
-    chrono::duration<double> d = l_timer[6] - l_timer[5];
+    FortranReal* matA;
+    matA = (FortranReal*)malloc(pnz * sizeof(FortranReal));
+    getCOODat(pn, pnz, colptr, rowind, values, matA);
+    l_pcg.setCscSymMat(pn, pnz, (int64_t*)rowind, (int64_t*)colptr, matA);
+    free(matA);
+    showTimeData("Matrix partition and transmission time: ", l_timer[0], l_timer[1]);
+    l_pcg.setVec(pn, b, matJ);
+    showTimeData("Vector initialization & transmission time: ", l_timer[1], l_timer[2]);
+    Results<CG_dataType> l_res = l_pcg.run(pmaxit, ptol);
+    showTimeData("PCG run time: ", l_timer[2], l_timer[3]);
+    cout << "Residual value " << l_res.m_residual << endl;
+    *prelres = sqrt(l_res.m_residual / l_pcg.getDot());
+    *pniter = l_res.m_nIters;
+    memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_res.m_x), pn * sizeof(FortranReal));
+    *pflops = l_res.m_nIters * (2 * pnz + 16 * pn) - 2 * pn;
+    chrono::duration<double> d = l_timer[3] - l_timer[2];
     return d.count() * 1e3;
 }
+#endif
 /* -------------------------------------------------------------------------- */
 /* Conjugate Gradients with diagonal preconditioner */
 extern "C" void userLE_JPCG(FortranInteger* pn,
@@ -184,7 +184,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     tol = *ptol;
     FortranInteger nnz = nz * 2 - n;
 
-#if defined FORMAT_COO || defined USE_FPGA
+#if defined FORMAT_COO
     FortranReal* matA;
     uint32_t* rowInd;
     uint32_t* colInd;
@@ -192,6 +192,15 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     rowInd = (uint32_t*) malloc(nnz * sizeof(uint32_t));
     colInd = (uint32_t*) malloc(nnz * sizeof(uint32_t));
     getCOO(n, nnz, colptr, rowind, values, matA, rowInd, colInd);
+    cout << "dim : " << n << ", NNZ: " << nnz << endl;
+    cout << "maxIter : " << maxit << ", tol: " << tol << endl;
+    writeBin("./row.bin", nnz * sizeof(uint32_t), rowInd);
+    writeBin("./col.bin", nnz * sizeof(uint32_t), colInd);
+    writeBin("./data.bin", nnz * sizeof(double), matA);
+    writeBin("./b.mat", n * sizeof(double), b);
+    writeBin("./A_diag.mat", n * sizeof(double), dprec);
+    exit(1);
+
 #endif
 
 #ifdef USE_FPGA
@@ -201,7 +210,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     TimePointType l_start = std::chrono::high_resolution_clock::now();
 
 #ifdef USE_FPGA
-    double l_hwTime = fpga_JPCG(l_pcg, n, nnz, rowInd, colInd, matA, dprec, maxit, tol, b, x, pniter, prelres, pflops);
+    double l_hwTime = fpga_JPCG(l_pcg, n, nnz, rowind, colptr, values, dprec, maxit, tol, b, x, pniter, prelres, pflops);
 #else
     FortranReal *r, *z, *p, *q;
     /* Allocate local storage */
@@ -234,8 +243,8 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
         coo_spmv(n, nnz, rowInd, colInd, matA, p, q);
         flops += 2.0 * nnz;
 #else
-        userLE_spmv(n, nz, colptr, rowind, values, 1.0, p, 0.0, q);
-        flops += 6.0 * nz - 2.0 * n;
+        userLE_spmv(n, nz, colptr, rowind, values, p, q);
+        flops += 4.0 * nz - 2.0 * n;
 #endif
 
         /* alpha = ( r^T z ) / ( p^T q ) */
@@ -283,7 +292,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     *pflops = flops;
 #endif
 
-#if defined FORMAT_COO || defined FPGA
+#if defined FORMAT_COO
     free(matA);
     free(rowInd);
     free(colInd);
@@ -292,25 +301,29 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     auto l_stop = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> l_durationSec = l_stop - l_start;
     double l_timeMs = l_durationSec.count() * 1e3;
-    static bool header = true;
 
-    ofstream fs;
-    if(header) {
-        fs.open("benchmark.csv");
+    string filename = "benchmark.csv";
+    bool header = std::experimental::filesystem::exists(filename);
+
+    fstream fs;
+    fs.open("benchmark.csv", ios::out | ios::app);
+    if(!header) {
         fs << "Dim" << ","
             << "NNZ" << ","
             << "Niter" << ","
             << "Relres" << ","
             <<"MFLOP" << ","
 #ifdef USE_FPGA
-            << "HW Time [ms]" << ","
-            << "HW GFLOPS" << ","
+            << "PCG Time [ms]" << ","
+            << "PCG GFLOPS" << ","
+            << "PCG&Matrix Partition Time [ms]" << ","
+            << "PCG&Matrix Partition GFLOPS"
+#else
+            << "PCG API Time [ms]" << ","
+            << "PCG API GFLOPS"
 #endif
-            << "API Time [ms]" << ","
-            << "API GFLOPS" << endl;
-        header = false;
-    } else 
-        fs.open("benchmark.csv", std::ofstream::app);
+            << endl;
+    } 
 
     fs << n << ","
         << nnz << ","
@@ -322,7 +335,7 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
         << *pflops/1e6/l_hwTime << ","
 #endif
         << l_timeMs << ","
-        << *pflops/1e6/l_timeMs << endl;
+        << *pflops/1e6/l_timeMs << std::endl;
     fs.close();
     return;
 }
@@ -379,20 +392,18 @@ void userLE_spmv(FortranInteger n,
         FortranInteger* colptr,
         FortranInteger* rowind,
         FortranReal* values,
-        FortranReal alpha,
         FortranReal* x,
-        FortranReal beta,
         FortranReal* y) {
     FortranInteger i, j, k;
 
-    for (i = 0; i < n; i++) y[i] *= beta;
+    for (i = 0; i < n; i++) y[i] = 0;
 
     for (j = 0; j < n; j++) {
         for (k = colptr[j] - 1; k < colptr[j + 1] - 1; k++) {
             i = rowind[k] - 1;
-            y[i] += alpha * values[k] * x[j];
+            y[i] += values[k] * x[j];
             if (i != j) {
-                y[j] += alpha * values[k] * x[i];
+                y[j] += values[k] * x[i];
             }
         }
     }

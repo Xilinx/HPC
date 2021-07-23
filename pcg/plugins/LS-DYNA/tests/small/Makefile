@@ -11,6 +11,7 @@ CUR_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
 XFLIB_DIR = $(XF_PROJ_ROOT)
 TEMP_DIR := $(CUR_DIR)/_x_temp
 TARGET?=csc
+MODEL_PATH?=$(LS_DYNA_PATH)/small_tbc/small_tbc.k
 BUILD_DIR := $(CUR_DIR)/build_output.$(TARGET)
 FC=mpiifort
 CC=mpigxx
@@ -19,12 +20,13 @@ FF=-O2 -safe-cray-ptr -assume byterecl,buffered_io,protect_parens -warn nousage 
 
 CXXFLAGS += -DHW_CLK=4e-9 -DCG_numTasks=1 -DCG_dataType=double -DCG_numChannels=16 -DCG_parEntries=4 -DCG_instrBytes=64 -DSPARSE_dataType=double -DSPARSE_indexType=uint16_t -DSPARSE_parEntries=4 -DSPARSE_accLatency=8 -DSPARSE_maxRows=4096 -DSPARSE_maxCols=4096 -DSPARSE_hbmChannels=16 -DSPARSE_hbmMemBits=256
 CXXFLAGS += -I$(XFLIB_DIR)/L1/hpc/include/
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/include
-CXXFLAGS += -I$(XFLIB_DIR)/pcg/include/sw
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/hw/include
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include/
+CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include/impl
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
-CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11  -Wno-unknown-pragmas -Wno-unused-label
+CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++14  -Wno-unknown-pragmas -Wno-unused-label
 CXXFLAGS += -fmessage-length=0
 
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
@@ -32,14 +34,14 @@ LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-na
 #
 LD=mpiifort -sox -fpp -qopenmp -static-intel
 #
-LF=  -lrt -lstdc++ -lpthread -lstdc++ -lpthread
+LF=  -lrt -lpthread -lstdc++ -lstdc++fs -lpthread
 CF=  -O3 $(CXXFLAGS) -DAUTODOUBLE -DUNSCORE -Wall
 
 ifeq ($(TARGET), coo)
 	CF += -DFORMAT_COO
 else
 ifeq ($(TARGET), fpga)
-	CF += -DFORMAT_COO -DUSE_FPGA
+	CF += -DUSE_FPGA
 endif
 endif
 #
@@ -141,10 +143,12 @@ OBJS += $(BUILD_DIR)/couple2other_user.o
 OBJS += $(BUILD_DIR)/dynrfn_user.o
 OBJS += $(BUILD_DIR)/userLE_JPCG.o
 OBJS += $(BUILD_DIR)/JPCG.o
+ifeq ($(TARGET), fpga)
 OBJS += $(BUILD_DIR)/gen_signature.o
 OBJS += $(BUILD_DIR)/xFPGA.o
 OBJS += $(BUILD_DIR)/xcl2.o
 OBJS += $(BUILD_DIR)/cgHost.o
+endif
 
 EXE := $(BUILD_DIR)/mppdyna
 
@@ -153,7 +157,7 @@ $(EXE): $(OBJS)
 
 run: $(EXE)
 	cd $(BUILD_DIR) && \
-	$(EXE) i=$(LS_DYNA_PATH)/run/small_tbc/small_tbc.k memory=1G ncpu=1 impcon=1
+	$(EXE) i=$(MODEL_PATH) memory=1G ncpu=1 impcon=1
 	cd ..
 
 clean:
@@ -163,6 +167,7 @@ clean:
 $(BUILD_DIR)/JPCG.o:
 	mkdir -p ${BUILD_DIR}
 	$(CC) -c $(CF) -I. -I$(LS_DYNA_PATH) ../../usermat/JPCG.cpp -o '$@'
+ifeq ($(TARGET), fpga)
 $(BUILD_DIR)/gen_signature.o:
 	mkdir -p ${BUILD_DIR}
 	$(CC) -c $(CF)  $(XFLIB_DIR)/L2/sparse/src/sw/c++/gen_signature.cpp  -o '$@'
@@ -174,7 +179,8 @@ $(BUILD_DIR)/xcl2.o:
 	$(CC) -c $(CF)  $(XFLIB_DIR)/L2/common/src/sw/xcl2.cpp -o '$@'
 $(BUILD_DIR)/cgHost.o:
 	mkdir -p ${BUILD_DIR}
-	$(CC) -c $(CF)  $(XFLIB_DIR)/pcg/src/sw/c++/cgHost.cpp -o '$@'
+	$(CC) -c $(CF)  $(XFLIB_DIR)/pcg/sw/src/cgHost.cpp -o '$@'
+endif
 
 $(BUILD_DIR)/userLE_JPCG.o: $(LS_DYNA_PATH)/usermat/userLE_JPCG.F90
 	mkdir -p ${BUILD_DIR}
