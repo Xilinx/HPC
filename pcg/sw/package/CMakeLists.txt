@@ -25,25 +25,9 @@ install(DIRECTORY "${CS_FILE_PATH}/lib/" DESTINATION ${CMAKE_INSTALL_PATH}/lib)
 
 install(FILES "${CS_FILE_PATH}/xclbin/pcg_xilinx_u280_xdma_201920_3.xclbin" DESTINATION ${CMAKE_INSTALL_PATH}/xclbin)
 
-install(FILES "${CS_FILE_PATH}/include/impl/pcgImp.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include/impl)
-install(FILES "${CS_FILE_PATH}/include/impl/cgVector.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include/impl)
-install(FILES "${CS_FILE_PATH}/include/impl/cgInstr.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include/impl)
-install(FILES "${CS_FILE_PATH}/include/impl/cgHost.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include/impl)
-
-install(FILES "${CS_FILE_PATH}/include/xFpga.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include)
-install(FILES "${CS_FILE_PATH}/include/xcl2.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include)
-install(FILES "${CS_FILE_PATH}/include/utils.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include)
-install(FILES "${CS_FILE_PATH}/include/signature.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include)
-install(FILES "${CS_FILE_PATH}/include/pcg.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include)
-install(FILES "${CS_FILE_PATH}/include/memInstr.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include)
-install(FILES "${CS_FILE_PATH}/include/matrix_params.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include)
-install(FILES "${CS_FILE_PATH}/include/gen_signature.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include)
-install(FILES "${CS_FILE_PATH}/include/control.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include)
-install(FILES "${CS_FILE_PATH}/include/binFiles.hpp" DESTINATION ${CMAKE_INSTALL_PATH}/include)
-
-
-install(FILES "${CS_FILE_PATH}/src/pcg_loader.cpp" DESTINATION ${CMAKE_INSTALL_PATH}/src)
-#install(FILES "${CS_FILE_PATH}/examples.zip" DESTINATION ${CMAKE_INSTALL_PATH}/)
+install(FILES "${CS_FILE_PATH}/include/pcg.h" DESTINATION ${CMAKE_INSTALL_PATH}/include)
+install(FILES "${CS_FILE_PATH}/src/pcg_loader.c" DESTINATION ${CMAKE_INSTALL_PATH}/src)
+install(FILES "${CS_FILE_PATH}/examples.zip" DESTINATION ${CMAKE_INSTALL_PATH}/)
 install(FILES "${CS_FILE_PATH}/VERSION" DESTINATION ${CMAKE_INSTALL_PATH}/ )
 
 #version 
