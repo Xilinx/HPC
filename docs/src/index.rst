@@ -13,9 +13,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-=========================
-Vitis HPC Product Library
-=========================
+===========================
+Xilinx HPC Products Library
+===========================
 
 This repository provides FPGA-based heterogeneous solutions for accelerating HPC applications.
 It currently includes following product:
@@ -27,26 +27,30 @@ It currently includes following product:
    :maxdepth: 1
 
    overview.rst
+
+.. toctree::
+   :caption: Installation
+   :maxdepth: 1
+
+   install.rst
  
 .. toctree::
-   :caption: PCG Solver Usage Examples
+   :caption: PCG Solver Examples
    :maxdepth: 1
 
     pcg_examples.rst
 
 .. toctree::
-   :caption: PCG APIs 
-   :maxdepth: 2 
+   :caption: Product User Guides
+   :maxdepth: 1
 
-   user_guide/L1/L1.rst
-   user_guide/L2/L2.rst
-   user_guide/L3/L3.rst
-
+   
 .. toctree::
-  :caption: PCG Benchmark Results  
-  :maxdepth: 1 
+   :caption: Versions
+   :maxdepth: 1
+   :hidden:
 
-  benchmark.rst
+   1.0 <https://xilinx.github.io/hpc/>
 
 .. toctree::
    :caption:  Release Notes

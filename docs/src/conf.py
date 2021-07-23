@@ -36,7 +36,7 @@ tools_dir = os.path.abspath(os.path.join(os.path.dirname(shutil.which('doxyrest'
 sys.path.insert(1, os.path.join(tools_dir, 'share/doxyrest_b/sphinx'))
 # -- Project information -----------------------------------------------------
 
-project = 'Vitis HPC Product Library'
+project = 'Xilinx Alveo HPC Products'
 copyright = '2021, Xilinx Inc.'
 author = 'Xilinx Inc.'
 
