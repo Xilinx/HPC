@@ -100,7 +100,7 @@ class Signature {
         const std::vector<uint32_t> &l_tmp = p_spm.getRows();
         auto l_up = l_tmp.begin();
         while (l_eId < p_spm.getNnz()) {
-            l_up = upper_bound(l_up, l_tmp.end(), l_minRowId + m_maxRows, isLessEqual);
+            l_up = upper_bound(l_tmp.begin(), l_tmp.end(), l_minRowId + m_maxRows, isLessEqual);
             l_eId = l_up - l_tmp.begin();
             if (l_eId > l_sId) {
                 std::vector<uint32_t> l_row = p_spm.getSubRows(l_sId, l_eId);
@@ -137,7 +137,7 @@ class Signature {
         const std::vector<uint32_t>& l_tmp = p_rbSpm.getCols();
         auto l_up = l_tmp.begin();
         while (l_eId < p_rbSpm.getNnz()) {
-            l_up = upper_bound(l_up, l_tmp.end(), l_minColId + m_maxCols, isLessEqual);
+            l_up = upper_bound(l_tmp.begin(), l_tmp.end(), l_minColId + m_maxCols, isLessEqual);
             l_eId = l_up - l_tmp.begin();
             if (l_eId > l_sId) {
                 std::vector<uint32_t> l_row = p_rbSpm.getSubRows(l_sId, l_eId);
@@ -160,20 +160,10 @@ class Signature {
     void gen_pars(std::vector<SparseMatrix>& p_rbSpms, std::vector<SparseMatrix>& p_parSpms) {
         uint32_t l_totalRbs = p_rbSpms.size();
         std::vector<std::vector<SparseMatrix> > l_parSpms(l_totalRbs);
-#ifdef MULTITHREADS
-        std::vector<std::thread> l_threads(l_totalRbs);
-        for (uint32_t i = 0; i < l_totalRbs; ++i) {
-            l_threads[i] = std::thread(&Signature::genPars4Rb, this, i, std::ref(p_rbSpms[i]), std::ref(l_parSpms[i]));
-        }
-        for (auto& th : l_threads) {
-            th.join();
-        }
-#else
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
         for (uint32_t i = 0; i < l_totalRbs; ++i) {
             genPars4Rb(i, p_rbSpms[i], l_parSpms[i]);
         }
-#endif
         for (uint32_t i = 0; i < l_totalRbs; ++i) {
             p_parSpms.insert(p_parSpms.end(), l_parSpms[i].begin(), l_parSpms[i].end());
         }
@@ -242,27 +232,10 @@ class Signature {
         unsigned int l_size = l_parSpms.size();
         p_paddedParSpms.resize(l_size);
 
-#ifdef MULTITHREADS
-        std::vector<std::thread> l_threads(l_size);
-        for (unsigned int i = 0; i < l_size; i++) {
-            /*SparseMatrix l_parSpm = l_parSpms[i];
-              l_parSpm.complete_sort_by_row();
-              SparseMatrix l_paddedParSpm = pad_par(l_parSpm);
-              assert(l_paddedParSpm.getM() <= m_maxRows);
-              assert(l_paddedParSpm.getN() <= m_maxCols);
-              p_paddedParSpms[i] = l_paddedParSpm;*/
-            l_threads[i] =
-                std::thread(&Signature::create_padPar, this, i, std::ref(l_parSpms[i]), std::ref(p_paddedParSpms[i]));
-        }
-        for (auto& th : l_threads) {
-            th.join();
-        }
-#else
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
         for (unsigned int i = 0; i < l_size; i++) {
             create_padPar(i, l_parSpms[i], p_paddedParSpms[i]);
         }
-#endif
     }
 
     void gen_chPars(std::vector<SparseMatrix>& p_paddedParSpms, std::vector<std::vector<SparseMatrix> >& p_chParSpms) {
@@ -382,7 +355,7 @@ class Signature {
         uint32_t l_rowIdxMod = l_memIdxWidth * l_rowIdxGap;
         uint32_t l_colIdxMod = l_memIdxWidth * m_parEntries;
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
         for (uint32_t c = 0; c < m_channels; c++) {
             uint32_t l_sParId = 0;
             for (uint32_t rbId = 0; rbId < m_rbParam.m_totalRbs; rbId++) {
