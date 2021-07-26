@@ -63,8 +63,8 @@ int main(int argc, const char** argv) {
     int deviceId = atoi(argv[1]);
     const char* xclbinPath = argv[2];
 
-    const uint32_t p_n = 4096, p_nnz = p_n * 3 - 2;
-    const double p_tol = 1e-8;
+    const uint32_t p_n = 65536, p_nnz = p_n * 3 - 2;
+    const double p_tol = 1e-16;
     const uint32_t p_maxIter = 1000;
     uint32_t p_iter, *p_rowIdx, *p_colIdx;
     double p_res;
@@ -88,15 +88,38 @@ int main(int argc, const char** argv) {
     CheckError(create_JPCG_handle(&pHandle, deviceId, xclbinPath));
     CheckError(xJPCG_coo(pHandle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
              &p_res, XJPCG_MODE_DEFAULT));
-    printf("First equation is solved in %d iterations with relative residual %e.\n", p_iter, p_res);
+
+    XJPCG_Metric_t metric;
+    xJPCG_getMetrics(pHandle, &metric);
+
+    printf("First equation information:\n");
+    printf("\tMatrix dim:\t %d\n", p_n);
+    printf("\tMatrix NNZs:\t %d\n", p_nnz);
+    printf("\tNum of iterations:\t %d\n", p_iter);
+    printf("\tRelative residual:\t %e\n", p_res);
+    printf("\tMatrix process time:\t %fs\n", metric.m_matProc);
+    printf("\tVector process time:\t %fs\n", metric.m_vecProc);
+    printf("\tSolver execution time:\t %fs\n", metric.m_solver);
+    printf("--------------------------------------------\n");
 
     for (i = 0; i < p_n; i++) {
         int val = rand() % p_n - p_n / 2;
         b[i] = val / 67.0;
     }
     CheckError(xJPCG_coo(pHandle, p_n, p_nnz, NULL, NULL, NULL, matJ, b, x, p_maxIter, p_tol, &p_iter,
-             &p_res, XJPCG_MODE_KEEP_MATRIX));
-    printf("Second equation is solved in %d iterations with relative residual %e.\n", p_iter, p_res);
+                &p_res, XJPCG_MODE_KEEP_MATRIX));
+
+    xJPCG_getMetrics(pHandle, &metric);
+
+    printf("Second equation information:\n");
+    printf("\tMatrix dim:\t %d\n", p_n);
+    printf("\tMatrix NNZs:\t %d\n", p_nnz);
+    printf("\tNum of iterations:\t %d\n", p_iter);
+    printf("\tRelative residual:\t %e\n", p_res);
+    printf("\tMatrix process time:\t %fs\n", metric.m_matProc);
+    printf("\tVector process time:\t %fs\n", metric.m_vecProc);
+    printf("\tSolver execution time:\t %fs\n", metric.m_solver);
+    printf("--------------------------------------------\n");
 
     genSPD(p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ);
     for (i = 0; i < p_n; i++) {
@@ -104,8 +127,19 @@ int main(int argc, const char** argv) {
         b[i] = val / 97.0;
     }
     CheckError(xJPCG_coo(pHandle, p_n, p_nnz, NULL, NULL, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
-             &p_res, XJPCG_MODE_KEEP_NZ_LAYOUT));
-    printf("Third equation is solved in %d iterations with relative residual %e.\n", p_iter, p_res);
+                &p_res, XJPCG_MODE_KEEP_NZ_LAYOUT));
+    xJPCG_getMetrics(pHandle, &metric);
+
+    printf("Third equation information:\n");
+    printf("\tMatrix dim:\t %d\n", p_n);
+    printf("\tMatrix NNZs:\t %d\n", p_nnz);
+    printf("\tNum of iterations:\t %d\n", p_iter);
+    printf("\tRelative residual:\t %e\n", p_res);
+    printf("\tMatrix process time:\t %fs\n", metric.m_matProc);
+    printf("\tVector process time:\t %fs\n", metric.m_vecProc);
+    printf("\tSolver execution time:\t %fs\n", metric.m_solver);
+    printf("--------------------------------------------\n");
+
     CheckError(destroy_JPCG_handle(pHandle));
 
     free(p_rowIdx);

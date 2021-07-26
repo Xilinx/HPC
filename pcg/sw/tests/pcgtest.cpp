@@ -87,12 +87,6 @@ int main(int argc, char** argv) {
             l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_MODE_KEEP_NZ_LAYOUT);
     }
 
-    auto stat = xJPCG_coo(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
-        l_diagA.data(), nullptr, l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_MODE_DEFAULT);
-    
-    if(stat != XJPCG_STATUS_SUCCESS)
-        std::cout << xJPCG_getLastMessage(pHandle) << std::endl;
-
     int err = 0;
     readBin(l_datFilePath + "/x.mat", h_x.data(), l_matInfo.m_m * sizeof(CG_dataType));
     compare<CG_dataType>(l_matInfo.m_m, h_x.data(), l_x.data(), err, l_debug);
