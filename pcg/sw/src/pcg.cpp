@@ -99,6 +99,8 @@ XJPCG_Status_t xJPCG_coo(void* handle,
         return pImpl -> setStatusMessage(err.getStatus(), err.what());
     } catch (const std::exception & err ) {
         return pImpl -> setStatusMessage(XJPCG_STATUS_OTHER_ERROR, err.what());
+    } catch (...) {
+        return pImpl -> setStatusMessage(XJPCG_STATUS_OTHER_ERROR, "ERROR");
     }
     return XJPCG_STATUS_SUCCESS;
 }

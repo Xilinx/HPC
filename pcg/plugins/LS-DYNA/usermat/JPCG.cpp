@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <experimental/filesystem>
 #include <assert.h>
 #include <sys/time.h>
 #include "utils.hpp"
@@ -207,8 +206,6 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     PCG_TYPE l_pcg(1, "../cgSolver.xclbin");
 #endif
 
-    TimePointType l_start = std::chrono::high_resolution_clock::now();
-
 #ifdef USE_FPGA
     double l_hwTime = fpga_JPCG(l_pcg, n, nnz, rowind, colptr, values, dprec, maxit, tol, b, x, pniter, prelres, pflops);
 #else
@@ -298,45 +295,6 @@ extern "C" void userLE_JPCG(FortranInteger* pn,
     free(colInd);
 #endif
 
-    auto l_stop = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> l_durationSec = l_stop - l_start;
-    double l_timeMs = l_durationSec.count() * 1e3;
-
-    string filename = "benchmark.csv";
-    bool header = std::experimental::filesystem::exists(filename);
-
-    fstream fs;
-    fs.open("benchmark.csv", ios::out | ios::app);
-    if(!header) {
-        fs << "Dim" << ","
-            << "NNZ" << ","
-            << "Niter" << ","
-            << "Relres" << ","
-            <<"MFLOP" << ","
-#ifdef USE_FPGA
-            << "PCG Time [ms]" << ","
-            << "PCG GFLOPS" << ","
-            << "PCG&Matrix Partition Time [ms]" << ","
-            << "PCG&Matrix Partition GFLOPS"
-#else
-            << "PCG API Time [ms]" << ","
-            << "PCG API GFLOPS"
-#endif
-            << endl;
-    } 
-
-    fs << n << ","
-        << nnz << ","
-        << *pniter << ","
-        << *prelres << ","
-        << *pflops/1e6 << ","
-#ifdef USE_FPGA
-        << l_hwTime << ","
-        << *pflops/1e6/l_hwTime << ","
-#endif
-        << l_timeMs << ","
-        << *pflops/1e6/l_timeMs << std::endl;
-    fs.close();
     return;
 }
 
