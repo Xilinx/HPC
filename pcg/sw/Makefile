@@ -301,10 +301,10 @@ $(foreach src,$(SRCS_python),$(eval $(call BUILD_CPP_RULE,$(src))))
 #
 
 # Set this variable to the parent directory of the Vitis build directory (which is build_dir.hw...)
-L2_TOP_DIR = $(HPC_DIR)/pcg/tests/pcg_spmv_c++
+L2_TOP_DIR = $(HPC_DIR)/pcg/hw/tests
 
 L2_XDEVICE = xilinx_u280_xdma_201920_3
-L2_BUILD_DIR = $(L2_TOP_DIR)/build_dir.hw.$(L2_XDEVICE)
+L2_BUILD_DIR = $(L2_TOP_DIR)/xclbin
 XCLBIN_NAME = cgSolver_ddrParParam_hbmRbParam.xclbin
 XCLBIN_RELEASE_NAME = pcg_$(L2_XDEVICE).xclbin
 XCLBIN_FILE = $(L2_BUILD_DIR)/$(XCLBIN_NAME)
