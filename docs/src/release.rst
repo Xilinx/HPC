@@ -32,5 +32,4 @@ Release Note
 1.0
 ----
 
-Xilinx HPC product libraray release 1.0 introduces HLS primitives, Vitis kernle level components and software APIs for following HPC products. 
-* PCG (Preconditioned Conjugate Gradient) Solver
+Xilinx HPC product libraray release 1.0 introduces HLS primitives, Vitis kernle level components and software APIs for PCG solver. 

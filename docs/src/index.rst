@@ -35,15 +35,16 @@ It currently includes following product:
    install.rst
  
 .. toctree::
-   :caption: PCG Solver Examples
+   :caption: PCG Solver Example
    :maxdepth: 1
 
-    pcg_examples.rst
+   pcg_c_example.rst
 
 .. toctree::
    :caption: Product User Guides
    :maxdepth: 1
 
+   pcg_userGuide.rst
    
 .. toctree::
    :caption: Versions
@@ -60,9 +61,6 @@ It currently includes following product:
 
 Requirements
 ------------
-
-Software Platform
-~~~~~~~~~~~~~~~~~
 
 For hardware users, who want to generate FPGA configuration file (.xclbin file), Vitits and XRT 2021.1 have to be installed.
 
