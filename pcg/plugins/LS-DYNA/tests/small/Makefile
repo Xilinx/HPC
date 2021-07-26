@@ -26,7 +26,7 @@ CXXFLAGS += -I$(XFLIB_DIR)/pcg/sw/include/impl
 CXXFLAGS += -I$(XFLIB_DIR)/L2/common/include/sw
 CXXFLAGS += -I$(XFLIB_DIR)/L2/sparse/include/sw/fp64
 CXXFLAGS += -I$(XFLIB_DIR)/utils/include/sw
-CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++14  -Wno-unknown-pragmas -Wno-unused-label
+CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11  -Wno-unknown-pragmas -Wno-unused-label
 CXXFLAGS += -fmessage-length=0
 
 LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
@@ -34,7 +34,7 @@ LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-na
 #
 LD=mpiifort -sox -fpp -qopenmp -static-intel
 #
-LF=  -lrt -lpthread -lstdc++ -lstdc++fs -lpthread
+LF=  -lrt -lpthread -lstdc++ -lpthread
 CF=  -O3 $(CXXFLAGS) -DAUTODOUBLE -DUNSCORE -Wall
 
 ifeq ($(TARGET), coo)
