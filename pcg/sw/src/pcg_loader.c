@@ -109,6 +109,15 @@ const char* xJPCG_getLastMessage(void* handle) {
     else
         return "Function not supported.";
 }
+XILINX_PCG_LINKAGE_DEF
+const char* XJPCG_getErrorString(XJPCG_Status_t code) {
+    typedef const char* (*GetErrorString)(XJPCG_Status_t);
+    GetErrorString pGetErrorString = (GetErrorString) xilinx_apps_getCDynamicFunction("xJPCG_getErrorString");
+    if (pGetErrorString)
+        return pGetErrorString(code);
+    else
+        return "Function not supported.";
+}
 
 XILINX_PCG_LINKAGE_DEF
 XJPCG_Status_t xJPCG_coo(void *handle, 

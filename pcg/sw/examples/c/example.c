@@ -18,6 +18,15 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#define CheckError(code) { checkError((code), __FILE__, __LINE__); }
+inline void checkError(XJPCG_Status_t code, const char *file, int line) {
+    if(code != XJPCG_STATUS_SUCCESS){
+        fprintf(stderr, "CheckError: %s at %s:%d\n", XJPCG_getErrorString(code), file, line);
+        exit(code);
+    }
+
+}
+
 void genSPD(uint32_t p_n, uint32_t p_nnz, uint32_t *p_rowIdx, uint32_t *p_colIdx, double *p_data, double *matJ){
     double *tmp = malloc(sizeof(double) * p_n);
 

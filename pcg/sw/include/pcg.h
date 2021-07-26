@@ -51,37 +51,12 @@ typedef enum {
     XJPCG_STATUS_OTHER_ERROR
 } XJPCG_Status_t;
 
-
-inline const char* XJPCG_getErrorString(XJPCG_Status_t code){ 
-    switch(code) {
-        case XJPCG_STATUS_SUCCESS:
-            return "XJPCG_STATUS_SUCCESS";
-        case XJPCG_STATUS_NOT_INITIALIZED: 
-            return "XJPCG_STATUS_NOT_INITIALIZED";
-        case XJPCG_STATUS_ALLOC_FAILED:
-            return "XJPCG_STATUS_ALLOC_FAILED";
-        case XJPCG_STATUS_INVALID_VALUE:
-            return "XJPCG_STATUS_INVALID_VALUE";
-        case XJPCG_STATUS_EXECUTION_FAILED:
-            return "XJPCG_STATUS_EXECUTION_FAILED";
-        case XJPCG_STATUS_INTERNAL_ERROR:
-            return "XJPCG_STATUS_INTERNAL_ERROR";
-        case XJPCG_STATUS_NOT_SUPPORTED:
-            return "XJPCG_STATUS_NOT_SUPPORTED";
-        case XJPCG_STATUS_OTHER_ERROR:
-            return "XJPCG_STATUS_OTHER_ERROR";
-    }
-    return "Unknown Error Code!";
-}
-
-#define CheckError(code) { checkError((code), __FILE__, __LINE__); }
-inline void checkError(XJPCG_Status_t code, const char *file, int line) {
-    if(code != XJPCG_STATUS_SUCCESS){
-        fprintf(stderr, "CheckError: %s at %s:%d\n", XJPCG_getErrorString(code), file, line);
-        exit(code);
-    }
-
-}
+/** XJPCG_getErrorString get the string presentation of given status code
+ *
+ * code status code
+ * return string
+ */
+const char* XJPCG_getErrorString(XJPCG_Status_t code);
 
 typedef struct {
     double m_init;
