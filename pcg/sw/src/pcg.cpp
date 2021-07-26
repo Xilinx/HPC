@@ -20,6 +20,14 @@
 
 using PcgImpl = xilinx_apps::pcg::PCGImpl<double, 4, 64, 8, 16, 4096, 4096, 256>;
 
+namespace {
+double getDuration(std::chrono::time_point<std::chrono::high_resolution_clock> &last){
+        std::chrono::duration<double> duration = std::chrono::high_resolution_clock::now() - last;
+        last = std::chrono::high_resolution_clock::now();
+        return duration.count();
+}
+}
+
 extern "C" {
 
 XJPCG_Status_t create_JPCG_handle(void **handle, const int deviceId, const char* xclbinPath) {
@@ -28,8 +36,7 @@ XJPCG_Status_t create_JPCG_handle(void **handle, const int deviceId, const char*
         auto last = std::chrono::high_resolution_clock::now();
         pImpl = new PcgImpl();
         pImpl->init(deviceId, xclbinPath);
-        std::chrono::duration<double> duration = std::chrono::high_resolution_clock::now() - last;
-        pImpl->getMetrics()->m_init = duration.count();
+        pImpl->getMetrics()->m_init = getDuration(last);
         *handle = pImpl;
     } catch (const xilinx_apps::pcg::CgException & err) {
         return pImpl -> setStatusMessage(err.getStatus(), err.what());
@@ -46,6 +53,7 @@ XJPCG_Status_t destroy_JPCG_handle(void* handle) {
     delete pImpl;
     return XJPCG_STATUS_SUCCESS;
 }
+
 
 XJPCG_Status_t xJPCG_coo(void* handle,
         const uint32_t p_n,
@@ -66,7 +74,6 @@ XJPCG_Status_t xJPCG_coo(void* handle,
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
     try {
         auto last = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> duration;
 
         switch (mode & XJPCG_MODE_KEEP_MATRIX) {
             case XJPCG_MODE_DEFAULT:
@@ -79,22 +86,16 @@ XJPCG_Status_t xJPCG_coo(void* handle,
                 break;
         }
 
-        duration = std::chrono::high_resolution_clock::now() - last;
-        last = std::chrono::high_resolution_clock::now();
-        pImpl->getMetrics()->m_matProc = duration.count();
+        pImpl->getMetrics()->m_matProc = getDuration(last);
 
         pImpl->setVec(p_n, b, matJ);
-        duration = std::chrono::high_resolution_clock::now() - last;
-        last = std::chrono::high_resolution_clock::now();
-        pImpl->getMetrics()->m_vecProc = duration.count();
+        pImpl->getMetrics()->m_vecProc = getDuration(last);
 
         xilinx_apps::pcg::Results<double> l_res = pImpl->run(p_maxIter, p_tol);
         *p_res = std::sqrt(l_res.m_residual / pImpl->getDot());
         *p_iter = l_res.m_nIters;
         memcpy((char*) x, (char*) l_res.m_x, sizeof(double) * p_n);
-        duration = std::chrono::high_resolution_clock::now() - last;
-        last = std::chrono::high_resolution_clock::now();
-        pImpl->getMetrics()->m_solver = duration.count();
+        pImpl->getMetrics()->m_solver = getDuration(last);
     } catch (const xilinx_apps::pcg::CgException & err) {
         return pImpl -> setStatusMessage(err.getStatus(), err.what());
     } catch (const std::exception & err ) {
@@ -126,4 +127,5 @@ const char* xJPCG_getLastMessage(void* handle) {
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
     return pImpl->getLastMessage().c_str();
 }
+
 }
