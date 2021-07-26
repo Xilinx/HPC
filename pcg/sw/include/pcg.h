@@ -21,6 +21,8 @@
 #define PCG_H
 
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /**
  * Define this macro to make functions in pcg_loader.cpp inline instead of extern.  You would use this macro
@@ -31,6 +33,8 @@
 #else
 #define XILINX_PCG_LINKAGE_DECL extern
 #endif
+
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,6 +50,13 @@ typedef enum {
     XJPCG_STATUS_NOT_SUPPORTED,
     XJPCG_STATUS_OTHER_ERROR
 } XJPCG_Status_t;
+
+/** XJPCG_getErrorString get the string presentation of given status code
+ *
+ * code status code
+ * return string
+ */
+const char* XJPCG_getErrorString(XJPCG_Status_t code);
 
 typedef struct {
     double m_init;
@@ -98,31 +109,45 @@ XJPCG_Status_t destroy_JPCG_handle(void* handle);
  */
 XILINX_PCG_LINKAGE_DECL
 XJPCG_Status_t xJPCG_coo(void* handle,
-              const uint32_t p_n,
-              const uint32_t p_nnz,
-              const uint32_t* p_rowIdx,
-              const uint32_t* p_colIdx,
-              const double* p_data,
-              const double* p_diagA,
-              const double* p_b,
-              const double* p_x,
-              const uint32_t p_maxIter,
-              const double p_tol,
-              uint32_t* p_iter,
-              double* p_res,
-              const XJPCG_Mode mode);
+        const uint32_t p_n,
+        const uint32_t p_nnz,
+        const uint32_t* p_rowIdx,
+        const uint32_t* p_colIdx,
+        const double* p_data,
+        const double* p_diagA,
+        const double* p_b,
+        const double* p_x,
+        const uint32_t p_maxIter,
+        const double p_tol,
+        uint32_t* p_iter,
+        double* p_res,
+        const XJPCG_Mode mode);
 
+/** xJPCG_peekAtLastStatus get the last status associated with handle
+ *
+ * handle pointer to a JPCG handle
+ */
 XILINX_PCG_LINKAGE_DECL
 XJPCG_Status_t xJPCG_peekAtLastStatus(void* handle);
 
+
+/** xJPCG_getLastMessage get the last status/error message associated with handle
+ *
+ * handle pointer to a JPCG handle
+ */
 XILINX_PCG_LINKAGE_DECL
 const char* xJPCG_getLastMessage(void* handle);
 
+/** xJPCG_getMetrics get the last performance metrics associated with handle
+ *
+ * handle pointer to a JPCG handle
+ * metric pointer to a metric struct
+ */
 XILINX_PCG_LINKAGE_DECL
 XJPCG_Status_t xJPCG_getMetrics(void* handle, XJPCG_Metric_t *metric);
 
 #ifdef __cplusplus
-        }
+}
 #endif
 
 #endif /* PCG_H */
