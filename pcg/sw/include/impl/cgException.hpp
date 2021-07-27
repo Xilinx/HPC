@@ -22,7 +22,7 @@ namespace pcg {
 
 class CgException : public std::exception {
    public:
-    CgException(const std::string str, const XJPCG_Status_t p_stat = XJPCG_STATUS_OTHER_ERROR) : m_msg(str), m_status(p_stat) {}
+    CgException(const std::string str, const XJPCG_Status_t p_stat) : m_msg(str), m_status(p_stat) {}
 
     const char* what() const noexcept override { 
         return m_msg.c_str(); 

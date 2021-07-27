@@ -21,8 +21,9 @@
 #define CheckError(code) { checkError((code), __FILE__, __LINE__); }
 inline void checkError(XJPCG_Status_t code, const char *file, int line) {
     if(code != XJPCG_STATUS_SUCCESS){
-        fprintf(stderr, "CheckError: %s at %s:%d\n", XJPCG_getErrorString(code), file, line);
-        exit(code);
+        fprintf(stderr, "CheckError: %s at %s:%d\n", xJPCG_getErrorString(code), file, line);
+        if(code != XJPCG_STATUS_EXECUTION_FAILED) 
+            exit(code);
     }
 
 }
@@ -93,34 +94,15 @@ int main(int argc, const char** argv) {
         b[i] = val / 37.0;
     }
 
-    void* pHandle = NULL;
-    CheckError(create_JPCG_handle(&pHandle, deviceId, xclbinPath));
-    CheckError(xJPCG_coo(pHandle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
+    XJPCG_Handle_t pHandle;
+    CheckError(xJPCG_createHandle(&pHandle, deviceId, xclbinPath));
+    CheckError(xJPCG_cooSolver(&pHandle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
              &p_res, XJPCG_MODE_DEFAULT));
 
     XJPCG_Metric_t metric;
-    xJPCG_getMetrics(pHandle, &metric);
+    CheckError(xJPCG_getMetrics(&pHandle, &metric));
 
     printf("First equation information:\n");
-    printf("\tMatrix dim:\t %d\n", p_n);
-    printf("\tMatrix NNZs:\t %d\n", p_nnz);
-    printf("\tNum of iterations:\t %d\n", p_iter);
-    printf("\tRelative residual:\t %e\n", p_res);
-    printf("\tMatrix process time:\t %fs\n", metric.m_matProc);
-    printf("\tVector process time:\t %fs\n", metric.m_vecProc);
-    printf("\tSolver execution time:\t %fs\n", metric.m_solver);
-    printf("--------------------------------------------\n");
-
-    for (i = 0; i < p_n; i++) {
-        int val = rand() % p_n - p_n / 2;
-        b[i] = val / 67.0;
-    }
-    CheckError(xJPCG_coo(pHandle, p_n, p_nnz, NULL, NULL, NULL, matJ, b, x, p_maxIter, p_tol, &p_iter,
-                &p_res, XJPCG_MODE_KEEP_MATRIX));
-
-    xJPCG_getMetrics(pHandle, &metric);
-
-    printf("Second equation information:\n");
     printf("\tMatrix dim:\t %d\n", p_n);
     printf("\tMatrix NNZs:\t %d\n", p_nnz);
     printf("\tNum of iterations:\t %d\n", p_iter);
@@ -135,11 +117,12 @@ int main(int argc, const char** argv) {
         int val = rand() % p_n - p_n / 2;
         b[i] = val / 97.0;
     }
-    CheckError(xJPCG_coo(pHandle, p_n, p_nnz, NULL, NULL, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
+    CheckError(xJPCG_cooSolver(&pHandle, p_n, p_nnz, NULL, NULL, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
                 &p_res, XJPCG_MODE_KEEP_NZ_LAYOUT));
-    xJPCG_getMetrics(pHandle, &metric);
 
-    printf("Third equation information:\n");
+    CheckError(xJPCG_getMetrics(&pHandle, &metric));
+
+    printf("Second equation information:\n");
     printf("\tMatrix dim:\t %d\n", p_n);
     printf("\tMatrix NNZs:\t %d\n", p_nnz);
     printf("\tNum of iterations:\t %d\n", p_iter);
@@ -149,7 +132,27 @@ int main(int argc, const char** argv) {
     printf("\tSolver execution time:\t %fs\n", metric.m_solver);
     printf("--------------------------------------------\n");
 
-    CheckError(destroy_JPCG_handle(pHandle));
+    XJPCG_Status_t status = xJPCG_cooSolver(&pHandle, p_n, p_nnz, NULL, NULL, NULL, matJ, NULL, x, p_maxIter, p_tol, &p_iter,
+                &p_res, XJPCG_MODE_KEEP_MATRIX);
+
+    if(status != XJPCG_STATUS_SUCCESS) {
+        const char* errMessage = xJPCG_getLastMessage(&pHandle);
+        printf("Third equation status %s, error message '%s'\n", xJPCG_getErrorString(status), errMessage);
+    } else {
+        CheckError(xJPCG_getMetrics(&pHandle, &metric));
+
+        printf("Third equation information:\n");
+        printf("\tMatrix dim:\t %d\n", p_n);
+        printf("\tMatrix NNZs:\t %d\n", p_nnz);
+        printf("\tNum of iterations:\t %d\n", p_iter);
+        printf("\tRelative residual:\t %e\n", p_res);
+        printf("\tMatrix process time:\t %fs\n", metric.m_matProc);
+        printf("\tVector process time:\t %fs\n", metric.m_vecProc);
+        printf("\tSolver execution time:\t %fs\n", metric.m_solver);
+        printf("--------------------------------------------\n");
+    }
+
+    CheckError(xJPCG_destroyHandle(&pHandle));
 
     free(p_rowIdx);
     free(p_colIdx);

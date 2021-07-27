@@ -63,26 +63,26 @@ void *xilinx_apps_getCDynamicFunction(const char *funcName) {
 //#####################################################################################################################
 
 XILINX_PCG_LINKAGE_DEF
-XJPCG_Status_t create_JPCG_handle(void **handle, int deviceId, const char *xclbinPath) {
-    typedef XJPCG_Status_t (*CreateFunc)(void**, int, const char *);
-    CreateFunc pCreateFunc = (CreateFunc) xilinx_apps_getCDynamicFunction("create_JPCG_handle");
+XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t*handle, int deviceId, const char *xclbinPath) {
+    typedef XJPCG_Status_t (*CreateFunc)(XJPCG_Handle_t*, int, const char *);
+    CreateFunc pCreateFunc = (CreateFunc) xilinx_apps_getCDynamicFunction("xJPCG_createHandle");
     if (!pCreateFunc)
         return XJPCG_STATUS_NOT_SUPPORTED;
     return pCreateFunc(handle, deviceId, xclbinPath);
 }
 
 XILINX_PCG_LINKAGE_DEF
-XJPCG_Status_t destroy_JPCG_handle(void *handle) {
-    typedef XJPCG_Status_t (*DestroyFunc)(void *);
-    DestroyFunc pDestroyFunc = (DestroyFunc) xilinx_apps_getCDynamicFunction("destroy_JPCG_handle");
+XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle) {
+    typedef XJPCG_Status_t (*DestroyFunc)(XJPCG_Handle_t*);
+    DestroyFunc pDestroyFunc = (DestroyFunc) xilinx_apps_getCDynamicFunction("xJPCG_destroyHandle");
     if (!pDestroyFunc)
         return XJPCG_STATUS_NOT_SUPPORTED;
     return pDestroyFunc(handle);
 }
 
 XILINX_PCG_LINKAGE_DEF
-XJPCG_Status_t xJPCG_getMetrics(void* handle, XJPCG_Metric_t *metric){
-    typedef XJPCG_Status_t (*GetMetrics)(void *, XJPCG_Metric_t *);
+XJPCG_Status_t xJPCG_getMetrics(XJPCG_Handle_t* handle, XJPCG_Metric_t *metric){
+    typedef XJPCG_Status_t (*GetMetrics)(XJPCG_Handle_t*, XJPCG_Metric_t *);
     GetMetrics pGetMetrics = (GetMetrics) xilinx_apps_getCDynamicFunction("xJPCG_getMetrics");
     if (pGetMetrics)
         return pGetMetrics(handle, metric);
@@ -91,8 +91,8 @@ XJPCG_Status_t xJPCG_getMetrics(void* handle, XJPCG_Metric_t *metric){
 }
 
 XILINX_PCG_LINKAGE_DEF
-XJPCG_Status_t xJPCG_peekAtLastStatus(void* handle) {
-    typedef XJPCG_Status_t (*PeekAtLastStatus)(void *);
+XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t* handle) {
+    typedef XJPCG_Status_t (*PeekAtLastStatus)(const XJPCG_Handle_t*);
     PeekAtLastStatus pPeekAtLastStatus = (PeekAtLastStatus) xilinx_apps_getCDynamicFunction("xJPCG_peekAtLastStatus");
     if (pPeekAtLastStatus)
         return pPeekAtLastStatus(handle);
@@ -101,8 +101,8 @@ XJPCG_Status_t xJPCG_peekAtLastStatus(void* handle) {
 }
 
 XILINX_PCG_LINKAGE_DEF
-const char* xJPCG_getLastMessage(void* handle) {
-    typedef const char* (*GetLastMessage)(void *);
+const char* xJPCG_getLastMessage(const XJPCG_Handle_t* handle) {
+    typedef const char* (*GetLastMessage)(const XJPCG_Handle_t*);
     GetLastMessage pGetLastMessage = (GetLastMessage) xilinx_apps_getCDynamicFunction("xJPCG_getLastMessage");
     if (pGetLastMessage)
         return pGetLastMessage(handle);
@@ -110,7 +110,7 @@ const char* xJPCG_getLastMessage(void* handle) {
         return "Function not supported.";
 }
 XILINX_PCG_LINKAGE_DEF
-const char* XJPCG_getErrorString(XJPCG_Status_t code) {
+const char* xJPCG_getErrorString(XJPCG_Status_t code) {
     typedef const char* (*GetErrorString)(XJPCG_Status_t);
     GetErrorString pGetErrorString = (GetErrorString) xilinx_apps_getCDynamicFunction("xJPCG_getErrorString");
     if (pGetErrorString)
@@ -120,7 +120,7 @@ const char* XJPCG_getErrorString(XJPCG_Status_t code) {
 }
 
 XILINX_PCG_LINKAGE_DEF
-XJPCG_Status_t xJPCG_coo(void *handle, 
+XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle, 
         const uint32_t p_n,
         const uint32_t p_nnz,
         const uint32_t *p_rowIdx,
@@ -134,8 +134,8 @@ XJPCG_Status_t xJPCG_coo(void *handle,
         uint32_t *p_iter,
         double *p_res,
         const XJPCG_Mode mode) {
-    typedef XJPCG_Status_t (*ApiFunc)(void *, uint32_t, uint32_t, const uint32_t*, const uint32_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const XJPCG_Mode);
-    ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("xJPCG_coo");
+    typedef XJPCG_Status_t (*ApiFunc)(XJPCG_Handle_t* , uint32_t, uint32_t, const uint32_t*, const uint32_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const XJPCG_Mode);
+    ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("xJPCG_cooSolver");
     if (!pApiFunc)
         return XJPCG_STATUS_NOT_SUPPORTED;
     return pApiFunc(handle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, p_iter, p_res, mode);
