@@ -29,6 +29,9 @@
 #define DIV_CEIL(x, y) (((x) + (y)-1) / (y))
 #define ZERO_VAL std::numeric_limits<uint32_t>::max()
 
+namespace xf {
+namespace sparse {
+
 class Signature {
    public:
     Signature() = default;
@@ -576,4 +579,7 @@ class Signature {
     NnzStore m_nnzStore;
     std::vector<std::vector<SparseMatrix> > m_chParSpms;
 };
+
+}
+}
 #endif

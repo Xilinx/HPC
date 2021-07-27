@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
 
     std::string l_datFilePath = l_datPath + "/" + l_mtxName;
 
-    CooMatInfo l_matInfo = loadMatInfo(l_datFilePath + "/");
+    xf::sparse::CooMatInfo l_matInfo = xf::sparse::loadMatInfo(l_datFilePath + "/");
     assert(l_matInfo.m_m == l_matInfo.m_n);
     std::vector<CG_dataType> h_x(l_matInfo.m_m);
     std::vector<uint32_t> l_rowIdx(l_matInfo.m_nnz);

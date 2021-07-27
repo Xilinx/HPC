@@ -31,6 +31,9 @@
 #include "binFiles.hpp"
 #include "utils.hpp"
 
+namespace xf {
+namespace sparse {
+
 class SparseMatrix {
    public:
     SparseMatrix() = default;
@@ -687,4 +690,7 @@ struct MatPartition {
     std::vector<void*> m_nnzValPtr;
     std::vector<uint32_t> m_nnzValSize;
 };
+
+}
+}
 #endif

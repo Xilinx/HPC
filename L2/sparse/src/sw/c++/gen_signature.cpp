@@ -38,6 +38,9 @@
 #include "binFiles.hpp"
 #include "gen_signature.hpp"
 
+namespace xf {
+namespace sparse {
+
 CooMatInfo loadMatInfo(std::string path) {
     std::ifstream l_info(path + "infos.txt");
     std::vector<std::string> infos;
@@ -75,4 +78,7 @@ void storeMatPar(std::string path, MatPartition& p_matPar) {
     std::ofstream outFile(l_infoFileName, std::ios::binary);
     outFile.write((char*)&int32Arr[0], sizeof(int) * 6);
     outFile.close();
+}
+
+}
 }

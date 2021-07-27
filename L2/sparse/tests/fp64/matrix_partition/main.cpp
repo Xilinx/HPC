@@ -24,11 +24,11 @@ int main(int argc, char** argv) {
     string dataPath = argv[++arg];
     int l_runs = atoi(argv[++arg]);
     int l_update = atoi(argv[++arg]);
-    CooMatInfo l_matInfo = loadMatInfo(dataPath);
+    xf::sparse::CooMatInfo l_matInfo = xf::sparse::loadMatInfo(dataPath);
     std::vector<uint32_t> l_rowIdx(l_matInfo.m_nnz);
     std::vector<uint32_t> l_colIdx(l_matInfo.m_nnz);
     std::vector<SPARSE_dataType> l_data(l_matInfo.m_nnz);
-    SpmPar<SPARSE_dataType> l_spmPar(SPARSE_parEntries, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols,
+    xf::sparse::SpmPar<SPARSE_dataType> l_spmPar(SPARSE_parEntries, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols,
            SPARSE_hbmMemBits);
     for (unsigned int i=0; i<l_runs; ++i) {
         string l_dataPath = dataPath + "/" + to_string(i) + "/"; 
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 
       
         l_timer[0] = chrono::high_resolution_clock::now();
-         MatPartition l_matPar;
+        xf::sparse::MatPartition l_matPar;
          if ((i == 0) || (l_update == 0)) {
             l_matPar = l_spmPar.partitionCooMat(l_matInfo.m_m, l_matInfo.m_n, l_matInfo.m_nnz, l_rowIdx.data(),
                                                          l_colIdx.data(), l_data.data());

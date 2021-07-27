@@ -97,19 +97,19 @@ int main(int argc, char** argv) {
     FPGA l_fpga(l_deviceId);
     l_fpga.xclbin(l_xclbinFile);
 
-    KernelLoadNnz<SPARSE_hbmChannels> l_kernelLoadNnz(&l_fpga);
+    xf::sparse::KernelLoadNnz<SPARSE_hbmChannels> l_kernelLoadNnz(&l_fpga);
     l_kernelLoadNnz.getCU("loadNnzKernel:{krnl_loadNnz}");
     l_kernelLoadNnz.setMem(l_nnzBuf);
 
-    KernelLoadCol l_kernelLoadParX(&l_fpga);
+    xf::sparse::KernelLoadCol l_kernelLoadParX(&l_fpga);
     l_kernelLoadParX.getCU("loadParXkernel:{krnl_loadParX}");
     l_kernelLoadParX.setMem(l_paramBuf[0], l_vecBuf[0]);
 
-    KernelLoadRbParam l_kernelLoadRbParam(&l_fpga);
+    xf::sparse::KernelLoadRbParam l_kernelLoadRbParam(&l_fpga);
     l_kernelLoadRbParam.getCU("loadRbParamKernel:{krnl_loadRbParam}");
     l_kernelLoadRbParam.setMem(l_paramBuf[1]);
 
-    KernelStoreY l_kernelStoreY(&l_fpga);
+    xf::sparse::KernelStoreY l_kernelStoreY(&l_fpga);
     l_kernelStoreY.getCU("storeYkernel:{krnl_storeY}");
     l_kernelStoreY.setArgs(l_yRows, l_outVecBuf);
 
