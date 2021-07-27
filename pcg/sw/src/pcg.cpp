@@ -142,8 +142,8 @@ const char* XJPCG_getErrorString(XJPCG_Status_t code){
             return "XJPCG_STATUS_EXECUTION_FAILED";
         case XJPCG_STATUS_INTERNAL_ERROR:
             return "XJPCG_STATUS_INTERNAL_ERROR";
-        case XJPCG_STATUS_NOT_SUPPORTED:
-            return "XJPCG_STATUS_NOT_SUPPORTED";
+        case XJPCG_STATUS_DYNAMIC_LOADING_ERROR:
+            return "XJPCG_STATUS_DYNAMIC_LOADING_ERROR";
         case XJPCG_STATUS_OTHER_ERROR:
             return "XJPCG_STATUS_OTHER_ERROR";
     }

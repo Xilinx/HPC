@@ -71,10 +71,13 @@ $(info INCLUDE_PATH="$(INCLUDE_PATH)")
 
 
 
-all: example
+all: example example-dyn
 
 example: example.c
 	gcc $^ -o $@ $(CFLAGS) $(LDFLAGS)
+	
+example-dyn: example.c
+	gcc $^ -o $@ $(CFLAGS) -L$(LIB_PATH) -lXilinxPcg_loader -ldl
 
 .PHONY: run clean
 
@@ -93,5 +96,11 @@ run:
 	./example $(DEVICE_ID) $(XCLBIN_PATH)/*.xclbin
 endif
 
+run-dyn:
+	@set -e; \
+	. $(XILINX_XRT)/setup.sh; \
+	export LD_LIBRARY_PATH=$(LIB_PATH):$$LD_LIBRARY_PATH; \
+	./example-dyn $(DEVICE_ID) $(XCLBIN_PATH)/*.xclbin
+
 clean:
-	rm -f example
+	rm -f example example-dyn
