@@ -2,6 +2,10 @@
 
 This README files explains how to setup and run pcg example.  
 
+# Prerequisit
+
+Completely compile the pcg system under HPC/pcg/sw/. 
+
 # Compile host:
 ```
 # c demo example showing simple API to use pcg.
