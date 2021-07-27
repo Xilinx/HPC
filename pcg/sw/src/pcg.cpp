@@ -161,7 +161,7 @@ const char* xJPCG_getLastMessage(const XJPCG_Handle_t *handle) {
     return handle -> msg;
 }
 
-const char* XJPCG_getErrorString(const XJPCG_Status_t code){ 
+const char* xJPCG_getErrorString(const XJPCG_Status_t code){ 
     switch(code) {
         case XJPCG_STATUS_SUCCESS:
             return "XJPCG_STATUS_SUCCESS";

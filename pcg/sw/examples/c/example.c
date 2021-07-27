@@ -21,7 +21,7 @@
 #define CheckError(code) { checkError((code), __FILE__, __LINE__); }
 inline void checkError(XJPCG_Status_t code, const char *file, int line) {
     if(code != XJPCG_STATUS_SUCCESS){
-        fprintf(stderr, "CheckError: %s at %s:%d\n", XJPCG_getErrorString(code), file, line);
+        fprintf(stderr, "CheckError: %s at %s:%d\n", xJPCG_getErrorString(code), file, line);
         if(code != XJPCG_STATUS_EXECUTION_FAILED) 
             exit(code);
     }
@@ -136,19 +136,23 @@ int main(int argc, const char** argv) {
         int val = rand() % p_n - p_n / 2;
         b[i] = val / 97.0;
     }
-    CheckError(xJPCG_cooSolver(&pHandle, p_n, p_nnz, NULL, NULL, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
-                &p_res, XJPCG_MODE_KEEP_NZ_LAYOUT));
-    CheckError(xJPCG_getMetrics(&pHandle, &metric));
-
-    printf("Third equation information:\n");
-    printf("\tMatrix dim:\t %d\n", p_n);
-    printf("\tMatrix NNZs:\t %d\n", p_nnz);
-    printf("\tNum of iterations:\t %d\n", p_iter);
-    printf("\tRelative residual:\t %e\n", p_res);
-    printf("\tMatrix process time:\t %fs\n", metric.m_matProc);
-    printf("\tVector process time:\t %fs\n", metric.m_vecProc);
-    printf("\tSolver execution time:\t %fs\n", metric.m_solver);
-    printf("--------------------------------------------\n");
+    XJPCG_Status_t status = xJPCG_cooSolver(&pHandle, p_n, p_nnz, NULL, NULL, p_data, matJ, NULL, x, p_maxIter, p_tol, &p_iter,
+                &p_res, XJPCG_MODE_KEEP_NZ_LAYOUT);
+    if(status != XJPCG_STATUS_SUCCESS) {
+        const char* errMessage = xJPCG_getLastMessage(&pHandle);
+        printf("Third equation status %s, error message '%s'\n", xJPCG_getErrorString(status), errMessage);
+    } else {
+        CheckError(xJPCG_getMetrics(&pHandle, &metric));
+        printf("Third equation information:\n");
+        printf("\tMatrix dim:\t %d\n", p_n);
+        printf("\tMatrix NNZs:\t %d\n", p_nnz);
+        printf("\tNum of iterations:\t %d\n", p_iter);
+        printf("\tRelative residual:\t %e\n", p_res);
+        printf("\tMatrix process time:\t %fs\n", metric.m_matProc);
+        printf("\tVector process time:\t %fs\n", metric.m_vecProc);
+        printf("\tSolver execution time:\t %fs\n", metric.m_solver);
+        printf("--------------------------------------------\n");
+    }
 
     CheckError(xJPCG_destroyHandle(&pHandle));
 

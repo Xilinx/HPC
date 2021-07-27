@@ -50,12 +50,12 @@ typedef enum {
     XJPCG_STATUS_NOT_SUPPORTED      // unsupported behavior
 } XJPCG_Status_t;
 
-/** XJPCG_getErrorString get the string presentation of given status code
+/** xJPCG_getErrorString get the string presentation of given status code
  *
  * code status code
  * return string
  */
-const char* XJPCG_getErrorString(const XJPCG_Status_t code);
+const char* xJPCG_getErrorString(const XJPCG_Status_t code);
 
 typedef struct {
     double m_init;          // JPCG Object initialization time
