@@ -28,6 +28,7 @@
 #include <vector>
 #include <assert.h>
 #include <thread>
+#include "spmException.hpp"
 #include "binFiles.hpp"
 #include "utils.hpp"
 
@@ -86,6 +87,9 @@ class SparseMatrix {
                 }
             }
         }
+        if (index != m_nnz) {
+            throw SpmAllocFailed("Failed to allocate memory for cscSym matrix.");
+        }
         assert(index == m_nnz);
         m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
         m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
@@ -116,6 +120,9 @@ class SparseMatrix {
                     index++;
                 }
             }
+        }
+        if (index != m_nnz) {
+            throw SpmAllocFailed("Failed to allocate memory for cscSym matrix.");
         }
         assert(index == m_nnz);
         m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
@@ -218,6 +225,9 @@ class SparseMatrix {
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_data_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
+        if ((l_row_list == nullptr)||(l_col_list == nullptr)||(l_data_list == nullptr)) {
+            throw SpmAllocFailed("Failed to allocate memory used for sorting matrix along the row indices.");
+        }
         for (uint32_t i = 0; i < m_nnz; i++) {
             l_row_list[i] = m_row_list[idx[i]];
             l_col_list[i] = m_col_list[idx[i]];
@@ -242,6 +252,9 @@ class SparseMatrix {
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_data_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
+        if ((l_row_list == nullptr)||(l_col_list == nullptr)||(l_data_list == nullptr)) {
+            throw SpmAllocFailed("Failed to allocate memory used for completely sorting matrix.");
+        }
         for (uint32_t i = 0; i < m_nnz; i++) {
             l_row_list[i] = m_row_list[idx[i]];
             l_col_list[i] = m_col_list[idx[i]];
@@ -268,6 +281,9 @@ class SparseMatrix {
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_data_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
+        if ((l_row_list == nullptr)||(l_col_list == nullptr)||(l_data_list == nullptr)) {
+            throw SpmAllocFailed("Failed to allocate memory used for sorting matrix along column indices.");
+        }
         for (uint32_t i = 0; i < m_nnz; i++) {
             l_row_list[i] = m_row_list[idx[i]];
             l_col_list[i] = m_col_list[idx[i]];
