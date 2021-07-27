@@ -22,7 +22,8 @@
 inline void checkError(XJPCG_Status_t code, const char *file, int line) {
     if(code != XJPCG_STATUS_SUCCESS){
         fprintf(stderr, "CheckError: %s at %s:%d\n", XJPCG_getErrorString(code), file, line);
-        exit(code);
+        if(code != XJPCG_STATUS_EXECUTION_FAILED) 
+            exit(code);
     }
 
 }
@@ -93,13 +94,13 @@ int main(int argc, const char** argv) {
         b[i] = val / 37.0;
     }
 
-    void* pHandle = NULL;
-    CheckError(create_JPCG_handle(&pHandle, deviceId, xclbinPath));
-    CheckError(xJPCG_coo(pHandle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
+    XJPCG_Handle_t pHandle;
+    CheckError(xJPCG_createHandle(&pHandle, deviceId, xclbinPath));
+    CheckError(xJPCG_cooSolver(&pHandle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
              &p_res, XJPCG_MODE_DEFAULT));
 
     XJPCG_Metric_t metric;
-    xJPCG_getMetrics(pHandle, &metric);
+    CheckError(xJPCG_getMetrics(&pHandle, &metric));
 
     printf("First equation information:\n");
     printf("\tMatrix dim:\t %d\n", p_n);
@@ -115,10 +116,10 @@ int main(int argc, const char** argv) {
         int val = rand() % p_n - p_n / 2;
         b[i] = val / 67.0;
     }
-    CheckError(xJPCG_coo(pHandle, p_n, p_nnz, NULL, NULL, NULL, matJ, b, x, p_maxIter, p_tol, &p_iter,
+    CheckError(xJPCG_cooSolver(&pHandle, p_n, p_nnz, NULL, NULL, NULL, matJ, b, x, p_maxIter, p_tol, &p_iter,
                 &p_res, XJPCG_MODE_KEEP_MATRIX));
 
-    xJPCG_getMetrics(pHandle, &metric);
+    CheckError(xJPCG_getMetrics(&pHandle, &metric));
 
     printf("Second equation information:\n");
     printf("\tMatrix dim:\t %d\n", p_n);
@@ -135,9 +136,9 @@ int main(int argc, const char** argv) {
         int val = rand() % p_n - p_n / 2;
         b[i] = val / 97.0;
     }
-    CheckError(xJPCG_coo(pHandle, p_n, p_nnz, NULL, NULL, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
+    CheckError(xJPCG_cooSolver(&pHandle, p_n, p_nnz, NULL, NULL, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
                 &p_res, XJPCG_MODE_KEEP_NZ_LAYOUT));
-    xJPCG_getMetrics(pHandle, &metric);
+    CheckError(xJPCG_getMetrics(&pHandle, &metric));
 
     printf("Third equation information:\n");
     printf("\tMatrix dim:\t %d\n", p_n);
@@ -149,7 +150,7 @@ int main(int argc, const char** argv) {
     printf("\tSolver execution time:\t %fs\n", metric.m_solver);
     printf("--------------------------------------------\n");
 
-    CheckError(destroy_JPCG_handle(pHandle));
+    CheckError(xJPCG_destroyHandle(&pHandle));
 
     free(p_rowIdx);
     free(p_colIdx);
