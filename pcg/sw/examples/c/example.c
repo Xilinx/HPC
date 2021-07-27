@@ -112,12 +112,13 @@ int main(int argc, const char** argv) {
     printf("\tSolver execution time:\t %fs\n", metric.m_solver);
     printf("--------------------------------------------\n");
 
+    genSPD(p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ);
     for (i = 0; i < p_n; i++) {
         int val = rand() % p_n - p_n / 2;
-        b[i] = val / 67.0;
+        b[i] = val / 97.0;
     }
-    CheckError(xJPCG_cooSolver(&pHandle, p_n, p_nnz, NULL, NULL, NULL, matJ, b, x, p_maxIter, p_tol, &p_iter,
-                &p_res, XJPCG_MODE_KEEP_MATRIX));
+    CheckError(xJPCG_cooSolver(&pHandle, p_n, p_nnz, NULL, NULL, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
+                &p_res, XJPCG_MODE_KEEP_NZ_LAYOUT));
 
     CheckError(xJPCG_getMetrics(&pHandle, &metric));
 
@@ -131,18 +132,15 @@ int main(int argc, const char** argv) {
     printf("\tSolver execution time:\t %fs\n", metric.m_solver);
     printf("--------------------------------------------\n");
 
-    genSPD(p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ);
-    for (i = 0; i < p_n; i++) {
-        int val = rand() % p_n - p_n / 2;
-        b[i] = val / 97.0;
-    }
-    XJPCG_Status_t status = xJPCG_cooSolver(&pHandle, p_n, p_nnz, NULL, NULL, p_data, matJ, NULL, x, p_maxIter, p_tol, &p_iter,
-                &p_res, XJPCG_MODE_KEEP_NZ_LAYOUT);
+    XJPCG_Status_t status = xJPCG_cooSolver(&pHandle, p_n, p_nnz, NULL, NULL, NULL, matJ, NULL, x, p_maxIter, p_tol, &p_iter,
+                &p_res, XJPCG_MODE_KEEP_MATRIX);
+
     if(status != XJPCG_STATUS_SUCCESS) {
         const char* errMessage = xJPCG_getLastMessage(&pHandle);
         printf("Third equation status %s, error message '%s'\n", xJPCG_getErrorString(status), errMessage);
     } else {
         CheckError(xJPCG_getMetrics(&pHandle, &metric));
+
         printf("Third equation information:\n");
         printf("\tMatrix dim:\t %d\n", p_n);
         printf("\tMatrix NNZs:\t %d\n", p_nnz);
