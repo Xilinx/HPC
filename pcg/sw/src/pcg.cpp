@@ -17,6 +17,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
+#include <cassert>
 #include "pcg.h"
 #include "impl/pcgImp.hpp"
 
@@ -44,6 +45,10 @@ void checkHandle(const XJPCG_Handle_t *handle) {
 XJPCG_Status_t setStatusMessage(XJPCG_Handle_t *handle, XJPCG_Status_t p_stat, const char* p_str){
     assert(handle != nullptr);
     handle -> status = p_stat;
+    /*
+    assert(strlen(p_str) < 255);
+    strcpy(handle -> msg, p_str);
+    */
     handle -> msg = p_str;
     return p_stat;
 }
@@ -67,7 +72,7 @@ XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t *handle, const int deviceId, co
     } catch (const std::exception & err ) {
         return setStatusMessage(handle, XJPCG_STATUS_INTERNAL_ERROR, err.what());
     } 
-    return XJPCG_STATUS_SUCCESS;
+    return setStatusMessage(handle, XJPCG_STATUS_SUCCESS, nullptr);
 }
 
 XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle) {
@@ -81,7 +86,7 @@ XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle) {
     } catch (const std::exception & err ) {
         return setStatusMessage(handle, XJPCG_STATUS_INTERNAL_ERROR, err.what());
     } 
-    return XJPCG_STATUS_SUCCESS;
+    return setStatusMessage(handle, XJPCG_STATUS_SUCCESS, nullptr);
 }
 
 
@@ -127,14 +132,14 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
         memcpy((char*) x, (char*) l_res.m_x, sizeof(double) * p_n);
         pImpl->getMetrics()->m_solver = getDuration(last);
         if(*p_iter > p_maxIter || *p_res > p_tol) {
-            throw xilinx_apps::pcg::CgException("Solver is not convergent.",XJPCG_STATUS_EXECUTION_FAILED);
+            throw xilinx_apps::pcg::CgException("Solution is not convergent after " + std::to_string(p_maxIter) + " iterations.", XJPCG_STATUS_EXECUTION_FAILED);
         }
     } catch (const xilinx_apps::pcg::CgException & err) {
         return setStatusMessage(handle, err.getStatus(), err.what());
     } catch (const std::exception & err ) {
         return setStatusMessage(handle, XJPCG_STATUS_INTERNAL_ERROR, err.what());
     } 
-    return XJPCG_STATUS_SUCCESS;
+    return setStatusMessage(handle, XJPCG_STATUS_SUCCESS, nullptr);
 }
 
 XJPCG_Status_t xJPCG_getMetrics(XJPCG_Handle_t *handle, XJPCG_Metric_t *metric) {
@@ -148,7 +153,7 @@ XJPCG_Status_t xJPCG_getMetrics(XJPCG_Handle_t *handle, XJPCG_Metric_t *metric) 
     } catch (const std::exception & err ) {
         return setStatusMessage(handle, XJPCG_STATUS_INTERNAL_ERROR, err.what());
     } 
-    return XJPCG_STATUS_SUCCESS;
+    return setStatusMessage(handle, XJPCG_STATUS_SUCCESS, nullptr);
 }
 
 XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t *handle) {
