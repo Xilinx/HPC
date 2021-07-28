@@ -40,7 +40,7 @@ XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t *handle, const int deviceId, co
     try{
         auto last = std::chrono::high_resolution_clock::now();
         pImpl->init(deviceId, xclbinPath);
-        pImpl->getMetrics()->m_init = getDuration(last);
+        pImpl->getMetrics()->m_objInit = getDuration(last);
     } catch (const xilinx_apps::pcg::CgException& err) {
         return pImpl->setStatusMessage(err.getStatus(), err.what());
     } catch (const std::exception& err) {
@@ -77,7 +77,7 @@ XJPCG_Status_t xJPCG_cooSolver(const XJPCG_Handle_t handle,
     try {
         auto last = std::chrono::high_resolution_clock::now();
         bool first = pImpl->isFirstCall();
-        switch (mode & XJPCG_MODE_KEEP_MATRIX) {
+        switch (mode) {
             case XJPCG_MODE_DEFAULT:
                 pImpl->setCooMat(p_n, p_nnz, p_rowIdx, p_colIdx, p_data);
                 break;
