@@ -21,7 +21,7 @@ DEVICE_ID ?= 1
 
 # Location of cosine similarity Alveo product 
 ifndef XILINX_PCG
-    XILINX_PCG = /opt/xilinx/apps/HPC/pcg
+    XILINX_PCG = /opt/xilinx/apps/hpc/pcg
     export XILINX_PCG
 endif
 
