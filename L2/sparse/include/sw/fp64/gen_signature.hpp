@@ -47,7 +47,7 @@ class SpmPar {
     }
     template <typename t_IdxType>
     MatPartition partitionCscSymMat(
-        uint32_t p_dim, uint32_t p_nnz, t_IdxType* p_rowIdx, t_IdxType* p_colPtr, t_DataType* p_data) {
+        const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data) {
         std::vector<t_DataType> l_cooDat = this->getCooDatFromCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
         SparseMatrix l_spm;
         l_spm.loadCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr);
