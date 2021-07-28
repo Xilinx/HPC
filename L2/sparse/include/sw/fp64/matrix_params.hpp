@@ -63,7 +63,7 @@ class SparseMatrix {
     }
 
     template <typename t_IdxType>
-    void loadCscSym(uint32_t p_n, uint32_t p_nnz, t_IdxType* p_rowIdx, t_IdxType* p_colPtr) {
+    void loadCscSym(const uint32_t p_n, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr) {
         m_m = p_n;
         m_n = p_n;
         m_nnz = p_nnz;

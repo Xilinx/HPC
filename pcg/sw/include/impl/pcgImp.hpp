@@ -65,7 +65,7 @@ class PCGImpl {
                           m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
     }
     template <typename t_IdxType>
-    void setCscSymMat(uint32_t p_dim, uint32_t p_nnz, t_IdxType* p_rowIdx, t_IdxType* p_colPtr, t_DataType* p_data) {
+    void setCscSymMat(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data) {
         if (p_dim == 0) {
             throw CgInvalidValue("Wrong dimension size.");
         }
