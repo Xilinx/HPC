@@ -11,7 +11,10 @@ Install Xilinx PCG Product
 
 .. code-block:: bash
 
-  sudo yum install ./xilinx-pcg-1.0_7.4.1708-x86_64.rpm 
+  sudo yum install ./xilinx-pcg-1.0_7.4.1708-x86_64.rpm (if you don't have PCG product on your machine)
+  or 
+  sudo yum reinstall ./xilinx-pcg-1.0_7.4.1708-x86_64.rpm (if you have PCG product on your machine)
+
 
 * Flash the Alveo U280 card if it is not already running with the shell
   xilinx_u280_xdma_201920_3. Cold reboot the machine after flashing is done.
@@ -45,3 +48,12 @@ Xilinx PCG Alveo product.
    cd pcg/sw/examples/c
    make
    make run
+
+* Build installation package
+
+.. code-block:: bash
+
+   cd pcg/sw
+   make dist
+
+The installation package (.rpm file) will be stored under pcg/sw/package.
