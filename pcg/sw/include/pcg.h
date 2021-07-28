@@ -40,6 +40,10 @@
 extern "C" {
 #endif
 
+/**
+ * List of XJPCG API status
+ *
+ */
 typedef enum {
     XJPCG_STATUS_SUCCESS,           // success status
     XJPCG_STATUS_NOT_INITIALIZED,   // handle not initialized
@@ -57,6 +61,10 @@ typedef enum {
  */
 const char* xJPCG_getErrorString(const XJPCG_Status_t code);
 
+/**
+ * Define XJPCG metrics 
+ *
+ */
 typedef struct {
     double m_init;          // JPCG Object initialization time
     double m_matProc;       // Matrix processing time
@@ -64,13 +72,20 @@ typedef struct {
     double m_solver;        // Solver execution time
 } XJPCG_Metric_t;
 
+/**
+ * Define XJPCG handle type 
+ *
+ */
 typedef struct {
     void *pcg;              // pointer to pcg object
-    const char* msg;        // last status message
-    XJPCG_Status_t status;  // last status
+    void *status;
     int code;               // checking code
 } XJPCG_Handle_t;
 
+/**
+ * List of XJPCG solver modes
+ *
+ */
 typedef enum XJPCG_Mode { 
     XJPCG_MODE_DEFAULT = 0x00, // Used for completely new data
     XJPCG_MODE_KEEP_NZ_LAYOUT = 0x01, // Update matrix values only

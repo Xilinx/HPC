@@ -45,10 +45,6 @@ void checkHandle(const XJPCG_Handle_t *handle) {
 XJPCG_Status_t setStatusMessage(XJPCG_Handle_t *handle, XJPCG_Status_t p_stat, const char* p_str){
     assert(handle != nullptr);
     handle -> status = p_stat;
-    /*
-    assert(strlen(p_str) < 255);
-    strcpy(handle -> msg, p_str);
-    */
     handle -> msg = p_str;
     return p_stat;
 }
@@ -131,7 +127,7 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
         *p_iter = l_res.m_nIters;
         memcpy((char*) x, (char*) l_res.m_x, sizeof(double) * p_n);
         pImpl->getMetrics()->m_solver = getDuration(last);
-        if(*p_iter > p_maxIter || *p_res > p_tol) {
+        if(*p_iter > p_maxIter && *p_res > p_tol) {
             throw xilinx_apps::pcg::CgException("Solution is not convergent after " + std::to_string(p_maxIter) + " iterations.", XJPCG_STATUS_EXECUTION_FAILED);
         }
     } catch (const xilinx_apps::pcg::CgException & err) {

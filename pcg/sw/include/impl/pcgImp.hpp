@@ -85,7 +85,7 @@ class PCGImpl {
     }
 
     Results<t_DataType> run(unsigned int p_maxIter, t_DataType p_tol) {
-        this->setInstr(p_maxIter, p_tol);
+        this->setInstr(p_maxIter + 1, p_tol);
         m_host.run();
         CgVector l_resVec = this->getRes();
         Results<t_DataType> l_res;
@@ -96,7 +96,7 @@ class PCGImpl {
         l_res.m_residual = 0;
 
         CgInstr l_instr = m_genInstr.getInstrPtr();
-        for (unsigned int i = 0; i < p_maxIter; i++) {
+        for (unsigned int i = 0; i <= p_maxIter; i++) {
             l_res.m_nIters = i;
             l_cgInstr.load((uint8_t*)(l_instr.h_instr) + (i + 1) * t_InstrBytes, l_memInstr);
             // std::cout << "l_cgInstr: " << std::scientific << l_cgInstr << std::endl;
