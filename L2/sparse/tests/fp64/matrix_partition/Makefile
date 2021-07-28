@@ -42,14 +42,9 @@ MACROS +=-D SPARSE_dataType=$(SPARSE_dataType) \
 
 HOST_ARGS = ${sig_path}/${MTX_NAME}/ 1 0
 
-CXX	= $(XILINX_VIVADO)/tps/lnx64/gcc-6.2.0/bin/g++
-ifeq ($(LD_LIBRARY_PATH),)
-export LD_LIBRARY_PATH := $(XILINX_VIVADO)/tps/lnx64/gcc-6.2.0/lib64
-else
-export LD_LIBRARY_PATH := $(XILINX_VIVADO)/tps/lnx64/gcc-6.2.0/lib64:$(LD_LIBRARY_PATH)
-endif
-CFLAGS	= -O3 -std=c++14 -I../../../include/sw/fp64 -I../../../../../utils/include/sw -lpthread 
-CFLAGS += ${MACROS} -fopenmp
+CXX	= g++
+CFLAGS	= -O3 -std=c++11 -I../../../include/sw/fp64 -I../../../../../utils/include/sw -lpthread 
+CFLAGS += ${MACROS} 
 
 
 ${TARGET}: ${SRCS}

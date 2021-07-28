@@ -15,47 +15,82 @@
 */
 
 #include <chrono>
+#include <cstdlib>
+#include <ctime>
+#include <cassert>
 #include "pcg.h"
 #include "impl/pcgImp.hpp"
 
 using PcgImpl = xilinx_apps::pcg::PCGImpl<double, 4, 64, 8, 16, 4096, 4096, 256>;
 
 namespace {
+
+const int secretCode() {
+    srand(time(NULL));
+    static const int val = std::rand();
+    return val;
+}
 double getDuration(std::chrono::time_point<std::chrono::high_resolution_clock> &last){
         std::chrono::duration<double> duration = std::chrono::high_resolution_clock::now() - last;
         last = std::chrono::high_resolution_clock::now();
         return duration.count();
 }
+
+void checkHandle(const XJPCG_Handle_t *handle) {
+    assert(handle != nullptr);
+    if(handle -> pcg == nullptr || handle -> code != secretCode())
+        throw xilinx_apps::pcg::CgException("Handle is not correctly initialized.", XJPCG_STATUS_NOT_INITIALIZED);
+}
+
+XJPCG_Status_t setStatusMessage(XJPCG_Handle_t *handle, XJPCG_Status_t p_stat, const char* p_str){
+    assert(handle != nullptr);
+    handle -> status = p_stat;
+    /*
+    assert(strlen(p_str) < 255);
+    strcpy(handle -> msg, p_str);
+    */
+    handle -> msg = p_str;
+    return p_stat;
+}
+
 }
 
 extern "C" {
 
-XJPCG_Status_t create_JPCG_handle(void **handle, const int deviceId, const char* xclbinPath) {
-    PcgImpl* pImpl = nullptr;
+XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t *handle, const int deviceId, const char* xclbinPath) {
+    assert(handle != nullptr);
     try {
         auto last = std::chrono::high_resolution_clock::now();
-        pImpl = new PcgImpl();
+        PcgImpl * pImpl = new PcgImpl();
+        handle -> pcg = pImpl;
+        handle -> code = secretCode();
+        checkHandle(handle);
         pImpl->init(deviceId, xclbinPath);
         pImpl->getMetrics()->m_init = getDuration(last);
-        *handle = pImpl;
     } catch (const xilinx_apps::pcg::CgException & err) {
-        return pImpl -> setStatusMessage(err.getStatus(), err.what());
+        return setStatusMessage(handle, err.getStatus(), err.what());
     } catch (const std::exception & err ) {
-        return pImpl -> setStatusMessage(XJPCG_STATUS_OTHER_ERROR, err.what());
-    }
-    return XJPCG_STATUS_SUCCESS;
+        return setStatusMessage(handle, XJPCG_STATUS_INTERNAL_ERROR, err.what());
+    } 
+    return setStatusMessage(handle, XJPCG_STATUS_SUCCESS, nullptr);
 }
 
-XJPCG_Status_t destroy_JPCG_handle(void* handle) {
-    if(handle == nullptr)
-        return XJPCG_STATUS_INVALID_VALUE;
-    auto pImpl = reinterpret_cast<PcgImpl*>(handle);
-    delete pImpl;
-    return XJPCG_STATUS_SUCCESS;
+XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle) {
+    assert(handle != nullptr);
+    try {
+        checkHandle(handle);
+        auto pImpl = reinterpret_cast<PcgImpl*>(handle -> pcg);
+        delete pImpl;
+    } catch (const xilinx_apps::pcg::CgException & err) {
+        return setStatusMessage(handle, err.getStatus(), err.what());
+    } catch (const std::exception & err ) {
+        return setStatusMessage(handle, XJPCG_STATUS_INTERNAL_ERROR, err.what());
+    } 
+    return setStatusMessage(handle, XJPCG_STATUS_SUCCESS, nullptr);
 }
 
 
-XJPCG_Status_t xJPCG_coo(void* handle,
+XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
         const uint32_t p_n,
         const uint32_t p_nnz,
         const uint32_t* p_rowIdx,
@@ -69,10 +104,10 @@ XJPCG_Status_t xJPCG_coo(void* handle,
         uint32_t* p_iter,
         double* p_res,
         const XJPCG_Mode mode) {
-    if(handle == nullptr)
-        return XJPCG_STATUS_NOT_INITIALIZED;
-    auto pImpl = reinterpret_cast<PcgImpl*>(handle);
+    assert(handle != nullptr);
     try {
+        checkHandle(handle);
+        auto pImpl = reinterpret_cast<PcgImpl*>(handle -> pcg);
         auto last = std::chrono::high_resolution_clock::now();
 
         switch (mode & XJPCG_MODE_KEEP_MATRIX) {
@@ -96,39 +131,42 @@ XJPCG_Status_t xJPCG_coo(void* handle,
         *p_iter = l_res.m_nIters;
         memcpy((char*) x, (char*) l_res.m_x, sizeof(double) * p_n);
         pImpl->getMetrics()->m_solver = getDuration(last);
+        if(*p_iter > p_maxIter || *p_res > p_tol) {
+            throw xilinx_apps::pcg::CgException("Solution is not convergent after " + std::to_string(p_maxIter) + " iterations.", XJPCG_STATUS_EXECUTION_FAILED);
+        }
     } catch (const xilinx_apps::pcg::CgException & err) {
-        return pImpl -> setStatusMessage(err.getStatus(), err.what());
+        return setStatusMessage(handle, err.getStatus(), err.what());
     } catch (const std::exception & err ) {
-        return pImpl -> setStatusMessage(XJPCG_STATUS_OTHER_ERROR, err.what());
-    } catch (...) {
-        return pImpl -> setStatusMessage(XJPCG_STATUS_OTHER_ERROR, "ERROR");
-    }
-    return XJPCG_STATUS_SUCCESS;
+        return setStatusMessage(handle, XJPCG_STATUS_INTERNAL_ERROR, err.what());
+    } 
+    return setStatusMessage(handle, XJPCG_STATUS_SUCCESS, nullptr);
 }
 
-XJPCG_Status_t xJPCG_getMetrics(void* handle, XJPCG_Metric_t *metric) {
-    if(handle == nullptr)
-        return XJPCG_STATUS_NOT_INITIALIZED;
-    auto pImpl = reinterpret_cast<PcgImpl*>(handle);
-    *metric = *pImpl->getMetrics();
-    return XJPCG_STATUS_SUCCESS;
+XJPCG_Status_t xJPCG_getMetrics(XJPCG_Handle_t *handle, XJPCG_Metric_t *metric) {
+    assert(handle != nullptr);
+    try {
+        checkHandle(handle);
+        auto pImpl = reinterpret_cast<PcgImpl*>(handle -> pcg);
+        *metric = *pImpl->getMetrics();
+    } catch (const xilinx_apps::pcg::CgException & err) {
+        return setStatusMessage(handle, err.getStatus(), err.what());
+    } catch (const std::exception & err ) {
+        return setStatusMessage(handle, XJPCG_STATUS_INTERNAL_ERROR, err.what());
+    } 
+    return setStatusMessage(handle, XJPCG_STATUS_SUCCESS, nullptr);
 }
 
-XJPCG_Status_t xJPCG_peekAtLastStatus(void* handle) {
-    if(handle == nullptr)
-        return XJPCG_STATUS_NOT_INITIALIZED;
-    auto pImpl = reinterpret_cast<PcgImpl*>(handle);
-    return pImpl->getLastStatus();
+XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t *handle) {
+    assert(handle != nullptr);
+    return handle -> status; 
 }
 
-const char* xJPCG_getLastMessage(void* handle) {
-    if(handle == nullptr)
-        return nullptr;
-    auto pImpl = reinterpret_cast<PcgImpl*>(handle);
-    return pImpl->getLastMessage().c_str();
+const char* xJPCG_getLastMessage(const XJPCG_Handle_t *handle) {
+    assert(handle != nullptr);
+    return handle -> msg;
 }
 
-const char* XJPCG_getErrorString(XJPCG_Status_t code){ 
+const char* xJPCG_getErrorString(const XJPCG_Status_t code){ 
     switch(code) {
         case XJPCG_STATUS_SUCCESS:
             return "XJPCG_STATUS_SUCCESS";
@@ -144,9 +182,7 @@ const char* XJPCG_getErrorString(XJPCG_Status_t code){
             return "XJPCG_STATUS_INTERNAL_ERROR";
         case XJPCG_STATUS_DYNAMIC_LOADING_ERROR:
             return "XJPCG_STATUS_DYNAMIC_LOADING_ERROR";
-        case XJPCG_STATUS_OTHER_ERROR:
-            return "XJPCG_STATUS_OTHER_ERROR";
-    }
+   }
     return "Unknown Error Code!";
 }
 

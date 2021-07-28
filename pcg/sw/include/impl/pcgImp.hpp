@@ -118,7 +118,7 @@ class PCGImpl {
         l_info[5] = m_matPar.m_nnzPad;
         return l_info;
     }
-    MatPartition getMatPar() { return m_matPar; }
+    xf::sparse::MatPartition getMatPar() { return m_matPar; }
     t_DataType getDot() { return m_genCgVec.getDot(); }
     t_DataType getRz() { return m_genCgVec.getRz(); }
     CgVector getVec() { return m_genCgVec.getVec(); }
@@ -148,30 +148,14 @@ class PCGImpl {
         return &m_Metrics;
     }
 
-    XJPCG_Status_t setStatusMessage(XJPCG_Status_t p_stat, std::string p_str){
-        m_lastStatus = p_stat;
-        m_lastMessage = p_str;
-        return m_lastStatus;
-    }
-
-    XJPCG_Status_t getLastStatus(){
-        return m_lastStatus;
-    }
-
-    std::string getLastMessage(){
-        return m_lastMessage;
-    }
-
    private:
-    SpmPar<t_DataType> m_spmPar =
-        SpmPar<t_DataType>(t_ParEntries, t_AccLatency, t_HbmChannels, t_MaxRows, t_MaxCols, t_HbmMemBits);
+    xf::sparse::SpmPar<t_DataType> m_spmPar =
+        xf::sparse::SpmPar<t_DataType>(t_ParEntries, t_AccLatency, t_HbmChannels, t_MaxRows, t_MaxCols, t_HbmMemBits);
     GenCgVector<t_DataType, t_ParEntries> m_genCgVec;
     GenCgInstr<t_DataType, t_InstrBytes> m_genInstr;
     xCgHost m_host;
-    MatPartition m_matPar;
+    xf::sparse::MatPartition m_matPar;
     XJPCG_Metric_t m_Metrics;
-    XJPCG_Status_t m_lastStatus;
-    std::string m_lastMessage;
 };
 
 }

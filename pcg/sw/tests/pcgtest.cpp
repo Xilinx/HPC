@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
 
     std::string l_datFilePath = l_datPath + "/" + l_mtxName;
 
-    CooMatInfo l_matInfo = loadMatInfo(l_datFilePath + "/");
+    xf::sparse::CooMatInfo l_matInfo = xf::sparse::loadMatInfo(l_datFilePath + "/");
     assert(l_matInfo.m_m == l_matInfo.m_n);
     std::vector<CG_dataType> h_x(l_matInfo.m_m);
     std::vector<uint32_t> l_rowIdx(l_matInfo.m_nnz);
@@ -75,15 +75,15 @@ int main(int argc, char** argv) {
     readBin(l_datFilePath + "/A_diag.mat", l_diagA.data(), l_matInfo.m_m * sizeof(CG_dataType));
     readBin(l_datFilePath + "/b.mat", l_b.data(), l_matInfo.m_m * sizeof(CG_dataType));
 
-    void *pHandle = nullptr;
-    create_JPCG_handle(&pHandle, l_deviceId, binaryFile.c_str());
+    XJPCG_Handle_t pHandle;
+    xJPCG_createHandle(&pHandle, l_deviceId, binaryFile.c_str());
     uint32_t numIterations = 0;
     double residual = 0.0;
-    xJPCG_coo(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
+    xJPCG_cooSolver(&pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
         l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_MODE_DEFAULT);
     
     for (int i = 1; i < l_numRuns; ++i) {
-        xJPCG_coo(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
+        xJPCG_cooSolver(&pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
             l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_MODE_KEEP_NZ_LAYOUT);
     }
 
@@ -92,7 +92,8 @@ int main(int argc, char** argv) {
     compare<CG_dataType>(l_matInfo.m_m, h_x.data(), l_x.data(), err, l_debug);
 
     XJPCG_Metric_t metric;
-    xJPCG_getMetrics(pHandle, &metric);
+    xJPCG_getMetrics(&pHandle, &metric);
+    xJPCG_destroyHandle(&pHandle);
 
     std::cout << "DATA_CSV:, matrix_name, dim, NNZs, num of iterations, JPCG residual, num_mismatches, solver time [s]" << std::endl;
     std::cout << "DATA_CSV:, " << l_matInfo.m_name << ", " << l_matInfo.m_m << ", ";

@@ -20,6 +20,9 @@
 #include "matrix_params.hpp"
 #include "signature.hpp"
 
+namespace xf {
+namespace sparse {
+
 CooMatInfo loadMatInfo(std::string path);
 void storeMatPar(std::string path, MatPartition& p_matPar);
 
@@ -68,4 +71,6 @@ class SpmPar {
     Signature m_sig;
 };
 
+}
+}
 #endif

@@ -28,7 +28,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
+
+#ifndef XF_SPARSE_SPMVKERNEL_HPP
+#define XF_SPARSE_SPMVKERNEL_HPP
+
 #include "fpga.hpp"
+
+namespace xf {
+namespace sparse {
+
 template <unsigned int t_NumChannels>
 class KernelLoadNnz : public Kernel {
    public:
@@ -121,3 +129,8 @@ class KernelStoreY : public Kernel {
    private:
     cl::Buffer m_buffer;
 };
+
+}
+}
+
+#endif
