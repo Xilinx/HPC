@@ -93,7 +93,7 @@ void *xilinx_apps_getCDynamicFunction(const char *funcName) {
 //#####################################################################################################################
 
 XILINX_PCG_LINKAGE_DEF
-XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t*handle, int deviceId, const char *xclbinPath) {
+XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t *handle, int deviceId, const char *xclbinPath) {
     typedef XJPCG_Status_t (*CreateFunc)(XJPCG_Handle_t*, int, const char *);
     CreateFunc pCreateFunc = (CreateFunc) xilinx_apps_getCDynamicFunction("xJPCG_createHandle");
     if (!pCreateFunc)
@@ -102,8 +102,8 @@ XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t*handle, int deviceId, const cha
 }
 
 XILINX_PCG_LINKAGE_DEF
-XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle) {
-    typedef XJPCG_Status_t (*DestroyFunc)(XJPCG_Handle_t*);
+XJPCG_Status_t xJPCG_destroyHandle(const XJPCG_Handle_t handle) {
+    typedef XJPCG_Status_t (*DestroyFunc)(const XJPCG_Handle_t);
     DestroyFunc pDestroyFunc = (DestroyFunc) xilinx_apps_getCDynamicFunction("xJPCG_destroyHandle");
     if (!pDestroyFunc)
         return XJPCG_STATUS_DYNAMIC_LOADING_ERROR;
@@ -111,8 +111,8 @@ XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle) {
 }
 
 XILINX_PCG_LINKAGE_DEF
-XJPCG_Status_t xJPCG_getMetrics(XJPCG_Handle_t* handle, XJPCG_Metric_t *metric){
-    typedef XJPCG_Status_t (*GetMetrics)(XJPCG_Handle_t*, XJPCG_Metric_t *);
+XJPCG_Status_t xJPCG_getMetrics(const XJPCG_Handle_t handle, XJPCG_Metric_t *metric){
+    typedef XJPCG_Status_t (*GetMetrics)(const XJPCG_Handle_t, XJPCG_Metric_t *);
     GetMetrics pGetMetrics = (GetMetrics) xilinx_apps_getCDynamicFunction("xJPCG_getMetrics");
     if (pGetMetrics)
         return pGetMetrics(handle, metric);
@@ -120,8 +120,8 @@ XJPCG_Status_t xJPCG_getMetrics(XJPCG_Handle_t* handle, XJPCG_Metric_t *metric){
 }
 
 XILINX_PCG_LINKAGE_DEF
-XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t* handle) {
-    typedef XJPCG_Status_t (*PeekAtLastStatus)(const XJPCG_Handle_t*);
+XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t handle) {
+    typedef XJPCG_Status_t (*PeekAtLastStatus)(const XJPCG_Handle_t);
     
     // Check if there was a recent dynamic loading error.  If so, don't try to access the .so during this
     // error handling, but instead return the dynamic loading error
@@ -136,8 +136,8 @@ XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t* handle) {
 }
 
 XILINX_PCG_LINKAGE_DEF
-const char* xJPCG_getLastMessage(const XJPCG_Handle_t* handle) {
-    typedef const char* (*GetLastMessage)(const XJPCG_Handle_t*);
+const char* xJPCG_getLastMessage(const XJPCG_Handle_t handle) {
+    typedef const char* (*GetLastMessage)(const XJPCG_Handle_t);
 
     // Check if there was a recent dynamic loading error.  If so, don't try to access the .so during this
     // error handling, but instead return the dynamic loading error
@@ -173,7 +173,7 @@ const char* xJPCG_getErrorString(XJPCG_Status_t code) {
 }
 
 XILINX_PCG_LINKAGE_DEF
-XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle, 
+XJPCG_Status_t xJPCG_cooSolver(const XJPCG_Handle_t handle, 
         const uint32_t p_n,
         const uint32_t p_nnz,
         const uint32_t *p_rowIdx,
@@ -187,7 +187,7 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
         uint32_t *p_iter,
         double *p_res,
         const XJPCG_Mode mode) {
-    typedef XJPCG_Status_t (*ApiFunc)(XJPCG_Handle_t* , uint32_t, uint32_t, const uint32_t*, const uint32_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const XJPCG_Mode);
+    typedef XJPCG_Status_t (*ApiFunc)(const XJPCG_Handle_t,  uint32_t, uint32_t, const uint32_t*, const uint32_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const XJPCG_Mode);
     ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("xJPCG_cooSolver");
     if (!pApiFunc)
         return XJPCG_STATUS_DYNAMIC_LOADING_ERROR;

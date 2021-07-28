@@ -130,7 +130,7 @@ class PCGImpl {
     }
 
     Results<t_DataType> run(unsigned int p_maxIter, t_DataType p_tol) {
-        this->setInstr(p_maxIter, p_tol);
+        this->setInstr(p_maxIter + 1, p_tol);
         m_host.run();
         CgVector l_resVec = this->getRes();
         Results<t_DataType> l_res;
@@ -141,7 +141,7 @@ class PCGImpl {
         l_res.m_residual = 0;
 
         CgInstr l_instr = m_genInstr.getInstrPtr();
-        for (unsigned int i = 0; i < p_maxIter; i++) {
+        for (unsigned int i = 0; i <= p_maxIter; i++) {
             l_res.m_nIters = i;
             l_cgInstr.load((uint8_t*)(l_instr.h_instr) + (i + 1) * t_InstrBytes, l_memInstr);
             // std::cout << "l_cgInstr: " << std::scientific << l_cgInstr << std::endl;
@@ -150,6 +150,7 @@ class PCGImpl {
             }
             l_res.m_residual = l_cgInstr.getRes();
         }
+        m_firstCall = false;
         return l_res;
     }
 
@@ -191,7 +192,28 @@ class PCGImpl {
 
     XJPCG_Metric_t* getMetrics() { return &m_Metrics; }
 
+    XJPCG_Status_t setStatusMessage(XJPCG_Status_t p_stat, const std::string p_str){
+        m_lastStatus = p_stat;
+        m_lastMessage = p_str;
+        return m_lastStatus;
+    }
+
+    XJPCG_Status_t getLastStatus() noexcept {
+        return m_lastStatus;
+    }
+
+    std::string getLastMessage() noexcept {
+        return m_lastMessage;
+    }
+    bool isFirstCall() const {
+        return m_firstCall;
+    }
+
    private:
+    XJPCG_Status_t m_lastStatus;
+    std::string m_lastMessage;
+    bool m_firstCall = true;
+
     xf::sparse::SpmPar<t_DataType> m_spmPar =
         xf::sparse::SpmPar<t_DataType>(t_ParEntries, t_AccLatency, t_HbmChannels, t_MaxRows, t_MaxCols, t_HbmMemBits);
     GenCgVector<t_DataType, t_ParEntries> m_genCgVec;

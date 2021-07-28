@@ -79,11 +79,11 @@ int main(int argc, char** argv) {
     xJPCG_createHandle(&pHandle, l_deviceId, binaryFile.c_str());
     uint32_t numIterations = 0;
     double residual = 0.0;
-    xJPCG_cooSolver(&pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
+    xJPCG_cooSolver(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
         l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_MODE_DEFAULT);
     
     for (int i = 1; i < l_numRuns; ++i) {
-        xJPCG_cooSolver(&pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
+        xJPCG_cooSolver(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
             l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_MODE_KEEP_NZ_LAYOUT);
     }
 
@@ -92,8 +92,8 @@ int main(int argc, char** argv) {
     compare<CG_dataType>(l_matInfo.m_m, h_x.data(), l_x.data(), err, l_debug);
 
     XJPCG_Metric_t metric;
-    xJPCG_getMetrics(&pHandle, &metric);
-    xJPCG_destroyHandle(&pHandle);
+    xJPCG_getMetrics(pHandle, &metric);
+    xJPCG_destroyHandle(pHandle);
 
     std::cout << "DATA_CSV:, matrix_name, dim, NNZs, num of iterations, JPCG residual, num_mismatches, solver time [s]" << std::endl;
     std::cout << "DATA_CSV:, " << l_matInfo.m_name << ", " << l_matInfo.m_m << ", ";
