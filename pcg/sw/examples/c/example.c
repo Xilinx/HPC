@@ -26,6 +26,8 @@ inline void checkError(XJPCG_Handle_t handle, XJPCG_Status_t code, const char *f
         fprintf(stderr, "CheckError: %s at %s:%d\n", xJPCG_getErrorString(code), file, line);
         if(handle.pcg != NULL)
             fprintf(stderr, "Error Message - %s \n", xJPCG_getLastMessage(handle));
+        else
+            fprintf(stderr, "Error Message - Handle is not correctly initialized.\n");
         exit(code);
     }
 
