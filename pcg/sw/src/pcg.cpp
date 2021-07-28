@@ -56,6 +56,61 @@ XJPCG_Status_t xJPCG_destroyHandle(const XJPCG_Handle_t handle) {
     delete pImpl;
     return XJPCG_STATUS_SUCCESS;
 }
+XILINX_PCG_LINKAGE_DECL
+XJPCG_Status_t xJPCG_cscSymSolver(const XJPCG_Handle_t handle,
+                               const uint32_t p_n,
+                               const uint32_t p_nnz,
+                               const uint64_t* p_rowIdx,
+                               const uint64_t* p_colPtr,
+                               const double* p_data,
+                               const double* p_diagA,
+                               const double* p_b,
+                               const double* p_x,
+                               const uint32_t p_maxIter,
+                               const double p_tol,
+                               uint32_t* p_iter,
+                               double* p_res,
+                               const XJPCG_Mode mode){
+    if (handle.pcg == nullptr)
+        return XJPCG_STATUS_NOT_INITIALIZED;
+    auto pImpl = reinterpret_cast<PcgImpl*>(handle.pcg);
+    try {
+        auto last = std::chrono::high_resolution_clock::now();
+        bool first = pImpl->isFirstCall();
+        switch (mode) {
+            case XJPCG_MODE_DEFAULT:
+                pImpl->setCscSymMat(p_n, p_nnz, p_rowIdx, p_colPtr, p_data);
+                break;
+            case XJPCG_MODE_KEEP_NZ_LAYOUT:
+                if(first)
+                    throw xilinx_apps::pcg::CgInvalidValue("wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
+                pImpl->updateCscSymMat(p_n, p_nnz, p_rowIdx, p_colPtr, p_data);
+                break;
+            default:
+                if(first)
+                    throw xilinx_apps::pcg::CgInvalidValue("wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
+                break;
+        }
+
+        pImpl->getMetrics()->m_matProc = getDuration(last);
+        pImpl->setVec(p_n, p_b, p_diagA);
+        pImpl->getMetrics()->m_vecProc = getDuration(last);
+
+        xilinx_apps::pcg::Results<double> l_res = pImpl->run(p_maxIter, p_tol);
+        *p_res = std::sqrt(l_res.m_residual / pImpl->getDot());
+        *p_iter = l_res.m_nIters;
+        memcpy((char*)p_x, (char*)l_res.m_x, sizeof(double) * p_n);
+        pImpl->getMetrics()->m_solver = getDuration(last);
+        if(*p_res > p_tol) {
+            throw xilinx_apps::pcg::CgExecutionFailed("exit with divergent solution after " + std::to_string(*p_iter) + " iterations.");
+        }
+    } catch (const xilinx_apps::pcg::CgException& err) {
+        return pImpl->setStatusMessage(err.getStatus(), err.what());
+    } catch (const std::exception& err) {
+        return pImpl->setStatusMessage(XJPCG_STATUS_INTERNAL_ERROR, err.what());
+    }
+    return pImpl->setStatusMessage(XJPCG_STATUS_SUCCESS, "API returns successfully");
+}
 
 XJPCG_Status_t xJPCG_cooSolver(const XJPCG_Handle_t handle,
         const uint32_t p_n,

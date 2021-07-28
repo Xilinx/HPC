@@ -173,6 +173,28 @@ const char* xJPCG_getErrorString(XJPCG_Status_t code) {
 }
 
 XILINX_PCG_LINKAGE_DEF
+XJPCG_Status_t xJPCG_cscSymSolver(const XJPCG_Handle_t handle, 
+        const uint32_t p_n,
+        const uint32_t p_nnz,
+        const uint64_t *p_rowIdx,
+        const uint64_t *p_colPtr,
+        const double *p_data,
+        const double *matJ,
+        const double *b,
+        const double *x,
+        const uint32_t p_maxIter,
+        const double p_tol,
+        uint32_t *p_iter,
+        double *p_res,
+        const XJPCG_Mode mode) {
+    typedef XJPCG_Status_t (*ApiFunc)(const XJPCG_Handle_t,  uint32_t, uint32_t, const uint64_t*, const uint64_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const XJPCG_Mode);
+    ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("xJPCG_cscSymSolver");
+    if (!pApiFunc)
+        return XJPCG_STATUS_DYNAMIC_LOADING_ERROR;
+    return pApiFunc(handle, p_n, p_nnz, p_rowIdx, p_colPtr, p_data, matJ, b, x, p_maxIter, p_tol, p_iter, p_res, mode);
+}
+
+XILINX_PCG_LINKAGE_DEF
 XJPCG_Status_t xJPCG_cooSolver(const XJPCG_Handle_t handle, 
         const uint32_t p_n,
         const uint32_t p_nnz,
