@@ -184,7 +184,24 @@ class PCGImpl {
 
     XJPCG_Metric_t* getMetrics() { return &m_Metrics; }
 
+    XJPCG_Status_t setStatusMessage(XJPCG_Status_t p_stat, const std::string p_str){
+        m_lastStatus = p_stat;
+        m_lastMessage = p_str;
+        return m_lastStatus;
+    }
+
+    XJPCG_Status_t getLastStatus() noexcept {
+        return m_lastStatus;
+    }
+
+    std::string getLastMessage() noexcept {
+        return m_lastMessage;
+    }
+
    private:
+    XJPCG_Status_t m_lastStatus;
+    std::string m_lastMessage;
+
     xf::sparse::SpmPar<t_DataType> m_spmPar =
         xf::sparse::SpmPar<t_DataType>(t_ParEntries, t_AccLatency, t_HbmChannels, t_MaxRows, t_MaxCols, t_HbmMemBits);
     GenCgVector<t_DataType, t_ParEntries> m_genCgVec;
