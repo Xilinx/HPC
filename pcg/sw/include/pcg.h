@@ -34,8 +34,6 @@
 #define XILINX_PCG_LINKAGE_DECL extern
 #endif
 
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -51,7 +49,7 @@ typedef enum {
     XJPCG_STATUS_INVALID_VALUE,     // invalid parameters
     XJPCG_STATUS_EXECUTION_FAILED,  // solver not convergent
     XJPCG_STATUS_INTERNAL_ERROR,    // internal errors or bugs
-    XJPCG_STATUS_NOT_SUPPORTED      // unsupported behavior
+    XJPCG_STATUS_DYNAMIC_LOADING_ERROR  // error while trying to access the API via dynamic loading (dlopen)
 } XJPCG_Status_t;
 
 /** xJPCG_getErrorString get the string presentation of given status code
@@ -66,10 +64,10 @@ const char* xJPCG_getErrorString(const XJPCG_Status_t code);
  *
  */
 typedef struct {
-    double m_init;          // JPCG Object initialization time
-    double m_matProc;       // Matrix processing time
-    double m_vecProc;       // Vector processing time
-    double m_solver;        // Solver execution time
+    double m_init;    // JPCG Object initialization time
+    double m_matProc; // Matrix processing time
+    double m_vecProc; // Vector processing time
+    double m_solver;  // Solver execution time
 } XJPCG_Metric_t;
 
 /**
@@ -86,10 +84,10 @@ typedef struct {
  * List of XJPCG solver modes
  *
  */
-typedef enum XJPCG_Mode { 
-    XJPCG_MODE_DEFAULT = 0x00, // Used for completely new data
+typedef enum XJPCG_Mode {
+    XJPCG_MODE_DEFAULT = 0x00,        // Used for completely new data
     XJPCG_MODE_KEEP_NZ_LAYOUT = 0x01, // Update matrix values only
-    XJPCG_MODE_KEEP_MATRIX = 0x03 // Reuse last matrix
+    XJPCG_MODE_KEEP_MATRIX = 0x03     // Reuse last matrix
 } XJPCG_Mode;
 
 /** xJPCG_createHandle create a JPCG handle
@@ -100,7 +98,7 @@ typedef enum XJPCG_Mode {
  * return the pointer of created handle
  */
 XILINX_PCG_LINKAGE_DECL
-XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t *handle, const int deviceId, const char* xclbinPath);
+XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t* handle, const int deviceId, const char* xclbinPath);
 
 /** xJPCG_destroyHandle destroy given JPCG handle
  *
@@ -108,7 +106,7 @@ XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t *handle, const int deviceId, co
  *
  */
 XILINX_PCG_LINKAGE_DECL
-XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle);
+XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t* handle);
 
 /** xJPCG_cooSolver solves equation Ax = b with sparse matrix A in COO format
  *
@@ -129,35 +127,34 @@ XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle);
  *
  */
 XILINX_PCG_LINKAGE_DECL
-XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
-        const uint32_t p_n,
-        const uint32_t p_nnz,
-        const uint32_t* p_rowIdx,
-        const uint32_t* p_colIdx,
-        const double* p_data,
-        const double* p_diagA,
-        const double* p_b,
-        const double* p_x,
-        const uint32_t p_maxIter,
-        const double p_tol,
-        uint32_t* p_iter,
-        double* p_res,
-        const XJPCG_Mode mode);
+XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t* handle,
+                               const uint32_t p_n,
+                               const uint32_t p_nnz,
+                               const uint32_t* p_rowIdx,
+                               const uint32_t* p_colIdx,
+                               const double* p_data,
+                               const double* p_diagA,
+                               const double* p_b,
+                               const double* p_x,
+                               const uint32_t p_maxIter,
+                               const double p_tol,
+                               uint32_t* p_iter,
+                               double* p_res,
+                               const XJPCG_Mode mode);
 
 /** xJPCG_peekAtLastStatus get the last status associated with handle
  *
  * handle pointer to a JPCG handle
  */
 XILINX_PCG_LINKAGE_DECL
-XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t *handle);
-
+XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t* handle);
 
 /** xJPCG_getLastMessage get the last status/error message associated with handle
  *
  * handle pointer to a JPCG handle
  */
 XILINX_PCG_LINKAGE_DECL
-const char* xJPCG_getLastMessage(const XJPCG_Handle_t *handle);
+const char* xJPCG_getLastMessage(const XJPCG_Handle_t* handle);
 
 /** xJPCG_getMetrics get the last performance metrics associated with handle
  *
@@ -165,7 +162,7 @@ const char* xJPCG_getLastMessage(const XJPCG_Handle_t *handle);
  * metric pointer to a metric struct
  */
 XILINX_PCG_LINKAGE_DECL
-XJPCG_Status_t xJPCG_getMetrics(XJPCG_Handle_t *handle, XJPCG_Metric_t *metric);
+XJPCG_Status_t xJPCG_getMetrics(XJPCG_Handle_t* handle, XJPCG_Metric_t* metric);
 
 #ifdef __cplusplus
 }
