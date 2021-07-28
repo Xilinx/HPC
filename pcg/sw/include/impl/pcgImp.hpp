@@ -64,21 +64,8 @@ class PCGImpl {
         m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
                           m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
     }
-    void setCscSymMat(uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr, t_DataType* p_data) {
-        if (p_dim == 0) {
-            throw CgInvalidValue("Wrong dimension size.");
-        }
-        if (p_nnz == 0) {
-            throw CgInvalidValue("Wrong non-zero element size.");
-        }
-        if (p_rowIdx == nullptr || p_colPtr == nullptr || p_data == nullptr) {
-            throw CgInvalidValue("Matrix is nullptr.");
-        }
-        m_matPar = m_spmPar.partitionCscSymMat(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
-        m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
-                          m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
-    }
-    void setCscSymMat(uint32_t p_dim, uint32_t p_nnz, int64_t* p_rowIdx, int64_t* p_colPtr, t_DataType* p_data) {
+    template <typename t_IdxType>
+    void setCscSymMat(uint32_t p_dim, uint32_t p_nnz, t_IdxType* p_rowIdx, t_IdxType* p_colPtr, t_DataType* p_data) {
         if (p_dim == 0) {
             throw CgInvalidValue("Wrong dimension size.");
         }
@@ -104,6 +91,26 @@ class PCGImpl {
         }
         if (m_spmPar.checkUpdateDim(p_dim, p_dim, p_nnz) == 0) {
             m_matPar = m_spmPar.updateMat(p_data);
+            m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr,
+                              m_matPar.m_rbParamSize, m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+            return 0;
+        } else {
+            return -1;
+        }
+    }
+    template <typename t_IdxType>
+    int updateCscSymMat(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data) {
+        if (p_dim == 0) {
+            throw CgInvalidValue("Wrong dimension size.");
+        }
+        if (p_nnz == 0) {
+            throw CgInvalidValue("Wrong non-zero element size.");
+        }
+        if (p_data == nullptr) {
+            throw CgInvalidValue("Matrix is nullptr.");
+        }
+        if (m_spmPar.checkUpdateDim(p_dim, p_dim, p_nnz) == 0) {
+            m_matPar = m_spmPar.updateCscSymMat(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
             m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr,
                               m_matPar.m_rbParamSize, m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
             return 0;

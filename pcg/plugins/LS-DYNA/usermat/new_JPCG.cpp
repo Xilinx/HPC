@@ -25,6 +25,7 @@
 #include "binFiles.hpp"
 
 #ifdef USE_FPGA
+#include "pcg.h"
 #include "pcgImp.hpp"
 #include "cgHost.hpp"
 typedef xilinx_apps::pcg::PCGImpl<CG_dataType, CG_parEntries, CG_instrBytes, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols, SPARSE_hbmMemBits> PCG_TYPE;
@@ -111,11 +112,11 @@ void set_matrix(PCG_TYPE* p_pcg,
                 FortranInteger* rowind,
                 FortranReal* values) {
     std::cout << "Setting and partitioning matrix ... " << std::endl;
-    FortranReal* matA;
-    matA = (FortranReal*)malloc(nnz * sizeof(FortranReal));
-    getCOODat(n, nnz, colptr, rowind, values, matA);
-    p_pcg->setCscSymMat(n, nnz, (int64_t*)rowind, (int64_t*)colptr, matA);
-    free(matA);
+    //FortranReal* matA;
+    //matA = (FortranReal*)malloc(nnz * sizeof(FortranReal));
+    //getCOODat(n, nnz, colptr, rowind, values, matA);
+    p_pcg->setCscSymMat(n, nnz, (int64_t*)rowind, (int64_t*)colptr, values);
+    //free(matA);
 }
 void update_matrix(PCG_TYPE* p_pcg,
                    FortranInteger n,
@@ -124,11 +125,11 @@ void update_matrix(PCG_TYPE* p_pcg,
                    FortranInteger* rowind,
                    FortranReal* values) {
     std::cout << "Updating the matrix value ... " << std::endl;
-    FortranReal* matA;
-    matA = (FortranReal*)malloc(nnz * sizeof(FortranReal));
-    getCOODat(n, nnz, colptr, rowind, values, matA);
-    p_pcg->updateMat(n, nnz, matA);
-    free(matA);
+    //FortranReal* matA;
+    //matA = (FortranReal*)malloc(nnz * sizeof(FortranReal));
+    //getCOODat(n, nnz, colptr, rowind, values, matA);
+    p_pcg->updateCscSymMat(n, nnz, (int64_t*)rowind, (int64_t*)colptr, values);
+    //free(matA);
 }
 double fpga_JPCG(PCG_TYPE* l_pcg,
                  FortranInteger callSelector,

@@ -62,7 +62,8 @@ class SparseMatrix {
         m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
-    void loadCscSym(uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr) {
+    template <typename t_IdxType>
+    void loadCscSym(uint32_t p_n, uint32_t p_nnz, t_IdxType* p_rowIdx, t_IdxType* p_colPtr) {
         m_m = p_n;
         m_n = p_n;
         m_nnz = p_nnz;
@@ -75,40 +76,8 @@ class SparseMatrix {
 
         uint32_t index = 0;
         for (uint32_t j = 0; j < p_n; j++) {
-            for (uint32_t k = p_colPtr[j] - 1; k < p_colPtr[j + 1] - 1; k++) {
-                uint32_t i = p_rowIdx[k] - 1;
-                assert(index < m_nnz);
-                m_row_list[index] = i;
-                m_col_list[index] = j;
-                if (i != j) {
-                    assert(index < m_nnz);
-                    m_row_list[index] = j;
-                    m_col_list[index] = i;
-                }
-            }
-        }
-        if (index != m_nnz) {
-            throw SpmAllocFailed("Failed to allocate memory for cscSym matrix.");
-        }
-        assert(index == m_nnz);
-        m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
-        m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
-    }
-    void loadCscSym(uint32_t p_n, uint32_t p_nnz, int64_t* p_rowIdx, int64_t* p_colPtr) {
-        m_m = p_n;
-        m_n = p_n;
-        m_nnz = p_nnz;
-        m_minRowId = 0;
-        m_minColId = 0;
-        m_row_list.resize(m_nnz);
-        m_col_list.resize(m_nnz);
-        m_data_list.resize(m_nnz);
-        iota(m_data_list.begin(), m_data_list.end(), 0);
-
-        uint32_t index = 0;
-        for (uint32_t j = 0; j < p_n; j++) {
-            for (uint32_t k = p_colPtr[j] - 1; k < p_colPtr[j + 1] - 1; k++) {
-                uint32_t i = p_rowIdx[k] - 1;
+            for (t_IdxType k = p_colPtr[j] - 1; k < p_colPtr[j + 1] - 1; k++) {
+                t_IdxType i = p_rowIdx[k] - 1;
                 assert(index < m_nnz);
                 m_row_list[index] = i;
                 m_col_list[index] = j;

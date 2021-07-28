@@ -45,18 +45,13 @@ class SpmPar {
         MatPartition l_res = m_sig.gen_sig(l_spm, p_data);
         return l_res;
     }
+    template <typename t_IdxType>
     MatPartition partitionCscSymMat(
-        uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr, t_DataType* p_data) {
+        uint32_t p_dim, uint32_t p_nnz, t_IdxType* p_rowIdx, t_IdxType* p_colPtr, t_DataType* p_data) {
+        std::vector<t_DataType> l_cooDat = this->getCooDatFromCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
         SparseMatrix l_spm;
         l_spm.loadCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr);
-        MatPartition l_res = m_sig.gen_sig(l_spm, p_data);
-        return l_res;
-    }
-    MatPartition partitionCscSymMat(
-        uint32_t p_dim, uint32_t p_nnz, int64_t* p_rowIdx, int64_t* p_colPtr, t_DataType* p_data) {
-        SparseMatrix l_spm;
-        l_spm.loadCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr);
-        MatPartition l_res = m_sig.gen_sig(l_spm, p_data);
+        MatPartition l_res = m_sig.gen_sig(l_spm, l_cooDat.data());
         return l_res;
     }
     int checkUpdateDim(uint32_t p_m, uint32_t p_n, uint32_t p_nnz) {
@@ -66,8 +61,42 @@ class SpmPar {
         MatPartition l_res = m_sig.update_sig(p_data);
         return l_res;
     }
+    template <typename t_IdxType>
+    MatPartition updateCscSymMat(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data) {
+        std::vector<t_DataType> l_cooDat = this->getCooDatFromCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
+        MatPartition l_res = m_sig.update_sig(l_cooDat.data());
+        return l_res;
+    }
 
    private:
+    template <typename t_IdxType>
+    std::vector<t_DataType> getCooDatFromCscSym(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data) {
+        std::vector<t_DataType> l_cooDat;
+        l_cooDat.resize(p_nnz);
+        uint32_t l_index = 0;
+        for (uint32_t j = 0; j < p_dim; j++) {
+            for (t_IdxType k = p_colPtr[j] - 1; k < p_colPtr[j + 1] - 1; k++) {
+                t_IdxType i = p_rowIdx[k] - 1;
+                if (l_index >= p_nnz) {
+                    throw SpmInternalError("faile to convert cscSym mat to coo mat");
+                }
+                assert(l_index < p_nnz);
+                l_cooDat[l_index++] = p_data[k];
+                if (i != j) {
+                    if (l_index >= p_nnz) {
+                        throw SpmInternalError("faile to convert cscSym mat to coo mat");
+                    }
+                    assert(l_index < p_nnz);
+                    l_cooDat[l_index++] = p_data[k];
+                }
+            }
+        }
+        if (l_index != p_nnz) {
+            throw SpmInternalError("faile to convert cscSym mat to coo mat");
+        }
+        assert(l_index == p_nnz);
+        return l_cooDat;
+    }
     Signature m_sig;
 };
 
