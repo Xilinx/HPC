@@ -76,14 +76,19 @@ XJPCG_Status_t xJPCG_cooSolver(const XJPCG_Handle_t handle,
     auto pImpl = reinterpret_cast<PcgImpl*>(handle.pcg);
     try {
         auto last = std::chrono::high_resolution_clock::now();
+        bool first = pImpl->isFirstCall();
         switch (mode & XJPCG_MODE_KEEP_MATRIX) {
             case XJPCG_MODE_DEFAULT:
                 pImpl->setCooMat(p_n, p_nnz, p_rowIdx, p_colIdx, p_data);
                 break;
             case XJPCG_MODE_KEEP_NZ_LAYOUT:
+                if(first)
+                    throw xilinx_apps::pcg::CgInvalidValue("wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
                 pImpl->updateMat(p_n, p_nnz, p_data);
                 break;
             default:
+                if(first)
+                    throw xilinx_apps::pcg::CgInvalidValue("wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
                 break;
         }
 
