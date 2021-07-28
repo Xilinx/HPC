@@ -46,22 +46,62 @@ class PCGImpl {
     PCGImpl(){};
     PCGImpl(int p_devId, std::string p_xclbinName) { m_host.init(p_devId, p_xclbinName); }
     void init(int p_devId, std::string p_xclbinName) { m_host.init(p_devId, p_xclbinName); }
-    void setCooMat(const uint32_t p_dim, const uint32_t p_nnz, const uint32_t* p_rowIdx, const uint32_t* p_colIdx, const t_DataType* p_data) {
+    void setCooMat(const uint32_t p_dim,
+                   const uint32_t p_nnz,
+                   const uint32_t* p_rowIdx,
+                   const uint32_t* p_colIdx,
+                   const t_DataType* p_data) {
+        if (p_dim == 0) {
+            throw CgInvalidValue("Wrong dimension size.");
+        }
+        if (p_nnz == 0) {
+            throw CgInvalidValue("Wrong non-zero element size.");
+        }
+        if (p_rowIdx == nullptr || p_colIdx == nullptr || p_data == nullptr) {
+            throw CgInvalidValue("Matrix is nullptr.");
+        }
         m_matPar = m_spmPar.partitionCooMat(p_dim, p_dim, p_nnz, p_rowIdx, p_colIdx, p_data);
         m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
                           m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
     }
     void setCscSymMat(uint32_t p_dim, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr, t_DataType* p_data) {
+        if (p_dim == 0) {
+            throw CgInvalidValue("Wrong dimension size.");
+        }
+        if (p_nnz == 0) {
+            throw CgInvalidValue("Wrong non-zero element size.");
+        }
+        if (p_rowIdx == nullptr || p_colPtr == nullptr || p_data == nullptr) {
+            throw CgInvalidValue("Matrix is nullptr.");
+        }
         m_matPar = m_spmPar.partitionCscSymMat(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
         m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
                           m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
     }
     void setCscSymMat(uint32_t p_dim, uint32_t p_nnz, int64_t* p_rowIdx, int64_t* p_colPtr, t_DataType* p_data) {
+        if (p_dim == 0) {
+            throw CgInvalidValue("Wrong dimension size.");
+        }
+        if (p_nnz == 0) {
+            throw CgInvalidValue("Wrong non-zero element size.");
+        }
+        if (p_rowIdx == nullptr || p_colPtr == nullptr || p_data == nullptr) {
+            throw CgInvalidValue("Matrix is nullptr.");
+        }
         m_matPar = m_spmPar.partitionCscSymMat(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
         m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
                           m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
     }
     int updateMat(const uint32_t p_dim, const uint32_t p_nnz, const t_DataType* p_data) {
+        if (p_dim == 0) {
+            throw CgInvalidValue("Wrong dimension size.");
+        }
+        if (p_nnz == 0) {
+            throw CgInvalidValue("Wrong non-zero element size.");
+        }
+        if (p_data == nullptr) {
+            throw CgInvalidValue("Matrix is nullptr.");
+        }
         if (m_spmPar.checkUpdateDim(p_dim, p_dim, p_nnz) == 0) {
             m_matPar = m_spmPar.updateMat(p_data);
             m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr,
@@ -73,8 +113,6 @@ class PCGImpl {
     }
 
     void setVec(const uint32_t p_dim, const t_DataType* p_b, const t_DataType* p_diagA) {
-        if(p_b == nullptr)
-            throw CgInvalidValue("p_b is null.");
         if (p_dim != m_genCgVec.getDim()) {
             m_genCgVec.loadVec(p_dim, p_b, p_diagA);
         } else {
@@ -144,9 +182,7 @@ class PCGImpl {
         m_host.sendInstr(l_cgInstr.h_instr, l_cgInstr.h_instrBytes);
     }
 
-    XJPCG_Metric_t* getMetrics(){
-        return &m_Metrics;
-    }
+    XJPCG_Metric_t* getMetrics() { return &m_Metrics; }
 
    private:
     xf::sparse::SpmPar<t_DataType> m_spmPar =
@@ -157,7 +193,6 @@ class PCGImpl {
     xf::sparse::MatPartition m_matPar;
     XJPCG_Metric_t m_Metrics;
 };
-
 }
 }
 #endif
