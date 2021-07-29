@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
     l_timer[0] = std::chrono::high_resolution_clock::now();
     xilinx_apps::pcg::PCGImpl<CG_dataType, 4, 64, 8, 16, 4096, 4096, 256> l_pcg(l_deviceId, binaryFile);
     showTimeData("FPGA configuration time: ", l_timer[0], l_timer[1]);
-    l_pcg.setCooMat(l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data());
+    l_pcg.setCooMat(l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(), 0);
     double l_mat_partition_time = 0;
     showTimeData("Matrix partition and transmission time: ", l_timer[1], l_timer[2], &l_mat_partition_time);
     double l_runTime = 1;
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
         //if (l_pcg.updateMat(l_matInfo.m_m, l_matInfo.m_nnz, l_data.data()) != 0) {
         //    return EXIT_FAILURE;
         //}
-        l_pcg.setCooMat(l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data());
+        l_pcg.setCooMat(l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(), 0);
         showTimeData("Matrix update time: ", l_timer[0], l_timer[1]);
         l_pcg.setVec(l_matInfo.m_m, l_b.data(), l_diagA.data());
         showTimeData("Vector initialization & transmission time: ", l_timer[1], l_timer[2], &l_h2d_time);

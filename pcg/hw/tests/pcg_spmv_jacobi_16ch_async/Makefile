@@ -105,7 +105,7 @@ endif
 
 # ################### Setting package and image directory #######################
 USER_BUILT_XCLBIN := ../../build_dir.hw.xilinx_u280_xdma_201920_3/cgSolver.xclbin
-PRE_BUILT_XCLBIN := ../xclbin/cgSolver_ddrParParam_hbmRbParam.xclbin
+PRE_BUILT_XCLBIN := ../../build_dir.hw.xilinx_u280_xdma_201920_3/cgSolver_ddrParParam_hbmRbParam.xclbin
 
 ifneq (,$(wildcard $(USER_BUILT_XCLBIN)))
 XCLBIN_PATH := $(USER_BUILT_XCLBIN)
