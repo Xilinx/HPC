@@ -123,6 +123,7 @@ int main(int argc, const char** argv) {
 
     free(l_rowIdx);
     free(l_colPtr);
+    free(l_data);
     free(p_rowIdx);
     free(p_colIdx);
     free(p_data);
