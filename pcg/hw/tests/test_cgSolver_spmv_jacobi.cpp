@@ -147,15 +147,15 @@ int main(int argc, char** argv) {
     l_kernelControl.getCU("krnl_control");
     l_kernelControl.setMem(h_instr);
 
-    KernelLoadNnz<CG_numChannels> l_kernelLoadAval(&l_fpga);
+    xf::sparse::KernelLoadNnz<CG_numChannels> l_kernelLoadAval(&l_fpga);
     l_kernelLoadAval.getCU("krnl_loadAval:{krnl_loadAval}");
     l_kernelLoadAval.setMem(h_nnzVal);
 
-    KernelLoadCol l_kernelLoadPkApar(&l_fpga);
+    xf::sparse::KernelLoadCol l_kernelLoadPkApar(&l_fpga);
     l_kernelLoadPkApar.getCU("krnl_loadPkApar:{krnl_loadPkApar}");
     l_kernelLoadPkApar.setMem(h_parParam, reinterpret_cast<host_buffer_t<uint8_t>&>(h_pk));
 
-    KernelLoadRbParam l_kernelLoadArbParam(&l_fpga);
+    xf::sparse::KernelLoadRbParam l_kernelLoadArbParam(&l_fpga);
     l_kernelLoadArbParam.getCU("krnl_loadArbParam:{krnl_loadArbParam}");
     l_kernelLoadArbParam.setMem(h_rbParam);
 

@@ -1,10 +1,10 @@
 # Build xclbin for PCG
 
-##1. Environment setting
+## 1. Environment setting
 
 Set env for XILINX_VIVADO, XILINX_VITIS and XILINX_XRT are required to build xclbin
 
-##2. Build xclbin
+## 2. Build xclbin
 
 Please be noticed that this process will take couple of hours to finish.
 TARGET could be either hw or hw_emu.
