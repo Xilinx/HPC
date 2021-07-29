@@ -79,11 +79,11 @@ typedef struct XJPCG_ObjectStruct XJPCG_Handle_t;
 /**
  * List of XJPCG solver modes
  */
-typedef enum XJPCG_Mode {
+typedef enum XJPCG_Mode_t {
     XJPCG_MODE_DEFAULT = 0x00,        // Used for completely new data
     XJPCG_MODE_KEEP_NZ_LAYOUT = 0x01, // Update matrix values only
     XJPCG_MODE_KEEP_MATRIX = 0x02     // Reuse last matrix
-} XJPCG_Mode;
+} XJPCG_Mode_t;
 
 /** xJPCG_createHandle create a JPCG handle
  *
@@ -140,7 +140,7 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
                                const double p_tol,
                                int64_t* p_iter,
                                double* p_res,
-                               const XJPCG_Mode mode);
+                               const XJPCG_Mode_t mode);
 /** xJPCG_cooSolver solves equation Ax = b with sparse SPD matrix A in COO format
  *
  * handle pointer to a JPCG handle
@@ -174,7 +174,7 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
                                const double p_tol,
                                uint32_t* p_iter,
                                double* p_res,
-                               const XJPCG_Mode mode);
+                               const XJPCG_Mode_t mode);
 
 /** xJPCG_peekAtLastStatus get the last status associated with handle
  *

@@ -73,7 +73,7 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
                                const double p_tol,
                                int64_t* p_iter,
                                double* p_res,
-                               const XJPCG_Mode mode){
+                               const XJPCG_Mode_t mode){
     if (handle == nullptr)
         return XJPCG_STATUS_NOT_INITIALIZED;
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
@@ -128,7 +128,7 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
         const double p_tol,
         uint32_t* p_iter,
         double* p_res,
-        const XJPCG_Mode mode) {
+        const XJPCG_Mode_t mode) {
     if (handle == nullptr)
         return XJPCG_STATUS_NOT_INITIALIZED;
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);

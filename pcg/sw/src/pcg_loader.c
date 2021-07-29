@@ -186,8 +186,8 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
         const double p_tol,
         int64_t *p_iter,
         double *p_res,
-        const XJPCG_Mode mode) {
-    typedef XJPCG_Status_t (*ApiFunc)(XJPCG_Handle_t *,  int64_t, int64_t, const int64_t*, const int64_t*, const double*, const double*, const double*, const double*, const int64_t, const double, int64_t*, double*, const XJPCG_Mode);
+        const XJPCG_Mode_t mode) {
+    typedef XJPCG_Status_t (*ApiFunc)(XJPCG_Handle_t *,  int64_t, int64_t, const int64_t*, const int64_t*, const double*, const double*, const double*, const double*, const int64_t, const double, int64_t*, double*, const XJPCG_Mode_t);
     ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("xJPCG_cscSymSolver");
     if (!pApiFunc)
         return XJPCG_STATUS_DYNAMIC_LOADING_ERROR;
@@ -208,8 +208,8 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
         const double p_tol,
         uint32_t *p_iter,
         double *p_res,
-        const XJPCG_Mode mode) {
-    typedef XJPCG_Status_t (*ApiFunc)(const XJPCG_Handle_t *,  uint32_t, uint32_t, const uint32_t*, const uint32_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const XJPCG_Mode);
+        const XJPCG_Mode_t mode) {
+    typedef XJPCG_Status_t (*ApiFunc)(const XJPCG_Handle_t *,  uint32_t, uint32_t, const uint32_t*, const uint32_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const XJPCG_Mode_t);
     ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("xJPCG_cooSolver");
     if (!pApiFunc)
         return XJPCG_STATUS_DYNAMIC_LOADING_ERROR;
