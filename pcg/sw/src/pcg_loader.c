@@ -176,8 +176,8 @@ XILINX_PCG_LINKAGE_DEF
 XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle, 
         const uint32_t p_n,
         const uint32_t p_nnz,
-        const uint64_t *p_rowIdx,
-        const uint64_t *p_colPtr,
+        const int64_t *p_rowIdx,
+        const int64_t *p_colPtr,
         const double *p_data,
         const double *matJ,
         const double *b,
@@ -187,7 +187,7 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
         uint32_t *p_iter,
         double *p_res,
         const XJPCG_Mode mode) {
-    typedef XJPCG_Status_t (*ApiFunc)(XJPCG_Handle_t *,  uint32_t, uint32_t, const uint64_t*, const uint64_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const XJPCG_Mode);
+    typedef XJPCG_Status_t (*ApiFunc)(XJPCG_Handle_t *,  uint32_t, uint32_t, const int64_t*, const int64_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const XJPCG_Mode);
     ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("xJPCG_cscSymSolver");
     if (!pApiFunc)
         return XJPCG_STATUS_DYNAMIC_LOADING_ERROR;

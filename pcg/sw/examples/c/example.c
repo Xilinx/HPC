@@ -20,7 +20,7 @@
 
 void genSPDcoo(uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, double* p_data, double* matJ);
 
-void genSPDcsc(uint32_t p_n, uint64_t* p_rowIdx, uint64_t* p_colPtr, double* p_data, double* matJ);
+void genSPDcsc(uint32_t p_n, int64_t* p_rowIdx, int64_t* p_colPtr, double* p_data, double* matJ);
 
 #define CheckError(handle, code) checkError((handle), (code), __FILE__, __LINE__)
 inline void checkError(const XJPCG_Handle_t* handle, XJPCG_Status_t code, const char* file, int line) {
@@ -99,16 +99,14 @@ int main(int argc, const char** argv) {
     printf("\tSolver execution time:\t %fs\n", metric.m_solver);
     printf("--------------------------------------------\n");
 
-    uint64_t* l_rowIdx = malloc(sizeof(uint64_t) * (2 * p_n - 1));
-    uint64_t* l_colPtr = malloc(sizeof(uint64_t) * (2 * p_n));
-    genSPDcsc(p_n, l_rowIdx, l_colPtr, p_data, matJ);
-    for (i = 0; i < p_n; i++) {
-        int val = rand() % p_n - p_n / 2;
-        b[i] = val / 97.0;
-    }
-    CheckError(pHandle, xJPCG_cscSymSolver(pHandle, p_n, p_nnz, l_rowIdx, l_colPtr, p_data, matJ, b, x, p_maxIter,
-                                           p_tol, &p_iter, &p_res, XJPCG_MODE_DEFAULT));
+    int half_nnz = (p_nnz + p_n) / 2;
+    int64_t* l_rowIdx = malloc(sizeof(int64_t) * half_nnz);
+    int64_t* l_colPtr = malloc(sizeof(int64_t) * (1 + p_n));
+    double * l_data = malloc(sizeof(double) * half_nnz);
+    genSPDcsc(p_n, l_rowIdx, l_colPtr, l_data, matJ);
 
+    CheckError(pHandle, xJPCG_cscSymSolver(pHandle, p_n, p_nnz, l_rowIdx, l_colPtr, l_data, matJ, b, x, p_maxIter,
+                                           p_tol, &p_iter, &p_res, XJPCG_MODE_DEFAULT));
     CheckError(pHandle, xJPCG_getMetrics(pHandle, &metric));
 
     printf("Third equation information:\n");
@@ -123,6 +121,8 @@ int main(int argc, const char** argv) {
 
     CheckError(pHandle, xJPCG_destroyHandle(pHandle));
 
+    free(l_rowIdx);
+    free(l_colPtr);
     free(p_rowIdx);
     free(p_colIdx);
     free(p_data);
@@ -168,7 +168,7 @@ void genSPDcoo(uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_col
     assert(p_nnz == idx);
 }
 
-void genSPDcsc(uint32_t p_n, uint64_t* p_rowIdx, uint64_t* p_colPtr, double* p_data, double* matJ) {
+void genSPDcsc(uint32_t p_n, int64_t* p_rowIdx, int64_t* p_colPtr, double* p_data, double* matJ) {
     double* tmp = malloc(sizeof(double) * p_n);
 
     uint32_t idx = 0, i = 0;
@@ -179,12 +179,12 @@ void genSPDcsc(uint32_t p_n, uint64_t* p_rowIdx, uint64_t* p_colPtr, double* p_d
     }
 
     for (i = 0; i < p_n; i++) {
-        p_colPtr[i] = i * 2;
+        p_colPtr[i] = i * 2 + 1;
         if (i != 0) {
-            p_rowIdx[idx] = i;
+            p_rowIdx[idx] = i + 1;
             p_data[idx++] = (tmp[i] + tmp[i - 1]) / 2;
         }
-        p_rowIdx[idx] = i;
+        p_rowIdx[idx] = i + 1;
         matJ[i] = tmp[i];
         if (i != 0) {
             matJ[i] += tmp[i - 1] * 0.75;
@@ -195,6 +195,6 @@ void genSPDcsc(uint32_t p_n, uint64_t* p_rowIdx, uint64_t* p_colPtr, double* p_d
         p_data[idx++] = matJ[i];
     }
     assert(2 * p_n - 1 == idx);
-    p_colPtr[p_n] = idx;
+    p_colPtr[p_n] = 2 * p_n;
     free(tmp);
 }
