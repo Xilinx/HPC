@@ -78,13 +78,13 @@ class SpmPar {
             for (t_IdxType k = p_colPtr[j] - 1; k < p_colPtr[j + 1] - 1; k++) {
                 t_IdxType i = p_rowIdx[k] - 1;
                 if (l_index >= p_nnz) {
-                    throw SpmInternalError("faile to convert cscSym mat to coo mat");
+                    throw SpmInternalError("from getCooDatFromCscSym in gen_signature.hpp, index >= nnz.");
                 }
                 assert(l_index < p_nnz);
                 l_cooDat[l_index++] = p_data[k];
                 if (i != j) {
                     if (l_index >= p_nnz) {
-                        throw SpmInternalError("faile to convert cscSym mat to coo mat");
+                        throw SpmInternalError("from getCooDatFromCscSym in gen_signature.hpp, index >= nnz.");
                     }
                     assert(l_index < p_nnz);
                     l_cooDat[l_index++] = p_data[k];
@@ -92,7 +92,7 @@ class SpmPar {
             }
         }
         if (l_index != p_nnz) {
-            throw SpmInternalError("faile to convert cscSym mat to coo mat");
+            throw SpmInternalError("from getCooDatFromCscSym in gen_signature.hpp, failed to convert data from CscSym to COO format.");
         }
         assert(l_index == p_nnz);
         return l_cooDat;

@@ -78,11 +78,17 @@ class SparseMatrix {
         for (uint32_t j = 0; j < p_n; j++) {
             for (t_IdxType k = p_colPtr[j] - 1; k < p_colPtr[j + 1] - 1; k++) {
                 t_IdxType i = p_rowIdx[k] - 1;
+                if (index >= m_nnz) {
+                    throw SpmAllocFailed("from loadCscSym in matrix_params.hpp, index >= nnz.");
+                }
                 assert(index < m_nnz);
                 m_row_list[index] = i;
                 m_col_list[index] = j;
                 index++;
                 if (i != j) {
+                    if (index >= m_nnz) {
+                        throw SpmAllocFailed("from loadCscSym in matrix_params.hpp, index >= nnz.");
+                    }
                     assert(index < m_nnz);
                     m_row_list[index] = j;
                     m_col_list[index] = i;
@@ -91,7 +97,7 @@ class SparseMatrix {
             }
         }
         if (index != m_nnz) {
-            throw SpmAllocFailed("Failed to allocate memory for cscSym matrix.");
+            throw SpmAllocFailed("from loadCscSym in matrix_params.hpp, failed to convert indices from CscSym to COO format.");
         }
         assert(index == m_nnz);
         m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
