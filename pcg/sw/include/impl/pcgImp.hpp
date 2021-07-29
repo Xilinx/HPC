@@ -191,18 +191,19 @@ class PCGImpl {
     }
 
     XJPCG_Metric_t* getMetrics() { return &m_Metrics; }
+    const XJPCG_Metric_t* getMetrics() const { return &m_Metrics; }
 
-    XJPCG_Status_t setStatusMessage(XJPCG_Status_t p_stat, const std::string p_str){
+    XJPCG_Status_t setStatusMessage(XJPCG_Status_t p_stat, const std::string p_str) const {
         m_lastStatus = p_stat;
         m_lastMessage = p_str;
         return m_lastStatus;
     }
 
-    XJPCG_Status_t getLastStatus() noexcept {
+    XJPCG_Status_t getLastStatus() const noexcept {
         return m_lastStatus;
     }
 
-    std::string getLastMessage() noexcept {
+    const std::string& getLastMessage() const noexcept {
         return m_lastMessage;
     }
     bool isFirstCall() const {
@@ -210,8 +211,8 @@ class PCGImpl {
     }
 
    private:
-    XJPCG_Status_t m_lastStatus;
-    std::string m_lastMessage;
+    mutable XJPCG_Status_t m_lastStatus;
+    mutable std::string m_lastMessage;
     bool m_firstCall = true;
 
     xf::sparse::SpmPar<t_DataType> m_spmPar =

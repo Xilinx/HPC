@@ -440,9 +440,11 @@ class Signature {
                 std::vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(rbId, 0);
                 uint32_t l_pars = l_rbInfo[3];
                 uint32_t l_sRbRowId = l_rbInfo[0];
+                (void) l_sRbRowId;  // TODO: remove unused variable if not needed
                 for (uint32_t parId = 0; parId < l_pars; parId++) {
                     uint32_t l_parId = l_sParId + parId;
                     uint32_t l_sParColId = m_parParam.get_parInfo(l_parId)[0];
+                    (void) l_sParColId;  // TODO: remove unused variable if not needed
                     SparseMatrix l_chParSpm = m_chParSpms[c][l_parId];
                     double l_nnz[m_parEntries];
                     memset(l_nnz, 0, m_parEntries * sizeof(double));

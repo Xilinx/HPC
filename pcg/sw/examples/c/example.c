@@ -21,10 +21,10 @@
 void genSPD(uint32_t p_n, uint32_t p_nnz, uint32_t *p_rowIdx, uint32_t *p_colIdx, double *p_data, double *matJ);
 
 #define CheckError(handle, code) { checkError((handle), (code), __FILE__, __LINE__); }
-inline void checkError(XJPCG_Handle_t handle, XJPCG_Status_t code, const char *file, int line) {
-    if(code != XJPCG_STATUS_SUCCESS){
+inline void checkError(const XJPCG_Object_t *handle, XJPCG_Status_t code, const char *file, int line) {
+    if (code != XJPCG_STATUS_SUCCESS){
         fprintf(stderr, "CheckError: %s at %s:%d\n", xJPCG_getErrorString(code), file, line);
-        if(handle.pcg != NULL)
+        if (handle != NULL)
             fprintf(stderr, "Error Message - %s \n", xJPCG_getLastMessage(handle));
         else
             fprintf(stderr, "Error Message - Handle is not correctly initialized.\n");
@@ -63,7 +63,7 @@ int main(int argc, const char** argv) {
         b[i] = val / 37.0;
     }
 
-    XJPCG_Handle_t pHandle = {NULL};
+    XJPCG_Object_t *pHandle = NULL;
     CheckError(pHandle, xJPCG_createHandle(&pHandle, deviceId, xclbinPath));
     CheckError(pHandle, xJPCG_cooSolver(pHandle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
                 &p_res, XJPCG_MODE_DEFAULT));

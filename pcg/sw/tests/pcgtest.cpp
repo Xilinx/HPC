@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
     readBin(l_datFilePath + "/A_diag.mat", l_diagA.data(), l_matInfo.m_m * sizeof(CG_dataType));
     readBin(l_datFilePath + "/b.mat", l_b.data(), l_matInfo.m_m * sizeof(CG_dataType));
 
-    XJPCG_Handle_t pHandle;
+    XJPCG_Object_t *pHandle = 0;
     xJPCG_createHandle(&pHandle, l_deviceId, binaryFile.c_str());
     uint32_t numIterations = 0;
     double residual = 0.0;
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
     std::cout << metric.m_solver << std::endl;
     
     
-    if ((err == 0) || (numIterations == l_maxIter)){
+    if ((err == 0) || (numIterations == uint32_t(l_maxIter))){
         std::cout << "Test pass!" << std::endl;
         return EXIT_SUCCESS;
     } else {
