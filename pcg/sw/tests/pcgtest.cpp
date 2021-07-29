@@ -85,33 +85,33 @@ int main(int argc, char** argv) {
     XJPCG_Status_t l_stat;
     
     l_stat = xJPCG_cooSolver(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
-        l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_MODE_DEFAULT);
+        l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_C_STORE, XJPCG_MODE_DEFAULT);
     assert(l_stat == XJPCG_STATUS_NOT_INITIALIZED);
 
     l_stat = xJPCG_createHandle(&pHandle, l_deviceId, binaryFile.c_str());
     assert(l_stat == XJPCG_STATUS_SUCCESS);
     xJPCG_cooSolver(pHandle, 0, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
-        l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_MODE_DEFAULT);
+        l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_C_STORE, XJPCG_MODE_DEFAULT);
     assert(l_stat == XJPCG_STATUS_INVALID_VALUE);
 
     l_stat = xJPCG_cooSolver(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
-        l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_MODE_KEEP_NZ_LAYOUT);
+        l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_C_STORE, XJPCG_MODE_KEEP_NZ_LAYOUT);
     assert(l_stat == XJPCG_STATUS_INVALID_VALUE);
 
     l_stat = xJPCG_cooSolver(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), nullptr,
-        l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_MODE_DEFAULT);
+        l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_C_STORE, XJPCG_MODE_DEFAULT);
     assert(l_stat == XJPCG_STATUS_INVALID_VALUE);
 
     /******************/
     /* solver tests */
     /******************/
     l_stat = xJPCG_cooSolver(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
-        l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_MODE_DEFAULT);
+        l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_C_STORE, XJPCG_MODE_DEFAULT);
     assert(l_stat == XJPCG_STATUS_SUCCESS);
     
     for (int i = 1; i < l_numRuns; ++i) {
         l_stat = xJPCG_cooSolver(pHandle, l_matInfo.m_m, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
-            l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_MODE_KEEP_NZ_LAYOUT);
+            l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual, XJPCG_C_STORE, XJPCG_MODE_KEEP_NZ_LAYOUT);
         assert(l_stat == XJPCG_STATUS_SUCCESS);
     }
 

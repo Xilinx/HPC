@@ -55,7 +55,9 @@ endif
 
 # #################### Checking if DEVICE in whitelist ############################
 ifneq ($(findstring u280, $(DEVICE)), u280)
-$(error [ERROR]: This project is not supported for $(DEVICE).)
+	ifneq ($(findstring u55c, $(DEVICE)), u55c)
+	$(error [ERROR]: This project is not supported for $(DEVICE).)
+	endif
 endif
 
 # ######################## Setting up Project Variables #################################
@@ -137,6 +139,8 @@ VPP_LDFLAGS_spmv_temp := --config $(CUR_DIR)/opts.cfg
 
 ifneq (,$(shell echo $(XPLATFORM) | awk '/u280/'))
 VPP_LDFLAGS_spmv_temp += --config $(CUR_DIR)/conn_u280.cfg
+else ifneq (,$(shell echo $(XPLATFORM) | awk '/u55x/'))
+VPP_LDFLAGS_spmv_temp += --config $(CUR_DIR)/conn_u55c.cfg
 endif
 VPP_LDFLAGS_spmv += $(VPP_LDFLAGS_spmv_temp)
 
@@ -219,16 +223,10 @@ $(TEMP_DIR)/storeYkernel.xo: $(XFLIB_DIR)/L2/sparse/src/hw/fp64/storeYkernel.cpp
 	mkdir -p $(TEMP_DIR)
 	$(VPP) -c $(storeYkernel_VPP_FLAGS) $(VPP_FLAGS) -k storeYkernel -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' $^
 
-ifneq (,$(shell echo $(XPLATFORM) | awk '/u280/'))
 
 $(BUILD_DIR)/spmv.xclbin: $(BINARY_CONTAINER_spmv_OBJS)
 	mkdir -p $(BUILD_DIR)
 	$(VPP) -l $(VPP_FLAGS) --temp_dir $(TEMP_DIR) --report_dir $(BUILD_REPORT_DIR)/spmv $(VPP_LDFLAGS) $(VPP_LDFLAGS_spmv) -o '$@' $(+)
-else 
-$(BUILD_DIR)/spmv.xclbin: $(BINARY_CONTAINER_spmv_OBJS)
-	mkdir -p $(BUILD_DIR)
-	$(VPP) -l $(VPP_FLAGS) --temp_dir $(TEMP_DIR) --report_dir $(BUILD_REPORT_DIR)/spmv $(VPP_LDFLAGS) $(VPP_LDFLAGS_spmv) -o '$@' $(+)
-endif
 
 
 # ################# Setting Rules for Host (Building Host Executable) ################

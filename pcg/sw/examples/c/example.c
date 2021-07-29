@@ -64,7 +64,7 @@ int main(int argc, const char** argv) {
     XJPCG_Handle_t* pHandle = NULL;
     CheckError(pHandle, xJPCG_createHandle(&pHandle, deviceId, xclbinPath));
     CheckError(pHandle, xJPCG_cooSolver(pHandle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol,
-                                        &p_iter, &p_res, XJPCG_MODE_DEFAULT));
+                                        &p_iter, &p_res, XJPCG_C_STORE, XJPCG_MODE_DEFAULT));
 
     XJPCG_Metric_t metric;
     CheckError(pHandle, xJPCG_getMetrics(pHandle, &metric));
@@ -85,7 +85,7 @@ int main(int argc, const char** argv) {
         b[i] = val / 97.0;
     }
     CheckError(pHandle, xJPCG_cooSolver(pHandle, p_n, p_nnz, NULL, NULL, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
-                                        &p_res, XJPCG_MODE_KEEP_NZ_LAYOUT));
+                                        &p_res, XJPCG_C_STORE, XJPCG_MODE_KEEP_NZ_LAYOUT));
 
     CheckError(pHandle, xJPCG_getMetrics(pHandle, &metric));
 
@@ -106,8 +106,8 @@ int main(int argc, const char** argv) {
     genSPDcsc(p_n, l_rowIdx, l_colPtr, l_data, matJ);
 
     int64_t l_iter;
-    CheckError(pHandle, xJPCG_cscSymSolver(pHandle, p_n, p_nnz, l_rowIdx, l_colPtr, l_data, matJ, b, x, p_maxIter,
-                                           p_tol, &l_iter, &p_res, XJPCG_MODE_DEFAULT));
+     CheckError(pHandle, xJPCG_cscSymSolver(pHandle, p_n, half_nnz, l_rowIdx, l_colPtr, l_data, matJ, b, x, p_maxIter,
+                                           p_tol, &l_iter, &p_res, XJPCG_FORTRAN_STORE, XJPCG_MODE_DEFAULT));
     CheckError(pHandle, xJPCG_getMetrics(pHandle, &metric));
 
     printf("Third equation information:\n");

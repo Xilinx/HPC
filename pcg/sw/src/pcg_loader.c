@@ -186,12 +186,13 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
         const double p_tol,
         int64_t *p_iter,
         double *p_res,
+        const XJPCG_Store_t storeType,
         const XJPCG_Mode_t mode) {
-    typedef XJPCG_Status_t (*ApiFunc)(XJPCG_Handle_t *,  int64_t, int64_t, const int64_t*, const int64_t*, const double*, const double*, const double*, const double*, const int64_t, const double, int64_t*, double*, const XJPCG_Mode_t);
+    typedef XJPCG_Status_t (*ApiFunc)(XJPCG_Handle_t *,  int64_t, int64_t, const int64_t*, const int64_t*, const double*, const double*, const double*, const double*, const int64_t, const double, int64_t*, double*, const XJPCG_Store_t, const XJPCG_Mode_t);
     ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("xJPCG_cscSymSolver");
     if (!pApiFunc)
         return XJPCG_STATUS_DYNAMIC_LOADING_ERROR;
-    return pApiFunc(handle, p_n, p_nnz, p_rowIdx, p_colPtr, p_data, matJ, b, x, p_maxIter, p_tol, p_iter, p_res, mode);
+    return pApiFunc(handle, p_n, p_nnz, p_rowIdx, p_colPtr, p_data, matJ, b, x, p_maxIter, p_tol, p_iter, p_res, storeType, mode);
 }
 
 XILINX_PCG_LINKAGE_DEF
@@ -208,12 +209,13 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
         const double p_tol,
         uint32_t *p_iter,
         double *p_res,
+        const XJPCG_Store_t storeType,
         const XJPCG_Mode_t mode) {
-    typedef XJPCG_Status_t (*ApiFunc)(const XJPCG_Handle_t *,  uint32_t, uint32_t, const uint32_t*, const uint32_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const XJPCG_Mode_t);
+    typedef XJPCG_Status_t (*ApiFunc)(const XJPCG_Handle_t *,  uint32_t, uint32_t, const uint32_t*, const uint32_t*, const double*, const double*, const double*, const double*, const uint32_t, const double, uint32_t*, double*, const XJPCG_Store_t, const XJPCG_Mode_t);
     ApiFunc pApiFunc = (ApiFunc) xilinx_apps_getCDynamicFunction("xJPCG_cooSolver");
     if (!pApiFunc)
         return XJPCG_STATUS_DYNAMIC_LOADING_ERROR;
-    return pApiFunc(handle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, p_iter, p_res, mode);
+    return pApiFunc(handle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol, p_iter, p_res, storeType, mode);
 }
 
 #ifdef __cplusplus

@@ -115,7 +115,7 @@ void set_matrix(PCG_TYPE* p_pcg,
     //FortranReal* matA;
     //matA = (FortranReal*)malloc(nnz * sizeof(FortranReal));
     //getCOODat(n, nnz, colptr, rowind, values, matA);
-    p_pcg->setCscSymMat(n, nnz, (int64_t*)rowind, (int64_t*)colptr, values);
+    p_pcg->setCscSymMat(n, nnz, (int64_t*)rowind, (int64_t*)colptr, values, 1);
     //free(matA);
 }
 void update_matrix(PCG_TYPE* p_pcg,
@@ -128,7 +128,7 @@ void update_matrix(PCG_TYPE* p_pcg,
     //FortranReal* matA;
     //matA = (FortranReal*)malloc(nnz * sizeof(FortranReal));
     //getCOODat(n, nnz, colptr, rowind, values, matA);
-    p_pcg->updateCscSymMat(n, nnz, (int64_t*)rowind, (int64_t*)colptr, values);
+    p_pcg->updateCscSymMat(n, nnz, (int64_t*)rowind, (int64_t*)colptr, values, 1);
     //free(matA);
 }
 double fpga_JPCG(PCG_TYPE* l_pcg,
@@ -171,7 +171,8 @@ double fpga_JPCG(PCG_TYPE* l_pcg,
     *prelres = sqrt(l_res.m_residual / l_pcg->getDot());
     *pniter = l_res.m_nIters;
     memcpy(reinterpret_cast<uint8_t*>(x), reinterpret_cast<uint8_t*>(l_res.m_x), pn * sizeof(FortranReal));
-    *pflops = l_res.m_nIters * (2 * pnz + 16 * pn) - 2 * pn;
+    int l_nnz = pnz * 2 - pn;
+    *pflops = l_res.m_nIters * (2 * l_nnz + 16 * pn) - 2 * pn;
     std::chrono::duration<double> d = l_timer[3] - l_timer[2];
     return d.count() * 1e3;
 }
@@ -211,7 +212,7 @@ extern "C" void userLE_JPCG(FortranInteger* handle,
 
 #ifdef USE_FPGA
     PCG_TYPE* l_pcg = (PCG_TYPE*)(*handle);
-    double l_hwTime = fpga_JPCG(l_pcg, option, n, nnz, rowind, colptr, values, dprec, maxit, tol, b, x, pniter, prelres, pflops);
+    double l_hwTime = fpga_JPCG(l_pcg, option, n, nz, rowind, colptr, values, dprec, maxit, tol, b, x, pniter, prelres, pflops);
 #else
     FortranReal *r, *z, *p, *q;
     /* Allocate local storage */

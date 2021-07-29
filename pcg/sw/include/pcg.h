@@ -85,6 +85,14 @@ typedef enum XJPCG_Mode_t {
     XJPCG_MODE_KEEP_MATRIX = 0x02     // Reuse last matrix
 } XJPCG_Mode_t;
 
+/**
+ * List of matrix storage modes
+ */
+typedef enum XJPCG_Store_t {
+    XJPCG_C_STORE = 0x00,        // C storage mode, indices and pointers satrt from 1
+    XJPCG_FORTRAN_STORE = 0x01, // FORTRAN storage mode, indices and pointers start from 0
+} XJPCG_Store_t;
+
 /** xJPCG_createHandle create a JPCG handle
  *
  * handle a pointer to the JPCG handle variable that will receive the PCG handle
@@ -140,6 +148,7 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
                                const double p_tol,
                                int64_t* p_iter,
                                double* p_res,
+                               const XJPCG_Store_t storeType,
                                const XJPCG_Mode_t mode);
 /** xJPCG_cooSolver solves equation Ax = b with sparse SPD matrix A in COO format
  *
@@ -174,6 +183,7 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
                                const double p_tol,
                                uint32_t* p_iter,
                                double* p_res,
+                               const XJPCG_Store_t storeType,
                                const XJPCG_Mode_t mode);
 
 /** xJPCG_peekAtLastStatus get the last status associated with handle

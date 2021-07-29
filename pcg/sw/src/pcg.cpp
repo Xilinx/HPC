@@ -73,6 +73,7 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
                                const double p_tol,
                                int64_t* p_iter,
                                double* p_res,
+                               const XJPCG_Store_t storeType, 
                                const XJPCG_Mode_t mode){
     if (handle == nullptr)
         return XJPCG_STATUS_NOT_INITIALIZED;
@@ -82,12 +83,12 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
         bool first = pImpl->isFirstCall();
         switch (mode) {
             case XJPCG_MODE_DEFAULT:
-                pImpl->setCscSymMat(p_n, p_nnz, p_rowIdx, p_colPtr, p_data);
+                pImpl->setCscSymMat(p_n, p_nnz, p_rowIdx, p_colPtr, p_data, storeType);
                 break;
             case XJPCG_MODE_KEEP_NZ_LAYOUT:
                 if(first)
                     throw xilinx_apps::pcg::CgInvalidValue("wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
-                pImpl->updateCscSymMat(p_n, p_nnz, p_rowIdx, p_colPtr, p_data);
+                pImpl->updateCscSymMat(p_n, p_nnz, p_rowIdx, p_colPtr, p_data, storeType);
                 break;
             default:
                 if(first)
@@ -128,6 +129,7 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
         const double p_tol,
         uint32_t* p_iter,
         double* p_res,
+        const XJPCG_Store_t storeType,
         const XJPCG_Mode_t mode) {
     if (handle == nullptr)
         return XJPCG_STATUS_NOT_INITIALIZED;
@@ -137,7 +139,7 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
         bool first = pImpl->isFirstCall();
         switch (mode) {
             case XJPCG_MODE_DEFAULT:
-                pImpl->setCooMat(p_n, p_nnz, p_rowIdx, p_colIdx, p_data);
+                pImpl->setCooMat(p_n, p_nnz, p_rowIdx, p_colIdx, p_data, storeType);
                 break;
             case XJPCG_MODE_KEEP_NZ_LAYOUT:
                 if(first)

@@ -50,7 +50,8 @@ class PCGImpl {
                    const uint32_t p_nnz,
                    const uint32_t* p_rowIdx,
                    const uint32_t* p_colIdx,
-                   const t_DataType* p_data) {
+                   const t_DataType* p_data,
+                   const int p_storeType) {
         if (p_dim == 0) {
             throw CgInvalidValue("Wrong dimension size.");
         }
@@ -60,12 +61,12 @@ class PCGImpl {
         if (p_rowIdx == nullptr || p_colIdx == nullptr || p_data == nullptr) {
             throw CgInvalidValue("Matrix is nullptr.");
         }
-        m_matPar = m_spmPar.partitionCooMat(p_dim, p_dim, p_nnz, p_rowIdx, p_colIdx, p_data);
+        m_matPar = m_spmPar.partitionCooMat(p_dim, p_dim, p_nnz, p_rowIdx, p_colIdx, p_data, p_storeType);
         m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
                           m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
     }
     template <typename t_IdxType>
-    void setCscSymMat(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data) {
+    void setCscSymMat(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data, const int p_storeType) {
         if (p_dim == 0) {
             throw CgInvalidValue("Wrong dimension size.");
         }
@@ -75,7 +76,8 @@ class PCGImpl {
         if (p_rowIdx == nullptr || p_colPtr == nullptr || p_data == nullptr) {
             throw CgInvalidValue("Matrix is nullptr.");
         }
-        m_matPar = m_spmPar.partitionCscSymMat(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
+        uint32_t l_nnz = p_nnz*2 - p_dim;
+        m_matPar = m_spmPar.partitionCscSymMat(p_dim, l_nnz, p_rowIdx, p_colPtr, p_data, p_storeType);
         m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
                           m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
     }
@@ -99,7 +101,7 @@ class PCGImpl {
         }
     }
     template <typename t_IdxType>
-    int updateCscSymMat(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data) {
+    int updateCscSymMat(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data, const int p_storeType) {
         if (p_dim == 0) {
             throw CgInvalidValue("Wrong dimension size.");
         }
@@ -109,8 +111,9 @@ class PCGImpl {
         if (p_data == nullptr) {
             throw CgInvalidValue("Matrix is nullptr.");
         }
-        if (m_spmPar.checkUpdateDim(p_dim, p_dim, p_nnz) == 0) {
-            m_matPar = m_spmPar.updateCscSymMat(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
+        uint32_t l_nnz = p_nnz * 2 - p_dim;
+        if (m_spmPar.checkUpdateDim(p_dim, p_dim, l_nnz) == 0) {
+            m_matPar = m_spmPar.updateCscSymMat(p_dim, l_nnz, p_rowIdx, p_colPtr, p_data, p_storeType);
             m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr,
                               m_matPar.m_rbParamSize, m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
             return 0;
