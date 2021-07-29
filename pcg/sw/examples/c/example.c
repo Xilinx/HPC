@@ -106,7 +106,7 @@ int main(int argc, const char** argv) {
         int val = rand() % p_n - p_n / 2;
         b[i] = val / 97.0;
     }
-    CheckError(pHandle, xJPCG_cscSymSolver(pHandle, p_n, 2 * p_n - 1, l_rowIdx, l_colPtr, p_data, matJ, b, x, p_maxIter,
+    CheckError(pHandle, xJPCG_cscSymSolver(pHandle, p_n, p_nnz, l_rowIdx, l_colPtr, p_data, matJ, b, x, p_maxIter,
                                            p_tol, &p_iter, &p_res, XJPCG_MODE_DEFAULT));
 
     CheckError(pHandle, xJPCG_getMetrics(pHandle, &metric));
@@ -178,10 +178,9 @@ void genSPDcsc(uint32_t p_n, uint64_t* p_rowIdx, uint64_t* p_colPtr, double* p_d
         tmp[i] = val / 73.0;
     }
 
-    p_colPtr[0] = 0;
     for (i = 0; i < p_n; i++) {
+        p_colPtr[i] = i * 2;
         if (i != 0) {
-            p_colPtr[i] = idx;
             p_rowIdx[idx] = i;
             p_data[idx++] = (tmp[i] + tmp[i - 1]) / 2;
         }
