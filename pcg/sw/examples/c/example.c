@@ -20,7 +20,9 @@
 
 void genSPDcoo(uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, double* p_data, double* matJ);
 
-void genSPDcsc(uint32_t p_n, int64_t* p_rowIdx, int64_t* p_colPtr, double* p_data, double* matJ);
+void genSPDcsc(uint32_t p_n, uint32_t p_nnz, int64_t* p_rowIdx, int64_t* p_colPtr, double* p_data, double* matJ);
+
+void genVec(uint32_t p_n, double* vec);
 
 #define CheckError(handle, code) checkError((handle), (code), __FILE__, __LINE__)
 inline void checkError(const XJPCG_Handle_t* handle, XJPCG_Status_t code, const char* file, int line) {
@@ -54,12 +56,7 @@ int main(int argc, const char** argv) {
     x = malloc(sizeof(double) * p_n);
 
     genSPDcoo(p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ);
-
-    uint32_t i = 0;
-    for (i = 0; i < p_n; i++) {
-        int val = rand() % p_n - p_n / 2;
-        b[i] = val / 37.0;
-    }
+    genVec(p_n, b);
 
     XJPCG_Handle_t* pHandle = NULL;
     CheckError(pHandle, xJPCG_createHandle(&pHandle, deviceId, xclbinPath));
@@ -80,10 +77,8 @@ int main(int argc, const char** argv) {
     printf("--------------------------------------------\n");
 
     genSPDcoo(p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ);
-    for (i = 0; i < p_n; i++) {
-        int val = rand() % p_n - p_n / 2;
-        b[i] = val / 97.0;
-    }
+    genVec(p_n, b);
+
     CheckError(pHandle, xJPCG_cooSolver(pHandle, p_n, p_nnz, NULL, NULL, p_data, matJ, b, x, p_maxIter, p_tol, &p_iter,
                                         &p_res, XJPCG_MODE_KEEP_NZ_LAYOUT));
 
@@ -103,11 +98,12 @@ int main(int argc, const char** argv) {
     int64_t* l_rowIdx = malloc(sizeof(int64_t) * half_nnz);
     int64_t* l_colPtr = malloc(sizeof(int64_t) * (1 + p_n));
     double * l_data = malloc(sizeof(double) * half_nnz);
-    genSPDcsc(p_n, l_rowIdx, l_colPtr, l_data, matJ);
+    genSPDcsc(p_n, half_nnz, l_rowIdx, l_colPtr, l_data, matJ);
+    genVec(p_n, b);
 
     int64_t l_iter;
     CheckError(pHandle, xJPCG_cscSymSolver(pHandle, p_n, p_nnz, l_rowIdx, l_colPtr, l_data, matJ, b, x, p_maxIter,
-                                           p_tol, &l_iter, &p_res, XJPCG_MODE_DEFAULT));
+                                           p_tol, &l_iter, &p_res, XJPCG_MODE_DEFAULT | XJPCG_MODE_FORTRAN_INDEX));
     CheckError(pHandle, xJPCG_getMetrics(pHandle, &metric));
 
     printf("Third equation information:\n");
@@ -135,68 +131,47 @@ int main(int argc, const char** argv) {
 }
 
 void genSPDcoo(uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colIdx, double* p_data, double* matJ) {
-    double* tmp = malloc(sizeof(double) * p_n);
-
-    uint32_t idx = 0, i = 0;
-
-    for (i = 0; i < p_n; i++) {
-        int val = rand() % p_n;
-        tmp[i] = val / 73.0;
-    }
-
+    uint32_t i = 0, idx = 0;
     for (i = 0; i < p_n; i++) {
         if (i != 0) {
             p_rowIdx[idx] = i;
             p_colIdx[idx] = i - 1;
-            p_data[idx++] = (tmp[i] + tmp[i - 1]) / 2;
+            p_data[idx++] = 1.0;
         }
         if (i != p_n - 1) {
             p_rowIdx[idx] = i;
             p_colIdx[idx] = i + 1;
-            p_data[idx++] = (tmp[i] + tmp[i + 1]) / 2;
+            p_data[idx++] = 1.0;
         }
         p_rowIdx[idx] = i;
         p_colIdx[idx] = i;
-        matJ[i] = tmp[i];
-        if (i != 0) {
-            matJ[i] += tmp[i - 1] * 0.75;
-        }
-        if (i != p_n - 1) {
-            matJ[i] += tmp[i + 1] * 0.75;
-        }
+        matJ[i] = 2.2;
         p_data[idx++] = matJ[i];
     }
-    free(tmp);
     assert(p_nnz == idx);
 }
 
-void genSPDcsc(uint32_t p_n, int64_t* p_rowIdx, int64_t* p_colPtr, double* p_data, double* matJ) {
-    double* tmp = malloc(sizeof(double) * p_n);
-
+void genSPDcsc(uint32_t p_n, uint32_t p_nnz, int64_t* p_rowIdx, int64_t* p_colPtr, double* p_data, double* matJ) {
     uint32_t idx = 0, i = 0;
-
-    for (i = 0; i < p_n; i++) {
-        int val = rand() % p_n;
-        tmp[i] = val / 73.0;
-    }
 
     for (i = 0; i < p_n; i++) {
         p_colPtr[i] = i * 2 + 1;
         if (i != 0) {
             p_rowIdx[idx] = i + 1;
-            p_data[idx++] = (tmp[i] + tmp[i - 1]) / 2;
+            p_data[idx++] = 1.0;
         }
         p_rowIdx[idx] = i + 1;
-        matJ[i] = tmp[i];
-        if (i != 0) {
-            matJ[i] += tmp[i - 1] * 0.75;
-        }
-        if (i != p_n - 1) {
-            matJ[i] += tmp[i + 1] * 0.75;
-        }
+        matJ[i] = 2.2;
         p_data[idx++] = matJ[i];
     }
-    assert(2 * p_n - 1 == idx);
-    p_colPtr[p_n] = 2 * p_n;
-    free(tmp);
+    assert(p_nnz == idx);
+    p_colPtr[p_n] = p_nnz + 1;
+}
+
+void genVec(uint32_t p_n, double *vec){
+    uint32_t i = 0;
+    for (i = 0; i < p_n; i++) {
+        int val = rand() % p_n - p_n / 2;
+        vec[i] = val / 97.0;
+    }
 }

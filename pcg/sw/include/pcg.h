@@ -82,7 +82,9 @@ typedef struct XJPCG_ObjectStruct XJPCG_Handle_t;
 typedef enum XJPCG_Mode_t {
     XJPCG_MODE_DEFAULT = 0x00,        // Used for completely new data
     XJPCG_MODE_KEEP_NZ_LAYOUT = 0x01, // Update matrix values only
-    XJPCG_MODE_KEEP_MATRIX = 0x02     // Reuse last matrix
+    XJPCG_MODE_KEEP_MATRIX = 0x02,     // Reuse last matrix
+    XJPCG_MODE_C_INDEX = 0x00,      // Default C-Type index, starting from 0
+    XJPCG_MODE_FORTRAN_INDEX = 0x10 // F-Type index, starting from 1
 } XJPCG_Mode_t;
 
 /** xJPCG_createHandle create a JPCG handle

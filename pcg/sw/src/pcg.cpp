@@ -80,14 +80,14 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
     try {
         auto last = std::chrono::high_resolution_clock::now();
         bool first = pImpl->isFirstCall();
-        switch (mode) {
+        switch (mode & 0x0f) {
             case XJPCG_MODE_DEFAULT:
-                pImpl->setCscSymMat(p_n, p_nnz, p_rowIdx, p_colPtr, p_data);
+                pImpl->setCscSymMat(p_n, p_nnz, p_rowIdx, p_colPtr, p_data, (mode & 0xf0) >> 4);
                 break;
             case XJPCG_MODE_KEEP_NZ_LAYOUT:
                 if(first)
                     throw xilinx_apps::pcg::CgInvalidValue("wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
-                pImpl->updateCscSymMat(p_n, p_nnz, p_rowIdx, p_colPtr, p_data);
+                pImpl->updateCscSymMat(p_n, p_nnz, p_rowIdx, p_colPtr, p_data, (mode & 0xf0) >> 4);
                 break;
             default:
                 if(first)
@@ -135,7 +135,7 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
     try {
         auto last = std::chrono::high_resolution_clock::now();
         bool first = pImpl->isFirstCall();
-        switch (mode) {
+        switch (mode & 0x0f) {
             case XJPCG_MODE_DEFAULT:
                 pImpl->setCooMat(p_n, p_nnz, p_rowIdx, p_colIdx, p_data);
                 break;
