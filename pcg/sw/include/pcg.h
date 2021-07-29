@@ -128,17 +128,17 @@ XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle);
  */
 XILINX_PCG_LINKAGE_DECL
 XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
-                               const uint32_t p_n,
-                               const uint32_t p_nnz,
+                               const int64_t p_n,
+                               const int64_t p_nnz,
                                const int64_t* p_rowIdx,
                                const int64_t* p_colptr,
                                const double* p_data,
                                const double* p_diagA,
                                const double* p_b,
                                const double* p_x,
-                               const uint32_t p_maxIter,
+                               const int64_t p_maxIter,
                                const double p_tol,
-                               uint32_t* p_iter,
+                               int64_t* p_iter,
                                double* p_res,
                                const XJPCG_Mode mode);
 /** xJPCG_cooSolver solves equation Ax = b with sparse SPD matrix A in COO format

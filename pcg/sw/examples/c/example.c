@@ -105,14 +105,15 @@ int main(int argc, const char** argv) {
     double * l_data = malloc(sizeof(double) * half_nnz);
     genSPDcsc(p_n, l_rowIdx, l_colPtr, l_data, matJ);
 
+    int64_t l_iter;
     CheckError(pHandle, xJPCG_cscSymSolver(pHandle, p_n, p_nnz, l_rowIdx, l_colPtr, l_data, matJ, b, x, p_maxIter,
-                                           p_tol, &p_iter, &p_res, XJPCG_MODE_DEFAULT));
+                                           p_tol, &l_iter, &p_res, XJPCG_MODE_DEFAULT));
     CheckError(pHandle, xJPCG_getMetrics(pHandle, &metric));
 
     printf("Third equation information:\n");
     printf("\tMatrix dim:\t %d\n", p_n);
     printf("\tMatrix NNZs:\t %d\n", p_nnz);
-    printf("\tNum of iterations:\t %d\n", p_iter);
+    printf("\tNum of iterations:\t %ld\n", l_iter);
     printf("\tRelative residual:\t %e\n", p_res);
     printf("\tMatrix process time:\t %fs\n", metric.m_matProc);
     printf("\tVector process time:\t %fs\n", metric.m_vecProc);
