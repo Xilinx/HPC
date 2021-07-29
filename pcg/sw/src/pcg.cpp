@@ -137,7 +137,7 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
         bool first = pImpl->isFirstCall();
         switch (mode & 0x0f) {
             case XJPCG_MODE_DEFAULT:
-                pImpl->setCooMat(p_n, p_nnz, p_rowIdx, p_colIdx, p_data);
+                pImpl->setCooMat(p_n, p_nnz, p_rowIdx, p_colIdx, p_data, (mode & 0xf0) >> 4);
                 break;
             case XJPCG_MODE_KEEP_NZ_LAYOUT:
                 if(first)

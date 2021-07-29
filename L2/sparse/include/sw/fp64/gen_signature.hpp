@@ -39,18 +39,18 @@ class SpmPar {
     }
 
     MatPartition partitionCooMat(
-        const uint32_t p_m, const uint32_t p_n, const uint32_t p_nnz, const uint32_t* p_rowIdx, const uint32_t* p_colIdx, const t_DataType* p_data) {
+        const uint32_t p_m, const uint32_t p_n, const uint32_t p_nnz, const uint32_t* p_rowIdx, const uint32_t* p_colIdx, const t_DataType* p_data, const int storeType) {
         SparseMatrix l_spm;
-        l_spm.loadCoo(p_m, p_n, p_nnz, p_rowIdx, p_colIdx);
+        l_spm.loadCoo(p_m, p_n, p_nnz, p_rowIdx, p_colIdx, storeType);
         MatPartition l_res = m_sig.gen_sig(l_spm, p_data);
         return l_res;
     }
     template <typename t_IdxType>
     MatPartition partitionCscSymMat(
-        const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data) {
-        std::vector<t_DataType> l_cooDat = this->getCooDatFromCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
+        const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data, const int storeType) {
+        std::vector<t_DataType> l_cooDat = this->getCooDatFromCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data, storeType);
         SparseMatrix l_spm;
-        l_spm.loadCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr);
+        l_spm.loadCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr, storeType);
         MatPartition l_res = m_sig.gen_sig(l_spm, l_cooDat.data());
         return l_res;
     }
@@ -62,21 +62,34 @@ class SpmPar {
         return l_res;
     }
     template <typename t_IdxType>
-    MatPartition updateCscSymMat(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data) {
-        std::vector<t_DataType> l_cooDat = this->getCooDatFromCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data);
+    MatPartition updateCscSymMat(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data, const int storeType) {
+        std::vector<t_DataType> l_cooDat = this->getCooDatFromCscSym(p_dim, p_nnz, p_rowIdx, p_colPtr, p_data, storeType);
         MatPartition l_res = m_sig.update_sig(l_cooDat.data());
         return l_res;
     }
 
    private:
     template <typename t_IdxType>
-    std::vector<t_DataType> getCooDatFromCscSym(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data) {
+    std::vector<t_DataType> getCooDatFromCscSym(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data, const int storeType) {
+        uint32_t l_off = 0;
+        if (storeType == 0)  {//C storeage type
+            l_off =0;   
+        }
+        else if (storeType == 1) {//FORTRAN storage type
+            l_off = 1;
+            if (p_colPtr[0] < 1) {
+                throw SpmInvalidValue("from getCooDatFromCscSym in gen_signature.hpp, colPtr[0] start from 1 in FORTRAN storage mode.");
+            }
+        }
+        else {
+            throw SpmNotSupported("from getCooDatFromCscSym in gen_signature.hpp, unsupported storage mode.");
+        }
         std::vector<t_DataType> l_cooDat;
         l_cooDat.resize(p_nnz);
         uint32_t l_index = 0;
         for (uint32_t j = 0; j < p_dim; j++) {
-            for (t_IdxType k = p_colPtr[j] - 1; k < p_colPtr[j + 1] - 1; k++) {
-                t_IdxType i = p_rowIdx[k] - 1;
+            for (t_IdxType k = p_colPtr[j] - l_off; k < p_colPtr[j + 1] - l_off; k++) {
+                t_IdxType i = p_rowIdx[k] - l_off;
                 if (l_index >= p_nnz) {
                     throw SpmInternalError("from getCooDatFromCscSym in gen_signature.hpp, index >= nnz.");
                 }

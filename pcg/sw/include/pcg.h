@@ -36,7 +36,7 @@ extern "C" {
 #endif
 
 /**
- * List of XJPCG API status
+ * @brief List of XJPCG API status
  *
  */
 typedef enum {
@@ -49,16 +49,16 @@ typedef enum {
     XJPCG_STATUS_DYNAMIC_LOADING_ERROR  // error while trying to access the API via dynamic loading (dlopen)
 } XJPCG_Status_t;
 
-/** xJPCG_getErrorString get the string presentation of given status code
+/** @brief xJPCG_getErrorString get the string presentation of given status code
  *
- * code status code
- * return string
+ * @param code status code
+ * @param return string
  */
 XILINX_PCG_LINKAGE_DECL
 const char* xJPCG_getErrorString(const XJPCG_Status_t code);
 
 /**
- * Define XJPCG metrics 
+ * @brief Define XJPCG metrics 
  *
  */
 typedef struct {
@@ -72,12 +72,12 @@ typedef struct {
 struct XJPCG_ObjectStruct; // dummy struct for XJPCG object type safety
 
 /**
- * Opaque struct for holding the state of JPCG operations
+ * @brief Opaque struct for holding the state of JPCG operations
  */
 typedef struct XJPCG_ObjectStruct XJPCG_Handle_t;
 
 /**
- * List of XJPCG solver modes
+ * @brief List of XJPCG solver modes
  */
 typedef enum XJPCG_Mode_t {
     XJPCG_MODE_DEFAULT = 0x00,        // Used for completely new data
@@ -87,46 +87,46 @@ typedef enum XJPCG_Mode_t {
     XJPCG_MODE_FORTRAN_INDEX = 0x10 // F-Type index, starting from 1
 } XJPCG_Mode_t;
 
-/** xJPCG_createHandle create a JPCG handle
+/** @brief xJPCG_createHandle create a JPCG handle
  *
  * handle a pointer to the JPCG handle variable that will receive the PCG handle
  * deviceId the ID of the device used for JPCG solver
  * xclbinPath the path to kernel xclbin
  *
- * return API status
+ * @param return API status
  * 
  * If the initialization fails, `*handle` may remain unchanged from its original value.
  */
 XILINX_PCG_LINKAGE_DECL
 XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t **handle, const int deviceId, const char* xclbinPath);
 
-/** xJPCG_destroyHandle destroy given JPCG handle
+/** @brief xJPCG_destroyHandle destroy given JPCG handle
  *
- * handel JPCG handle to be destroyed
+ * @param handel JPCG handle to be destroyed
  *
- * return API status
+ * @param return API status
  */
 XILINX_PCG_LINKAGE_DECL
 XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle);
 
-/** xJPCG_cscSymSolver solves equation Ax = b with sparse SPD matrix A in CSC format
+/** @brief xJPCG_cscSymSolver solves equation Ax = b with sparse SPD matrix A in CSC format
  *
- * handle pointer to a JPCG handle
- * mode solver modes
- * p_n dimension of given matrix and vectors
- * p_nnz number of non-zero entris in sparse matrix A
- * p_rowIdx row index of matrix A
- * p_colptr compressed col index of matrix A
- * p_data data entries of matrix A, half matrix for symmetry
- * p_diagA diagnal vector of matrix A
- * p_b right-hand side vector
- * p_x solution to the equation
- * p_maxIter maximum number of iteration that solve could run
- * p_tol the relative tolerence for solver to stop iteration
- * p_iter the real iterations that solver takes
- * p_res the relative residual when solver exits
+ * @param handle pointer to a JPCG handle
+ * @param mode solver modes
+ * @param p_n dimension of given matrix and vectors
+ * @param p_nnz number of non-zero entris in sparse matrix A
+ * @param p_rowIdx row index of matrix A
+ * @param p_colptr compressed col index of matrix A
+ * @param p_data data entries of matrix A, half matrix for symmetry
+ * @param p_diagA diagnal vector of matrix A
+ * @param p_b right-hand side vector
+ * @param p_x solution to the equation
+ * @param p_maxIter maximum number of iteration that solve could run
+ * @param p_tol the relative tolerence for solver to stop iteration
+ * @param p_iter the real iterations that solver takes
+ * @param p_res the relative residual when solver exits
  *
- * return API status
+ * @param return API status
  */
 XILINX_PCG_LINKAGE_DECL
 XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
@@ -143,24 +143,24 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
                                int64_t* p_iter,
                                double* p_res,
                                const XJPCG_Mode_t mode);
-/** xJPCG_cooSolver solves equation Ax = b with sparse SPD matrix A in COO format
+/** @brief xJPCG_cooSolver solves equation Ax = b with sparse SPD matrix A in COO format
  *
- * handle pointer to a JPCG handle
- * mode solver modes
- * p_n dimension of given matrix and vectors
- * p_nnz number of non-zero entris in sparse matrix A
- * p_rowIdx row index of matrix A
- * p_colIdx col index of matrix A
- * p_data data entries of matrix A, full matrix
- * p_diagA diagnal vector of matrix A
- * p_b right-hand side vector
- * p_x solution to the equation
- * p_maxIter maximum number of iteration that solve could run
- * p_tol the relative tolerence for solver to stop iteration
- * p_iter the real iterations that solver takes
- * p_res the relative residual when solver exits
+ * @param handle pointer to a JPCG handle
+ * @param mode solver modes
+ * @param p_n dimension of given matrix and vectors
+ * @param p_nnz number of non-zero entris in sparse matrix A
+ * @param p_rowIdx row index of matrix A
+ * @param p_colIdx col index of matrix A
+ * @param p_data data entries of matrix A, full matrix
+ * @param p_diagA diagnal vector of matrix A
+ * @param p_b right-hand side vector
+ * @param p_x solution to the equation
+ * @param p_maxIter maximum number of iteration that solve could run
+ * @param p_tol the relative tolerence for solver to stop iteration
+ * @param p_iter the real iterations that solver takes
+ * @param p_res the relative residual when solver exits
  *
- * return API status
+ * @param return API status
  */
 XILINX_PCG_LINKAGE_DECL
 XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
@@ -178,20 +178,20 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
                                double* p_res,
                                const XJPCG_Mode_t mode);
 
-/** xJPCG_peekAtLastStatus get the last status associated with handle
+/** @brief xJPCG_peekAtLastStatus get the last status associated with handle
  *
- * handle JPCG handle
+ * @param handle JPCG handle
  *
- * return API status
+ * @param return API status
  */
 XILINX_PCG_LINKAGE_DECL
 XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t *handle);
 
-/** xJPCG_getLastMessage get the last status/error message associated with handle
+/** @brief xJPCG_getLastMessage get the last status/error message associated with handle
  *
- * handle pointer to a JPCG handle
+ * @param handle pointer to a JPCG handle
  *
- * return last status message
+ * @param return last status message
  * 
  * NOTE: This function requires @ref xJPCG_createHandle() to have progressed sufficiently far to produce
  * a valid `handle`, except in the case of a dynamic loading error, for which even a null handle will
@@ -203,12 +203,12 @@ XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t *handle);
 XILINX_PCG_LINKAGE_DECL
 const char* xJPCG_getLastMessage(const XJPCG_Handle_t *handle);
 
-/** xJPCG_getMetrics get the last performance metrics associated with handle
+/** @brief xJPCG_getMetrics get the last performance metrics associated with handle
  *
- * handle JPCG handle
- * metric pointer to a metric struct
+ * @param handle JPCG handle
+ * @param metric pointer to a metric struct
  *
- * return API status
+ * @param return API status
  * 
  * This function fills the members of the given struct with performance metrics.
  */
