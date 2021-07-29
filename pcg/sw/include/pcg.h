@@ -74,7 +74,7 @@ struct XJPCG_ObjectStruct; // dummy struct for XJPCG object type safety
 /**
  * Opaque struct for holding the state of JPCG operations
  */
-typedef struct XJPCG_ObjectStruct XJPCG_Object_t;
+typedef struct XJPCG_ObjectStruct XJPCG_Handle_t;
 
 /**
  * List of XJPCG solver modes
@@ -96,7 +96,7 @@ typedef enum XJPCG_Mode {
  * If the initialization fails, `*handle` may remain unchanged from its original value.
  */
 XILINX_PCG_LINKAGE_DECL
-XJPCG_Status_t xJPCG_createHandle(XJPCG_Object_t **handle, const int deviceId, const char* xclbinPath);
+XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t **handle, const int deviceId, const char* xclbinPath);
 
 /** xJPCG_destroyHandle destroy given JPCG handle
  *
@@ -105,7 +105,7 @@ XJPCG_Status_t xJPCG_createHandle(XJPCG_Object_t **handle, const int deviceId, c
  * return API status
  */
 XILINX_PCG_LINKAGE_DECL
-XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Object_t *handle);
+XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle);
 
 /** xJPCG_cscSymSolver solves equation Ax = b with sparse SPD matrix A in CSC format
  *
@@ -127,7 +127,7 @@ XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Object_t *handle);
  * return API status
  */
 XILINX_PCG_LINKAGE_DECL
-XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Object_t *handle,
+XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
                                const uint32_t p_n,
                                const uint32_t p_nnz,
                                const uint64_t* p_rowIdx,
@@ -161,7 +161,7 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Object_t *handle,
  * return API status
  */
 XILINX_PCG_LINKAGE_DECL
-XJPCG_Status_t xJPCG_cooSolver(XJPCG_Object_t *handle,
+XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
                                const uint32_t p_n,
                                const uint32_t p_nnz,
                                const uint32_t* p_rowIdx,
@@ -183,7 +183,7 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Object_t *handle,
  * return API status
  */
 XILINX_PCG_LINKAGE_DECL
-XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Object_t *handle);
+XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t *handle);
 
 /** xJPCG_getLastMessage get the last status/error message associated with handle
  *
@@ -199,7 +199,7 @@ XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Object_t *handle);
  * global storage for the loading error, fetching the error message is not thread safe.
  */
 XILINX_PCG_LINKAGE_DECL
-const char* xJPCG_getLastMessage(const XJPCG_Object_t *handle);
+const char* xJPCG_getLastMessage(const XJPCG_Handle_t *handle);
 
 /** xJPCG_getMetrics get the last performance metrics associated with handle
  *
@@ -211,7 +211,7 @@ const char* xJPCG_getLastMessage(const XJPCG_Object_t *handle);
  * This function fills the members of the given struct with performance metrics.
  */
 XILINX_PCG_LINKAGE_DECL
-XJPCG_Status_t xJPCG_getMetrics(const XJPCG_Object_t *handle, XJPCG_Metric_t* metric);
+XJPCG_Status_t xJPCG_getMetrics(const XJPCG_Handle_t *handle, XJPCG_Metric_t* metric);
 
 #ifdef __cplusplus
 }
