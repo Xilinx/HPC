@@ -112,9 +112,8 @@ XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle);
 /** @brief xJPCG_cscSymSolver solves equation Ax = b with sparse SPD matrix A in CSC format
  *
  * @param handle pointer to a JPCG handle
- * @param mode solver modes
  * @param p_n dimension of given matrix and vectors
- * @param p_nnz number of non-zero entris in sparse matrix A
+ * @param p_nnz number of non-zero entris in p_data of sparse matrix A
  * @param p_rowIdx row index of matrix A
  * @param p_colptr compressed col index of matrix A
  * @param p_data data entries of matrix A, half matrix for symmetry
@@ -125,6 +124,7 @@ XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle);
  * @param p_tol the relative tolerence for solver to stop iteration
  * @param p_iter the real iterations that solver takes
  * @param p_res the relative residual when solver exits
+ * @param mode solver modes including date reuse and index type
  *
  * @param return API status
  */
@@ -146,7 +146,6 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
 /** @brief xJPCG_cooSolver solves equation Ax = b with sparse SPD matrix A in COO format
  *
  * @param handle pointer to a JPCG handle
- * @param mode solver modes
  * @param p_n dimension of given matrix and vectors
  * @param p_nnz number of non-zero entris in sparse matrix A
  * @param p_rowIdx row index of matrix A
@@ -159,6 +158,7 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
  * @param p_tol the relative tolerence for solver to stop iteration
  * @param p_iter the real iterations that solver takes
  * @param p_res the relative residual when solver exits
+ * @param mode solver modes including date reuse and index type
  *
  * @param return API status
  */
