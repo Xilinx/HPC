@@ -22,7 +22,7 @@ Xilinx Alveo HPC Products
 PCG Solver
 ----------
 
-Engineering simulation softwares allow companies to predict the behavior of
+Engineering simulation software allows companies to predict the behavior of
 their future products more accurately, and as a result, to deliver high
 quality products with a much shorter development cycle. One of the key components
 in those engineering simulation applications is a set of numerical solvers. PCG (Preconditioned Conjugate Gradient) 
@@ -34,11 +34,9 @@ It is widely used in following simulation systems.
 * Dynamic fluid simulation
 
 To be more precise, PCG method is used to solve a large sparse linear system Ax=b, where A is a symmetric 
-positive definite matrix. The algorithm below describes a PCG solver with Jacobi preconditioner.
-The major part of the algorithm is an iterative loop which contains a SPMV (for sparse systems) or 
-GEMV operation (for dense systems) and a groupt of vector operations. When the dimension of the
-matrix is significantly smaller than the matrix entries (none zero entries for sparse matrix), the 
-time spent on each iteration is dominated by the matrix vector multiplication. 
+positive definite matrix. When the density of matrix A is less than 10% or the dimension of the matrix A 
+is at least half million, the PCG solver product here will speed up your solution. The algorithm below 
+describes a PCG solver with Jacobi preconditioner.
 
 .. figure:: /images/JPCG_algo.png
    :alt: JPCG algorithm
@@ -52,7 +50,9 @@ FPGA accelerated JPCG function
 As shown below, in the installation package of the Xilinx PCG product,
 a set of C functions and an FPGA configuration file are provided. After
 the installation, users can direcly call the C functions to offload the
-JPCG (Jacobi Preconditioned Conjugate Gradient) solve to Alveo FPGA card.
+JPCG (Jacobi Preconditioned Conjugate Gradient) solver to Alveo FPGA card.
+
+
 
 .. figure:: /images/PCG_stack.png
    :alt: PCG stack 
