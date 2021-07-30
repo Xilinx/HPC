@@ -21,7 +21,20 @@ PCG Product User Guide
 
 The PCG Product allows you to use a Xilinx Alveo accelerator card to solve huge number of linear equations,
 which are normally represented as Ax = b. Here A is a sparse coefficient matrix, which has multi-million dimensions
-and hundred of millions none-zero entries; b is a dense vector; and x is the dense vector returned by the PCG product.
+and multi-million none-zero entries; b is a dense vector; and x is the dense vector returned by the PCG product.
+
+Using C APIs
+==================
+
+Alveo accelerator card storage capacity
+========================================
+
+Error handling
+==============
+
+Linking your application
+========================
+
 
 .. toctree::
       :maxdepth: 2 

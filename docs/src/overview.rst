@@ -49,23 +49,23 @@ The algorithm below describes a PCG solver with Jacobi preconditioner, referred 
    
    Algorithm source: https://en.wikipedia.org/wiki/Conjugate_gradient_method#The_preconditioned_conjugate_gradient_method 
 
-As shown below, the Xilinx PCG product currently provides a set of C functions 
-called xJPCG APIs to offload the JPCG solver from users' C applicaiton to Xilinx Alveo U280 card.
-The offloading process is essentially a data transfer process between the software and hardward 
-components of Xilinx PCG product. The hardware component, also called xJPCG circuit, realizes JPCG solver
+As shown below, the Xilinx PCG Alveo product currently provides a set of C functions 
+called xJPCG APIs to offload the JPCG solver from users' C applicaiton to Xilinx Alveo U280 accelerator card.
+The offloading process is essentially a data transfer process between the software and hardware 
+components of Xilinx PCG Alveo product. The hardware component, also called xJPCG circuit, realizes JPCG solver
 on the Alveo card. The software component also called xJPCG software library transfers the input data, namely
 matrix A and right hand vector b to the xJPCG circuit, and read the solution, the x vector back from the xJPCG circuit.
 
 .. figure:: /images/PCG_stack.png
-   :alt: PCG product diagram
+   :alt: PCG Alveo product diagram
    :scale: 100%
    :align: center
 
-Run JPCG on Alveo U280 Card
-----------------------------
+Run JPCG on Alveo U280 Accelerator Card
+----------------------------------------
 
 The `Xilinx® Alveo™ U280 Data Center accelerator cards <https://www.xilinx.com/products/boards-and-kits/alveo/u280.html>`_
-provides optimized accelerator across a wide range of workload. Alveo U280 is 
+provide optimized acceleration across a wide range of workload. Alveo U280 accelerator card is 
 designed for deployment in any server with the following features:
 
 * Built on Xilinx UltraScale+ architecture 
@@ -74,4 +74,4 @@ designed for deployment in any server with the following features:
 * PCIe Gen4
 * HBM  
 
-An example is included in this repository to show the general usage model of accelerating JPCG solver on Alveo U280 card. 
+An example is included in this repository to show the general usage model of accelerating JPCG solver with the Xilinx PCG Alveo product. 

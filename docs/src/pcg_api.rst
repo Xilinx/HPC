@@ -13,26 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-******************
-xJPCG User Guide
-******************
-
-Overview
-=========
-
-Using C APIs
-==================
-
-Alveo accelerator card storage capacity
-========================================
-
-Error handling
-==============
-
-Linking your application
-========================
-
-
 *********************
 xJPCG API reference 
 *********************
