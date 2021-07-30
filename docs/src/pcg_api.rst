@@ -13,9 +13,29 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-********************
-PCG C API Reference
-********************
+******************
+xJPCG User Guide
+******************
+
+Overview
+=========
+
+Using C APIs
+==================
+
+Alveo accelerator card storage capacity
+========================================
+
+Error handling
+==============
+
+Linking your application
+========================
+
+
+*********************
+xJPCG API reference 
+*********************
 
 .. toctree::
        :maxdepth: 2
