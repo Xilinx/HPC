@@ -48,7 +48,7 @@ XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t **handle, const int deviceId, c
     } catch (const std::exception& err) {
         return pImpl->setStatusMessage(XJPCG_STATUS_INTERNAL_ERROR, err.what());
     }
-    return pImpl->setStatusMessage(XJPCG_STATUS_SUCCESS, "API returns successfully");
+    return pImpl->setStatusMessage(XJPCG_STATUS_SUCCESS, "Handle is created successfully");
 }
 
 XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle) {
@@ -112,7 +112,7 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
     } catch (const std::exception& err) {
         return pImpl->setStatusMessage(XJPCG_STATUS_INTERNAL_ERROR, err.what());
     }
-    return pImpl->setStatusMessage(XJPCG_STATUS_SUCCESS, "API returns successfully");
+    return pImpl->setStatusMessage(XJPCG_STATUS_SUCCESS, "Solver returns successfully");
 }
 
 XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
@@ -167,7 +167,7 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
     } catch (const std::exception& err) {
         return pImpl->setStatusMessage(XJPCG_STATUS_INTERNAL_ERROR, err.what());
     }
-    return pImpl->setStatusMessage(XJPCG_STATUS_SUCCESS, "API returns successfully");
+    return pImpl->setStatusMessage(XJPCG_STATUS_SUCCESS, "Solver returns successfully");
 }
 
 XJPCG_Status_t xJPCG_getMetrics(const XJPCG_Handle_t *handle, XJPCG_Metric_t* metric) {
@@ -175,7 +175,7 @@ XJPCG_Status_t xJPCG_getMetrics(const XJPCG_Handle_t *handle, XJPCG_Metric_t* me
         return XJPCG_STATUS_NOT_INITIALIZED;
     auto pImpl = reinterpret_cast<const PcgImpl*>(handle);
     *metric = *pImpl->getMetrics();
-    return pImpl->setStatusMessage(XJPCG_STATUS_SUCCESS, "API returns successfully");
+    return pImpl->setStatusMessage(XJPCG_STATUS_SUCCESS, "Get metrics successfully");
 }
 
 XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t *handle) {
