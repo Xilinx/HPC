@@ -62,7 +62,7 @@ const char* xJPCG_getErrorString(const XJPCG_Status_t code);
  *
  */
 typedef struct {
-    double m_objInit;    // JPCG Object initialization time
+    double m_objInit;    // JPCG handle creation time
     double m_matProc; // Matrix processing time
     double m_vecProc; // Vector processing time
     double m_solver;  // Solver execution time
@@ -89,9 +89,9 @@ typedef enum XJPCG_Mode_t {
 
 /** @brief xJPCG_createHandle create a JPCG handle
  *
- * handle a pointer to the JPCG handle variable that will receive the PCG handle
- * deviceId the ID of the device used for JPCG solver
- * xclbinPath the path to kernel xclbin
+ * @param handle a pointer to the JPCG handle variable that will receive the PCG handle
+ * @param deviceId the ID of the device used for JPCG solver
+ * @param xclbinPath the path to kernel xclbin
  *
  * @param return API status
  * 
