@@ -39,6 +39,25 @@ Xilinx PCG Alveo product.
    cd pcg/hw
    make
 
+The hardware architecture of the JPCG accelerator is shown in the following image.
+The main architecture highlights are:
+
+* supporting float64 data type
+
+* running at 240MHz
+
+* scalable kernel-to-kernel streaming structure
+
+* software configurable loop control circuit
+
+* dedicated HBM channels for storing matrix and vectors to avoid data movement overhead
+
+
+.. figure:: /images/JPCG_arch.png
+   :alt: JPCG hardware architecture 
+   :scale: 100%
+   :align: center
+
 * Run the example test.
 
 .. code-block:: bash
