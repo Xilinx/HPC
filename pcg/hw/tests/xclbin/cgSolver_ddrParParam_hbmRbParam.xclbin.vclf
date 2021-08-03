@@ -1,9 +1,0 @@
-{
-    "note": "stub file for large file",
-    "tags": [
-        "xilinx_u280_xdma_201920_3",
-        "vitis-2021.1"
-    ],
-    "filename": "cgSolver_ddrParParam_hbmRbParam.xclbin",
-    "sha256sum": "8c0348b9d89b1e659ce973e9ff0c5668113832468442b42bb745f294bfe1d3fa"
-}
