@@ -24,10 +24,14 @@
 #include <assert.h>
 #include <thread>
 #include <unordered_map>
+#include "spmException.hpp"
 #include "utils.hpp"
 
 #define DIV_CEIL(x, y) (((x) + (y)-1) / (y))
 #define ZERO_VAL std::numeric_limits<uint32_t>::max()
+
+namespace xf {
+namespace sparse {
 
 class Signature {
    public:
@@ -110,6 +114,9 @@ class Signature {
                 uint32_t l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId = 0;
                 SparseMatrix l_rbSpm = add_spm(l_row, l_col, l_data, l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId);
                 p_rbSpms.push_back(l_rbSpm);
+                if (l_m > m_maxRows) {
+                    throw SpmParFailed("Matrix partition failed in gen_rbs.");
+                }
                 assert(l_m <= m_maxRows);
                 l_sId = l_eId;
                 m_rbParam.add_rbIdxInfo(l_spmMinRowId, l_spmMinColId, l_n, l_numPars);
@@ -146,6 +153,9 @@ class Signature {
                 uint32_t l_m = 0, l_n = 0, l_nnz = 0, l_spmMinRowId = 0, l_spmMinColId = 0;
                 SparseMatrix l_parSpm = add_spm(l_row, l_col, l_data, l_m, l_n, l_nnz, l_spmMinRowId, l_spmMinColId);
                 p_parSpms.push_back(l_parSpm);
+                if ((l_m > m_maxRows) || (l_n > m_maxCols)) {
+                    throw SpmParFailed("Matrix partition failed in genPars4Rb.");
+                }
                 assert(l_m <= m_maxRows);
                 assert(l_n <= m_maxCols);
                 l_sId = l_eId;
@@ -281,6 +291,9 @@ class Signature {
                 assert(l_minColId % m_parEntries == 0);
                 assert(l_n % m_parEntries == 0);
                 assert(l_nnz % (m_parEntries * m_accLatency) == 0);
+                if ((l_m > m_maxRows)||(l_n > m_maxCols)||(l_minColId % m_parEntries != 0)||(l_n % m_parEntries != 0)||(l_nnz % (m_parEntries * m_accLatency) != 0)) {
+                    throw SpmParFailed("Matrix partition failed in gen_chPars.");
+                }
                 l_chBaseAddr[c] = (l_minColId / m_parEntries) - l_baseParAddr;
                 l_chCols[c] = l_n;
                 l_chNnzs[c] = l_nnz;
@@ -427,9 +440,11 @@ class Signature {
                 std::vector<uint32_t> l_rbInfo = m_rbParam.get_rbInfo(rbId, 0);
                 uint32_t l_pars = l_rbInfo[3];
                 uint32_t l_sRbRowId = l_rbInfo[0];
+                (void) l_sRbRowId;  // TODO: remove unused variable if not needed
                 for (uint32_t parId = 0; parId < l_pars; parId++) {
                     uint32_t l_parId = l_sParId + parId;
                     uint32_t l_sParColId = m_parParam.get_parInfo(l_parId)[0];
+                    (void) l_sParColId;  // TODO: remove unused variable if not needed
                     SparseMatrix l_chParSpm = m_chParSpms[c][l_parId];
                     double l_nnz[m_parEntries];
                     memset(l_nnz, 0, m_parEntries * sizeof(double));
@@ -562,7 +577,7 @@ class Signature {
             return 0;
         }
         else {
-            std::cout << "ERROR: update dimensions are not the same as the stored dimensions" << std::endl;
+            throw SpmInvalidValue("Invalid dimension and/or number of nnzs used for updateing matrix.");
             return -1;
         }
     }
@@ -576,4 +591,7 @@ class Signature {
     NnzStore m_nnzStore;
     std::vector<std::vector<SparseMatrix> > m_chParSpms;
 };
+
+}
+}
 #endif

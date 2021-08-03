@@ -28,8 +28,12 @@
 #include <vector>
 #include <assert.h>
 #include <thread>
+#include "spmException.hpp"
 #include "binFiles.hpp"
 #include "utils.hpp"
+
+namespace xf {
+namespace sparse {
 
 class SparseMatrix {
    public:
@@ -44,50 +48,51 @@ class SparseMatrix {
         m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
-    void loadCoo(const uint32_t p_m, const uint32_t p_n, const uint32_t p_nnz, const uint32_t* p_rowIdx, const uint32_t* p_colIdx) {
+    void loadCoo(const uint32_t p_m, const uint32_t p_n, const uint32_t p_nnz, const uint32_t* p_rowIdx, const uint32_t* p_colIdx, const int storeType) {
+        uint32_t l_off = 0;
+        if (storeType == 0)  {//C storeage type
+            l_off =0; 
+        }
+        else if (storeType == 1) {//FORTRAN storage type
+            l_off = 1;
+        }
+        else {
+            throw SpmNotSupported("from getCooDatFromCscSym in gen_signature.hpp, unsupported storage mode.");
+        }
         m_m = p_m;
         m_n = p_n;
         m_nnz = p_nnz;
         m_minRowId = 0;
         m_minColId = 0;
-        m_row_list.insert(m_row_list.end(), p_rowIdx, p_rowIdx + p_nnz);
-        m_col_list.insert(m_col_list.end(), p_colIdx, p_colIdx + p_nnz);
+        m_row_list.resize(m_nnz);
+        m_col_list.resize(m_nnz);
+        for (uint32_t i=0; i<p_nnz; ++i) {
+            m_row_list[i] = p_rowIdx[i] - l_off;
+            m_col_list[i] = p_colIdx[i] - l_off;
+        }
+        //m_row_list.insert(m_row_list.end(), p_rowIdx, p_rowIdx + p_nnz);
+        //m_col_list.insert(m_col_list.end(), p_colIdx, p_colIdx + p_nnz);
         m_data_list.resize(m_nnz);
         iota(m_data_list.begin(), m_data_list.end(), 0);
         m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
         m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
     }
 
-    void loadCscSym(uint32_t p_n, uint32_t p_nnz, uint32_t* p_rowIdx, uint32_t* p_colPtr) {
-        m_m = p_n;
-        m_n = p_n;
-        m_nnz = p_nnz;
-        m_minRowId = 0;
-        m_minColId = 0;
-        m_row_list.resize(m_nnz);
-        m_col_list.resize(m_nnz);
-        m_data_list.resize(m_nnz);
-        iota(m_data_list.begin(), m_data_list.end(), 0);
-
-        uint32_t index = 0;
-        for (uint32_t j = 0; j < p_n; j++) {
-            for (uint32_t k = p_colPtr[j] - 1; k < p_colPtr[j + 1] - 1; k++) {
-                uint32_t i = p_rowIdx[k] - 1;
-                assert(index < m_nnz);
-                m_row_list[index] = i;
-                m_col_list[index] = j;
-                if (i != j) {
-                    assert(index < m_nnz);
-                    m_row_list[index] = j;
-                    m_col_list[index] = i;
-                }
+    template <typename t_IdxType>
+    void loadCscSym(const uint32_t p_n, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const int storeType) {
+        uint32_t l_off = 0;
+        if (storeType == 0)  {//C storeage type
+            l_off =0; 
+        }
+        else if (storeType == 1) {//FORTRAN storage type
+            l_off = 1;
+            if (p_colPtr[0] < 1) {
+                throw SpmInvalidValue("from getCooDatFromCscSym in gen_signature.hpp, colPtr[0] start from 1 in FORTRAN storage mode.");
             }
         }
-        assert(index == m_nnz);
-        m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
-        m_minColId = *(min_element(m_col_list.begin(), m_col_list.end()));
-    }
-    void loadCscSym(uint32_t p_n, uint32_t p_nnz, int64_t* p_rowIdx, int64_t* p_colPtr) {
+        else {
+            throw SpmNotSupported("from getCooDatFromCscSym in gen_signature.hpp, unsupported storage mode.");
+        }
         m_m = p_n;
         m_n = p_n;
         m_nnz = p_nnz;
@@ -100,19 +105,28 @@ class SparseMatrix {
 
         uint32_t index = 0;
         for (uint32_t j = 0; j < p_n; j++) {
-            for (uint32_t k = p_colPtr[j] - 1; k < p_colPtr[j + 1] - 1; k++) {
-                uint32_t i = p_rowIdx[k] - 1;
+            for (t_IdxType k = p_colPtr[j] - l_off; k < p_colPtr[j + 1] - l_off; k++) {
+                t_IdxType i = p_rowIdx[k] - l_off;
+                if (index >= m_nnz) {
+                    throw SpmAllocFailed("from loadCscSym in matrix_params.hpp, index >= nnz.");
+                }
                 assert(index < m_nnz);
                 m_row_list[index] = i;
                 m_col_list[index] = j;
                 index++;
                 if (i != j) {
+                    if (index >= m_nnz) {
+                        throw SpmAllocFailed("from loadCscSym in matrix_params.hpp, index >= nnz.");
+                    }
                     assert(index < m_nnz);
                     m_row_list[index] = j;
                     m_col_list[index] = i;
                     index++;
                 }
             }
+        }
+        if (index != m_nnz) {
+            throw SpmAllocFailed("from loadCscSym in matrix_params.hpp, failed to convert indices from CscSym to COO format.");
         }
         assert(index == m_nnz);
         m_minRowId = *(min_element(m_row_list.begin(), m_row_list.end()));
@@ -215,6 +229,9 @@ class SparseMatrix {
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_data_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
+        if ((l_row_list == nullptr)||(l_col_list == nullptr)||(l_data_list == nullptr)) {
+            throw SpmAllocFailed("Failed to allocate memory used for sorting matrix along the row indices.");
+        }
         for (uint32_t i = 0; i < m_nnz; i++) {
             l_row_list[i] = m_row_list[idx[i]];
             l_col_list[i] = m_col_list[idx[i]];
@@ -239,6 +256,9 @@ class SparseMatrix {
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_data_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
+        if ((l_row_list == nullptr)||(l_col_list == nullptr)||(l_data_list == nullptr)) {
+            throw SpmAllocFailed("Failed to allocate memory used for completely sorting matrix.");
+        }
         for (uint32_t i = 0; i < m_nnz; i++) {
             l_row_list[i] = m_row_list[idx[i]];
             l_col_list[i] = m_col_list[idx[i]];
@@ -265,6 +285,9 @@ class SparseMatrix {
         uint32_t* l_row_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_col_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
         uint32_t* l_data_list = (uint32_t*)malloc(m_nnz * sizeof(uint32_t));
+        if ((l_row_list == nullptr)||(l_col_list == nullptr)||(l_data_list == nullptr)) {
+            throw SpmAllocFailed("Failed to allocate memory used for sorting matrix along column indices.");
+        }
         for (uint32_t i = 0; i < m_nnz; i++) {
             l_row_list[i] = m_row_list[idx[i]];
             l_col_list[i] = m_col_list[idx[i]];
@@ -687,4 +710,7 @@ struct MatPartition {
     std::vector<void*> m_nnzValPtr;
     std::vector<uint32_t> m_nnzValSize;
 };
+
+}
+}
 #endif

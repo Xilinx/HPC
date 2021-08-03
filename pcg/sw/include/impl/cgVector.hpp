@@ -19,6 +19,7 @@
 
 #include <vector>
 #include "impl/cgInstr.hpp"
+#include "impl/cgException.hpp"
 #include "utils.hpp"
 
 using namespace xf::hpc;
@@ -52,6 +53,9 @@ class GenCgVector {
    public:
     GenCgVector() : m_dim(0), m_dot(0), m_rz(0){};
     void loadVec(const unsigned int p_dim, const t_DataType* p_b, const t_DataType* p_diagA) {
+        if (p_b == nullptr || p_diagA == nullptr) {
+            throw CgInvalidValue("Vector is nullptr.");
+        }
         m_diagA.clear();
         m_b.clear();
         m_Apk.clear();
@@ -75,6 +79,9 @@ class GenCgVector {
         m_zk.assign(m_dimAligned, 0);
     }
     void updateVec(const unsigned int p_dim, const t_DataType* p_b, const t_DataType* p_diagA) {
+        if (p_b == nullptr || p_diagA == nullptr) {
+            throw CgInvalidValue("Vector is nullptr.");
+        }
         std::copy(p_diagA, p_diagA + p_dim, m_diagA.begin());
         std::copy(p_b, p_b + p_dim, m_b.begin());
         std::fill(m_Apk.begin(), m_Apk.end(), 0);
