@@ -139,7 +139,7 @@ VPP_LDFLAGS_spmv_temp := --config $(CUR_DIR)/opts.cfg
 
 ifneq (,$(shell echo $(XPLATFORM) | awk '/u280/'))
 VPP_LDFLAGS_spmv_temp += --config $(CUR_DIR)/conn_u280.cfg
-else ifneq (,$(shell echo $(XPLATFORM) | awk '/u55x/'))
+else ifneq (,$(shell echo $(XPLATFORM) | awk '/u55c/'))
 VPP_LDFLAGS_spmv_temp += --config $(CUR_DIR)/conn_u55c.cfg
 endif
 VPP_LDFLAGS_spmv += $(VPP_LDFLAGS_spmv_temp)
