@@ -508,7 +508,7 @@
 <pre class="highlight title-code-block literal-block">
 <span></span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">xJPCG_getErrorString</span> <span class="p">(</span><span class="k">const</span> <a class="reference internal" href="enum_XJPCG_Status_t.html#doxid-pcg-8h-1a5e49ba5a9f2bf948ff0e0913eccc0a85"><span class="std std-ref">XJPCG_Status_t</span></a><span></span> <span class="n">code</span><span class="p">)</span>
 </pre>
-<p>xJPCG_getErrorString get the string presentation of given status code</p>
+<p>xJPCG_getErrorString get the string presentation of a given status code</p>
 <p class="rubric">Parameters:</p>
 <table border="1" class="colwidths-given docutils">
 <colgroup>
@@ -519,11 +519,10 @@
 <tr class="row-odd"><td>code</td>
 <td>status code</td>
 </tr>
-<tr class="row-even"><td>return</td>
-<td>string</td>
-</tr>
 </tbody>
 </table>
+<p class="rubric">Returns:</p>
+<p>error message string</p>
 </div>
 <div class="section" id="xjpcg-createhandle">
 <span id="cid-xjpcg-createhandle"></span><span id="doxid-pcg-8h-1aba597d1daad4cb27793460b699a951f8"></span><h3>xJPCG_createHandle<a class="headerlink" href="#xjpcg-createhandle" title="Permalink to this headline">¶</a></h3>
@@ -552,13 +551,12 @@
 <td>the ID of the device used for JPCG solver</td>
 </tr>
 <tr class="row-odd"><td>xclbinPath</td>
-<td>the path to kernel xclbin</td>
-</tr>
-<tr class="row-even"><td>return</td>
-<td>API status If the initialization fails, <code class="docutils literal notranslate"><span class="pre">*handle</span></code> may remain unchanged from its original value.</td>
+<td>the path to xclbin file</td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Returns:</p>
+<p>API status If the initialization fails, <code class="docutils literal notranslate"><span class="pre">*handle</span></code> may remain unchanged from its original value.</p>
 </div>
 <div class="section" id="xjpcg-destroyhandle">
 <span id="cid-xjpcg-destroyhandle"></span><span id="doxid-pcg-8h-1a052c339a19444014565ce59beb4bb4bd"></span><h3>xJPCG_destroyHandle<a class="headerlink" href="#xjpcg-destroyhandle" title="Permalink to this headline">¶</a></h3>
@@ -568,7 +566,7 @@
 <pre class="highlight title-code-block literal-block">
 <a class="reference internal" href="enum_XJPCG_Status_t.html#doxid-pcg-8h-1a5e49ba5a9f2bf948ff0e0913eccc0a85"><span class="std std-ref">XJPCG_Status_t</span></a><span></span> <span class="n">xJPCG_destroyHandle</span> <span class="p">(</span><a class="reference internal" href="#doxid-pcg-8h-1ac5d49f35d40c5c54665a653ba470fabf"><span class="std std-ref">XJPCG_Handle_t</span></a><span></span><span class="o">*</span> <span class="n">handle</span><span class="p">)</span>
 </pre>
-<p>xJPCG_destroyHandle destroy given JPCG handle</p>
+<p>xJPCG_destroyHandle destroies a given JPCG handle</p>
 <p class="rubric">Parameters:</p>
 <table border="1" class="colwidths-given docutils">
 <colgroup>
@@ -579,11 +577,10 @@
 <tr class="row-odd"><td>handel</td>
 <td>JPCG handle to be destroyed</td>
 </tr>
-<tr class="row-even"><td>return</td>
-<td>API status</td>
-</tr>
 </tbody>
 </table>
+<p class="rubric">Returns:</p>
+<p>API status</p>
 </div>
 <div class="section" id="xjpcg-cscsymsolver">
 <span id="cid-xjpcg-cscsymsolver"></span><span id="doxid-pcg-8h-1af3dfb3fbe2b8b340fc5c1de42e221405"></span><h3>xJPCG_cscSymSolver<a class="headerlink" href="#xjpcg-cscsymsolver" title="Permalink to this headline">¶</a></h3>
@@ -608,7 +605,11 @@
     <span class="k">const</span> <a class="reference internal" href="enum_XJPCG_Mode_t.html#doxid-pcg-8h-1a097480419ba62e34d113ac20e7ae5f12"><span class="std std-ref">XJPCG_Mode_t</span></a><span></span> <span class="n">mode</span>
     <span class="p">)</span>
 </pre>
-<p>xJPCG_cscSymSolver solves equation Ax = b with sparse SPD matrix A in CSC format</p>
+<p>xJPCG_cscSymSolver solves a system Ax = b with sparse SPD (Symmetric Positive Definite) matrix A in CSC format</p>
+<p>Convergency issue:</p>
+<p>conjugate gradient method may suffer convergency issue for matrices with large condition number. Jacobi preconditioner adopted in this product is used to address this issue. However, for some matrices, even with Jacobi preconditioner the solver is not able to converge. If the returned value in parameter <code class="docutils literal notranslate"><span class="pre">p_iter</span></code> is equal to the maximum iteration numbers given by parameter <code class="docutils literal notranslate"><span class="pre">p_maxIter</span></code> , that means the solver cannot converge.</p>
+<p>Mismatch issue:</p>
+<p>for some matrices, the solver can terminate within the given number of iterations set by parameter <code class="docutils literal notranslate"><span class="pre">p_maxIter</span></code> , but produce the solution x that have some mismatches compared to the golden reference. This issue can be addressed by further reducing the relative tolerance value set by parameter <code class="docutils literal notranslate"><span class="pre">p_tol</span></code> . For example, using <code class="docutils literal notranslate"><span class="pre">p_tol</span> <span class="pre">=</span> <span class="pre">1e-15</span></code> might get the solver to produce correct results.</p>
 <p class="rubric">Parameters:</p>
 <table border="1" class="colwidths-given docutils">
 <colgroup>
@@ -623,13 +624,30 @@
 <td>dimension of given matrix and vectors</td>
 </tr>
 <tr class="row-odd"><td>p_nnz</td>
-<td>number of non-zero entris in p_data of sparse matrix A</td>
+<td><p class="first">number of none-zero entries in p_data of sparse matrix A</p>
+<pre class="highlight last literal-block">
+When using this API, only upper or lower triangular part and the main diagonal entries of the matrix A are stored.
+Therefore, the value of p_nnz should be equal to the (total_nnz + p_n) / 2, where total_nnz is the total number
+of none-zero entries in A, and the main diagonal entries in A are all none-zero entries. Users might need to pad
+the main diagoal entries when using this API.
+</pre>
+</td>
 </tr>
 <tr class="row-even"><td>p_rowIdx</td>
-<td>row index of matrix A</td>
+<td><p class="first">row index of matrix A</p>
+<pre class="highlight last literal-block">
+when parameter mode contains value XJPCG_MODE_FORTRAN_INDEX, the row indices start from 1.
+when parameter mode contains value XJPCG_MODE_C_INDEX, the row indices start from 0.
+</pre>
+</td>
 </tr>
 <tr class="row-odd"><td>p_colptr</td>
-<td>compressed col index of matrix A</td>
+<td><p class="first">compressed col index pointer of matrix A</p>
+<pre class="highlight last literal-block">
+when parameter mode contains value XJPCG_MODE_FORTRAN_INDEX, the col index pointer value starts from 1.
+when parameter mode contains value XJPCG_MODE_C_INDEX, the col index pointer value  starts from 0.
+</pre>
+</td>
 </tr>
 <tr class="row-even"><td>p_data</td>
 <td>data entries of matrix A, half matrix for symmetry</td>
@@ -644,7 +662,7 @@
 <td>solution to the equation</td>
 </tr>
 <tr class="row-even"><td>p_maxIter</td>
-<td>maximum number of iteration that solve could run</td>
+<td>maximum number of iteration that solver could run</td>
 </tr>
 <tr class="row-odd"><td>p_tol</td>
 <td>the relative tolerence for solver to stop iteration</td>
@@ -656,13 +674,20 @@
 <td>the relative residual when solver exits</td>
 </tr>
 <tr class="row-even"><td>mode</td>
-<td>solver modes including date reuse and index type</td>
-</tr>
-<tr class="row-odd"><td>return</td>
-<td>API status</td>
+<td><p class="first">solver modes including date reuse and index type</p>
+<pre class="highlight last literal-block">
+when using this API, the value of parameter mode normally contains two parts.
+One part is used for matrix reusage, the other for selecting C/Fortran storage.
+For example, setting mode with XJPCG_MODE_DEFAULT | XJPCG_MODE_FORTRAN_INDEX
+means the matrix A will not be re-used to solve this system, and the matrix storage follows
+the convention in Fortran, namely indices start from zero
+</pre>
+</td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Returns:</p>
+<p>API status</p>
 </div>
 <div class="section" id="xjpcg-coosolver">
 <span id="cid-xjpcg-coosolver"></span><span id="doxid-pcg-8h-1a1e1a54d92ca1455735476fa16ac53941"></span><h3>xJPCG_cooSolver<a class="headerlink" href="#xjpcg-coosolver" title="Permalink to this headline">¶</a></h3>
@@ -688,6 +713,7 @@
     <span class="p">)</span>
 </pre>
 <p>xJPCG_cooSolver solves equation Ax = b with sparse SPD matrix A in COO format</p>
+<p>This function only support C storage format. Hence the indices values start from 0.</p>
 <p class="rubric">Parameters:</p>
 <table border="1" class="colwidths-given docutils">
 <colgroup>
@@ -737,11 +763,12 @@
 <tr class="row-even"><td>mode</td>
 <td>solver modes including date reuse and index type</td>
 </tr>
-<tr class="row-odd"><td>return</td>
-<td>API status</td>
-</tr>
 </tbody>
 </table>
+<p class="rubric">Returns:</p>
+<p>API status</p>
+<p class="rubric">See also:</p>
+<p><a class="reference internal" href="#doxid-pcg-8h-1af3dfb3fbe2b8b340fc5c1de42e221405"><span class="std std-ref">xJPCG_cscSymSolver</span></a> for the convergency issues and solutions to the mismatching results when using this API</p>
 </div>
 <div class="section" id="xjpcg-peekatlaststatus">
 <span id="cid-xjpcg-peekatlaststatus"></span><span id="doxid-pcg-8h-1a404936f6e1791e4cde9698dffc4fc807"></span><h3>xJPCG_peekAtLastStatus<a class="headerlink" href="#xjpcg-peekatlaststatus" title="Permalink to this headline">¶</a></h3>
@@ -762,11 +789,10 @@
 <tr class="row-odd"><td>handle</td>
 <td>JPCG handle</td>
 </tr>
-<tr class="row-even"><td>return</td>
-<td>API status</td>
-</tr>
 </tbody>
 </table>
+<p class="rubric">Returns:</p>
+<p>API status</p>
 </div>
 <div class="section" id="xjpcg-getlastmessage">
 <span id="cid-xjpcg-getlastmessage"></span><span id="doxid-pcg-8h-1aa35d385d96c88ec71aded2769f514ce4"></span><h3>xJPCG_getLastMessage<a class="headerlink" href="#xjpcg-getlastmessage" title="Permalink to this headline">¶</a></h3>
@@ -789,11 +815,10 @@
 <tr class="row-odd"><td>handle</td>
 <td>pointer to a JPCG handle</td>
 </tr>
-<tr class="row-even"><td>return</td>
-<td>last status message</td>
-</tr>
 </tbody>
 </table>
+<p class="rubric">Returns:</p>
+<p>last status message</p>
 </div>
 <div class="section" id="xjpcg-getmetrics">
 <span id="cid-xjpcg-getmetrics"></span><span id="doxid-pcg-8h-1a4a8ad42db475a0987a4c43797485ede9"></span><h3>xJPCG_getMetrics<a class="headerlink" href="#xjpcg-getmetrics" title="Permalink to this headline">¶</a></h3>
@@ -821,11 +846,10 @@
 <tr class="row-even"><td>metric</td>
 <td>pointer to a metric struct</td>
 </tr>
-<tr class="row-odd"><td>return</td>
-<td>API status</td>
-</tr>
 </tbody>
 </table>
+<p class="rubric">Returns:</p>
+<p>API status</p>
 </div>
 <div class="section" id="macros">
 <h3>Macros<a class="headerlink" href="#macros" title="Permalink to this headline">¶</a></h3>
