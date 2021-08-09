@@ -40,10 +40,11 @@ rsts := $(patsubst Doxyfile_%, rst_%, $(wildcard Doxyfile_*))
 
 rst_%: Doxyfile_%
 	doxygen $^
-	rm -rf rst_$*
-	mkdir -p rst_$*
-	doxyrest xml_$*/index.xml -o rst_$*/index.rst \
+	rm -rf src/rst_$*
+	mkdir -p src/rst_$*
+	doxyrest xml_$*/index.xml -o src/rst_$*/index.rst \
 		-F $(DOXYREST_FRAME) -f c_index.rst.in -Dg_verbatimToCodeBlock
+	cp src/pcg_api.rst src/rst_pcg/
 
 .stamp/sphinx: $(rsts) Makefile.sphinx
 	mkdir -p $(HTML_DEST_DIR)
@@ -61,4 +62,4 @@ cleanhtml:
 
 cleanall:
 	rm -rf .stamp src/_static _build $(HTML_DEST_DIR)
-	rm -rf xml_* rst_*
+	rm -rf xml_* src/rst_*

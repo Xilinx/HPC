@@ -32,11 +32,11 @@ import recommonmark
 from recommonmark.transform import AutoStructify
 import shutil
 # sys.path.insert(0, os.path.abspath('.'))
-tools_dir = os.path.abspath(os.path.join(os.path.dirname(shutil.which('doxyrest')), '..'))
-sys.path.insert(1, os.path.join(tools_dir, 'share/doxyrest_b/sphinx'))
+tools_dir = os.path.abspath(os.path.join(os.path.dirname(shutil.which('doxyrest')), '..'))
+sys.path.insert(1, os.path.join(tools_dir, 'share/doxyrest_b/sphinx'))
 # -- Project information -----------------------------------------------------
 
-project = 'Xilinx Alveo HPC Products'
+project = 'Xilinx HPC Alveo Products'
 copyright = '2021, Xilinx Inc.'
 author = 'Xilinx Inc.'
 
@@ -80,8 +80,8 @@ autosectionlabel_prefix_document = True
 
 
 # Configure 'Edit on GitHub' extension
-edit_on_github_project = 'Xilinx/Vitis_Libraries'
-edit_on_github_branch = 'master/rtm/docs/src'
+edit_on_github_project = 'Xilinx/HPC'
+edit_on_github_branch = 'master/src'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -148,7 +148,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'xf_hpc'
+htmlhelp_basename = 'hpc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -175,7 +175,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'xf_hpc.tex', 'Vitis HPC Library Documentation',
+    (master_doc, 'hpc.tex', 'Xilinx HPC Alveo Products Documentation',
      'Xilinx', 'manual'),
 ]
 
@@ -185,7 +185,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'xf_hpc', 'Vitis HPC Library Documentation',
+    (master_doc, 'hpc', 'Xilinx HPC Alveo Products Documentation',
      [author], 1)
 ]
 
@@ -196,7 +196,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'xf_hpc', 'Vitis HPC Library Documentation',
+    (master_doc, 'hpc', 'Xilinx HPC Alveo Products Documentation',
      author, 'Xilinx', 'One line description of project.',
      'Miscellaneous'),
 ]

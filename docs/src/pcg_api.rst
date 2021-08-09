@@ -14,7 +14,9 @@
    limitations under the License.
 
 .. toctree::
-       :maxdepth: 2
+    :maxdepth: 4 
 
-.. include:: ../rst_pcg/global.rst
+    global.rst
+
+|	:ref:`genindex`
 
