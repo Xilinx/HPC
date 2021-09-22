@@ -47,16 +47,12 @@ int main(int argc, char** argv) {
     std::string l_datPath = argv[l_idx++];
     std::string l_mtxName = argv[l_idx++];
     int l_numRuns = atoi(argv[l_idx++]);
-    int l_deviceId = 0;
     bool l_debug = false;
     if (argc > l_idx) {
         std::string l_option = argv[l_idx++];
         if (l_option == "--debug")
             l_debug = true;
-        else
-            l_deviceId = stoi(l_option);
     }
-    if (argc > l_idx) l_deviceId = atoi(argv[l_idx++]);
 
     std::string l_datFilePath = l_datPath + "/" + l_mtxName;
 
@@ -88,7 +84,7 @@ int main(int argc, char** argv) {
         l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual,  XJPCG_MODE_DEFAULT);
     assert(l_stat == XJPCG_STATUS_NOT_INITIALIZED);
 
-    l_stat = xJPCG_createHandle(&pHandle, l_deviceId, binaryFile.c_str());
+    l_stat = xJPCG_createHandle(&pHandle, binaryFile.c_str());
     assert(l_stat == XJPCG_STATUS_SUCCESS);
     xJPCG_cooSolver(pHandle, 0, l_matInfo.m_nnz, l_rowIdx.data(), l_colIdx.data(), l_data.data(),
         l_diagA.data(), l_b.data(), l_x.data(), l_maxIter, l_tolerance, &numIterations, &residual,  XJPCG_MODE_DEFAULT);

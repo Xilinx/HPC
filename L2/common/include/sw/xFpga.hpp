@@ -1,19 +1,4 @@
 /*
- * Copyright 2019 Xilinx, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-/*
  * Copyright 2019-2021 Xilinx, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,25 +29,27 @@
 class FPGA {
    public:
     FPGA();
-    FPGA(std::string& deviceName);
-    FPGA(unsigned int p_id);
-    void init(int p_id, std::string& p_xclbinName);
-    void setID(uint32_t id);
+    FPGA(std::string& deviceName, bool* p_err);
+    FPGA(bool* p_err);
+    void init(std::string& p_xclbinName, bool* p_err);
+    int getDeviceId();
+    bool setID(uint32_t id);
     bool xclbin(std::string& binaryFile);
     const cl::Context& getContext() const;
     const cl::CommandQueue& getCommandQueue() const;
     cl::CommandQueue& getCommandQueue();
     const cl::Program& getProgram() const;
     void finish() const;
-    cl::Buffer createDeviceBuffer(cl_mem_flags p_flags, void* p_buffer, size_t p_size);
+    cl::Buffer createDeviceBuffer(cl_mem_flags p_flags, void* p_buffer, size_t p_size, bool* p_err);
     std::vector<cl::Buffer> createDeviceBuffer(cl_mem_flags p_flags,
                                                const std::vector<void*>& p_buffer,
-                                               const std::vector<size_t>& p_size);
+                                               const std::vector<size_t>& p_size,
+                                               bool* p_err);
 
    protected:
     bool exists(const void* p_ptr) const;
-    void getDevices(std::string deviceName);
-    FPGA(unsigned int p_id, const std::vector<cl::Device>& devices);
+    bool getDevices(std::string deviceName);
+    FPGA(const std::vector<cl::Device>& devices);
 
    private:
     unsigned int m_id;
@@ -79,15 +66,16 @@ class Kernel {
    public:
     Kernel(FPGA* p_fpga = nullptr);
     void fpga(FPGA* p_fpga);
-    void getCU(const std::string& p_name);
-    void enqueueTask();
+    bool getCU(const std::string& p_name);
+    bool enqueueTask();
     void finish();
-    void getBuffer(std::vector<cl::Memory>& h_m);
-    void sendBuffer(std::vector<cl::Memory>& h_m);
-    cl::Buffer createDeviceBuffer(cl_mem_flags p_flags, void* p_buffer, size_t p_size) const;
+    bool getBuffer(std::vector<cl::Memory>& h_m);
+    bool sendBuffer(std::vector<cl::Memory>& h_m);
+    cl::Buffer createDeviceBuffer(cl_mem_flags p_flags, void* p_buffer, size_t p_size, bool* p_err) const;
     std::vector<cl::Buffer> createDeviceBuffer(cl_mem_flags p_flags,
                                                std::vector<void*>& p_buffer,
-                                               std::vector<size_t>& p_size) const;
+                                               std::vector<size_t>& p_size,
+                                               bool* p_err) const;
 
    protected:
     FPGA* m_fpga;

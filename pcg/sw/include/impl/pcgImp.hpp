@@ -44,8 +44,8 @@ template <typename t_DataType,
 class PCGImpl {
    public:
     PCGImpl(){};
-    PCGImpl(int p_devId, std::string p_xclbinName) { m_host.init(p_devId, p_xclbinName); }
-    void init(int p_devId, std::string p_xclbinName) { m_host.init(p_devId, p_xclbinName); }
+    PCGImpl(std::string p_xclbinName) { m_host.init(p_xclbinName); }
+    void init(std::string p_xclbinName) { m_host.init(p_xclbinName); }
     void setCooMat(const uint32_t p_dim,
                    const uint32_t p_nnz,
                    const uint32_t* p_rowIdx,
@@ -62,11 +62,19 @@ class PCGImpl {
             throw CgInvalidValue("Matrix is nullptr.");
         }
         m_matPar = m_spmPar.partitionCooMat(p_dim, p_dim, p_nnz, p_rowIdx, p_colIdx, p_data, p_storeType);
-        m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
-                          m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+        bool l_send = m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr,
+                                        m_matPar.m_rbParamSize, m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+        if (l_send == false) {
+            throw CgAllocFailed("Send matirx data failed.");
+        }
     }
     template <typename t_IdxType>
-    void setCscSymMat(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data, const int p_storeType) {
+    void setCscSymMat(const uint32_t p_dim,
+                      const uint32_t p_nnz,
+                      const t_IdxType* p_rowIdx,
+                      const t_IdxType* p_colPtr,
+                      const t_DataType* p_data,
+                      const int p_storeType) {
         if (p_dim == 0) {
             throw CgInvalidValue("Wrong dimension size.");
         }
@@ -76,10 +84,13 @@ class PCGImpl {
         if (p_rowIdx == nullptr || p_colPtr == nullptr || p_data == nullptr) {
             throw CgInvalidValue("Matrix is nullptr.");
         }
-        uint32_t l_nnz = p_nnz*2 - p_dim;
+        uint32_t l_nnz = p_nnz * 2 - p_dim;
         m_matPar = m_spmPar.partitionCscSymMat(p_dim, l_nnz, p_rowIdx, p_colPtr, p_data, p_storeType);
-        m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr, m_matPar.m_rbParamSize,
-                          m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+        bool l_send = m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr,
+                                        m_matPar.m_rbParamSize, m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+        if (l_send == false) {
+            throw CgAllocFailed("Send matirx data failed.");
+        }
     }
     int updateMat(const uint32_t p_dim, const uint32_t p_nnz, const t_DataType* p_data) {
         if (p_dim == 0) {
@@ -93,15 +104,23 @@ class PCGImpl {
         }
         if (m_spmPar.checkUpdateDim(p_dim, p_dim, p_nnz) == 0) {
             m_matPar = m_spmPar.updateMat(p_data);
-            m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr,
-                              m_matPar.m_rbParamSize, m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+            bool l_send = m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr,
+                                            m_matPar.m_rbParamSize, m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+            if (l_send == false) {
+                throw CgAllocFailed("Send matirx data failed.");
+            }
             return 0;
         } else {
             return -1;
         }
     }
     template <typename t_IdxType>
-    int updateCscSymMat(const uint32_t p_dim, const uint32_t p_nnz, const t_IdxType* p_rowIdx, const t_IdxType* p_colPtr, const t_DataType* p_data, const int p_storeType) {
+    int updateCscSymMat(const uint32_t p_dim,
+                        const uint32_t p_nnz,
+                        const t_IdxType* p_rowIdx,
+                        const t_IdxType* p_colPtr,
+                        const t_DataType* p_data,
+                        const int p_storeType) {
         if (p_dim == 0) {
             throw CgInvalidValue("Wrong dimension size.");
         }
@@ -114,8 +133,11 @@ class PCGImpl {
         uint32_t l_nnz = p_nnz * 2 - p_dim;
         if (m_spmPar.checkUpdateDim(p_dim, p_dim, l_nnz) == 0) {
             m_matPar = m_spmPar.updateCscSymMat(p_dim, l_nnz, p_rowIdx, p_colPtr, p_data, p_storeType);
-            m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr,
-                              m_matPar.m_rbParamSize, m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+            bool l_send = m_host.sendMatDat(m_matPar.m_nnzValPtr, m_matPar.m_nnzValSize, m_matPar.m_rbParamPtr,
+                                            m_matPar.m_rbParamSize, m_matPar.m_parParamPtr, m_matPar.m_parParamSize);
+            if (l_send == false) {
+                throw CgAllocFailed("Send matirx data failed.");
+            }
             return 0;
         } else {
             return -1;
@@ -134,7 +156,10 @@ class PCGImpl {
 
     Results<t_DataType> run(unsigned int p_maxIter, t_DataType p_tol) {
         this->setInstr(p_maxIter + 1, p_tol);
-        m_host.run();
+        bool l_run = m_host.run();
+        if (l_run == false) {
+            throw CgInternalError("Run kernel failed.");
+        }
         CgVector l_resVec = this->getRes();
         Results<t_DataType> l_res;
         l_res.m_x = l_resVec.h_xk;
@@ -180,9 +205,12 @@ class PCGImpl {
 
     void sendVec() {
         CgVector l_cgVec = m_genCgVec.getVec();
-        m_host.sendVecDat(l_cgVec.h_pk, l_cgVec.vecBytes, l_cgVec.h_Apk, l_cgVec.vecBytes, l_cgVec.h_zk,
-                          l_cgVec.vecBytes, l_cgVec.h_rk, l_cgVec.vecBytes, l_cgVec.h_jacobi, l_cgVec.vecBytes,
-                          l_cgVec.h_xk, l_cgVec.vecBytes);
+        bool l_send = m_host.sendVecDat(l_cgVec.h_pk, l_cgVec.vecBytes, l_cgVec.h_Apk, l_cgVec.vecBytes, l_cgVec.h_zk,
+                                        l_cgVec.vecBytes, l_cgVec.h_rk, l_cgVec.vecBytes, l_cgVec.h_jacobi,
+                                        l_cgVec.vecBytes, l_cgVec.h_xk, l_cgVec.vecBytes);
+        if (l_send == false) {
+            throw CgAllocFailed("Send vector data failed.");
+        }
     }
     void setInstr(unsigned int p_maxIter, t_DataType p_tol) {
         t_DataType l_dot = m_genCgVec.getDot();
@@ -190,7 +218,10 @@ class PCGImpl {
         m_genInstr.setInstr(p_maxIter, m_genCgVec.getDimAligned(), l_dot, p_tol, l_rz);
         m_genInstr.updateInstr();
         CgInstr l_cgInstr = m_genInstr.getInstrPtr();
-        m_host.sendInstr(l_cgInstr.h_instr, l_cgInstr.h_instrBytes);
+        bool l_send = m_host.sendInstr(l_cgInstr.h_instr, l_cgInstr.h_instrBytes);
+        if (l_send == false) {
+            throw CgAllocFailed("Send Instruction data failed.");
+        }
     }
 
     XJPCG_Metric_t* getMetrics() { return &m_Metrics; }
@@ -202,16 +233,10 @@ class PCGImpl {
         return m_lastStatus;
     }
 
-    XJPCG_Status_t getLastStatus() const noexcept {
-        return m_lastStatus;
-    }
+    XJPCG_Status_t getLastStatus() const noexcept { return m_lastStatus; }
 
-    const std::string& getLastMessage() const noexcept {
-        return m_lastMessage;
-    }
-    bool isFirstCall() const {
-        return m_firstCall;
-    }
+    const std::string& getLastMessage() const noexcept { return m_lastMessage; }
+    bool isFirstCall() const { return m_firstCall; }
 
    private:
     mutable XJPCG_Status_t m_lastStatus;

@@ -31,17 +31,17 @@ double getDuration(std::chrono::time_point<std::chrono::high_resolution_clock>& 
 
 extern "C" {
 
-XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t **handle, const int deviceId, const char* xclbinPath) {
+XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t** handle, const char* xclbinPath) {
     assert(handle != nullptr);
     auto pImpl = new PcgImpl();
-    
+
     // At this point, the construction of the PCG object has succeeded, so even if further initialization fails,
     // we can return the handle for checking error messages
-    *handle = reinterpret_cast<XJPCG_Handle_t *>(pImpl);
-    
-    try{
+    *handle = reinterpret_cast<XJPCG_Handle_t*>(pImpl);
+
+    try {
         auto last = std::chrono::high_resolution_clock::now();
-        pImpl->init(deviceId, xclbinPath);
+        pImpl->init(xclbinPath);
         pImpl->getMetrics()->m_objInit = getDuration(last);
     } catch (const xilinx_apps::pcg::CgException& err) {
         return pImpl->setStatusMessage(err.getStatus(), err.what());
@@ -51,31 +51,28 @@ XJPCG_Status_t xJPCG_createHandle(XJPCG_Handle_t **handle, const int deviceId, c
     return pImpl->setStatusMessage(XJPCG_STATUS_SUCCESS, "Handle is created successfully");
 }
 
-XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t *handle) {
-    if (handle == nullptr)
-        return XJPCG_STATUS_NOT_INITIALIZED;
+XJPCG_Status_t xJPCG_destroyHandle(XJPCG_Handle_t* handle) {
+    if (handle == nullptr) return XJPCG_STATUS_NOT_INITIALIZED;
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
     delete pImpl;
     return XJPCG_STATUS_SUCCESS;
 }
 
-
-XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
-                               const int64_t p_n,
-                               const int64_t p_nnz,
-                               const int64_t* p_rowIdx,
-                               const int64_t* p_colPtr,
-                               const double* p_data,
-                               const double* p_diagA,
-                               const double* p_b,
-                               const double* p_x,
-                               const int64_t p_maxIter,
-                               const double p_tol,
-                               int64_t* p_iter,
-                               double* p_res,
-                               const XJPCG_Mode_t mode){
-    if (handle == nullptr)
-        return XJPCG_STATUS_NOT_INITIALIZED;
+XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t* handle,
+                                  const int64_t p_n,
+                                  const int64_t p_nnz,
+                                  const int64_t* p_rowIdx,
+                                  const int64_t* p_colPtr,
+                                  const double* p_data,
+                                  const double* p_diagA,
+                                  const double* p_b,
+                                  const double* p_x,
+                                  const int64_t p_maxIter,
+                                  const double p_tol,
+                                  int64_t* p_iter,
+                                  double* p_res,
+                                  const XJPCG_Mode_t mode) {
+    if (handle == nullptr) return XJPCG_STATUS_NOT_INITIALIZED;
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
     try {
         auto last = std::chrono::high_resolution_clock::now();
@@ -85,13 +82,15 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
                 pImpl->setCscSymMat(p_n, p_nnz, p_rowIdx, p_colPtr, p_data, (mode & 0xf0) >> 4);
                 break;
             case XJPCG_MODE_KEEP_NZ_LAYOUT:
-                if(first)
-                    throw xilinx_apps::pcg::CgInvalidValue("wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
+                if (first)
+                    throw xilinx_apps::pcg::CgInvalidValue(
+                        "wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
                 pImpl->updateCscSymMat(p_n, p_nnz, p_rowIdx, p_colPtr, p_data, (mode & 0xf0) >> 4);
                 break;
             default:
-                if(first)
-                    throw xilinx_apps::pcg::CgInvalidValue("wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
+                if (first)
+                    throw xilinx_apps::pcg::CgInvalidValue(
+                        "wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
                 break;
         }
 
@@ -104,8 +103,9 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
         *p_iter = l_res.m_nIters;
         memcpy((char*)p_x, (char*)l_res.m_x, sizeof(double) * p_n);
         pImpl->getMetrics()->m_solver = getDuration(last);
-        if(*p_res > p_tol) {
-            throw xilinx_apps::pcg::CgExecutionFailed("exit with divergent solution after " + std::to_string(*p_iter) + " iterations.");
+        if (*p_res > p_tol) {
+            throw xilinx_apps::pcg::CgExecutionFailed("exit with divergent solution after " + std::to_string(*p_iter) +
+                                                      " iterations.");
         }
     } catch (const xilinx_apps::pcg::CgException& err) {
         return pImpl->setStatusMessage(err.getStatus(), err.what());
@@ -115,22 +115,21 @@ XJPCG_Status_t xJPCG_cscSymSolver(XJPCG_Handle_t *handle,
     return pImpl->setStatusMessage(XJPCG_STATUS_SUCCESS, "Solver returns successfully");
 }
 
-XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
-        const uint32_t p_n,
-        const uint32_t p_nnz,
-        const uint32_t* p_rowIdx,
-        const uint32_t* p_colIdx,
-        const double* p_data,
-        const double* matJ,
-        const double* b,
-        const double* x,
-        const uint32_t p_maxIter,
-        const double p_tol,
-        uint32_t* p_iter,
-        double* p_res,
-        const XJPCG_Mode_t mode) {
-    if (handle == nullptr)
-        return XJPCG_STATUS_NOT_INITIALIZED;
+XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t* handle,
+                               const uint32_t p_n,
+                               const uint32_t p_nnz,
+                               const uint32_t* p_rowIdx,
+                               const uint32_t* p_colIdx,
+                               const double* p_data,
+                               const double* matJ,
+                               const double* b,
+                               const double* x,
+                               const uint32_t p_maxIter,
+                               const double p_tol,
+                               uint32_t* p_iter,
+                               double* p_res,
+                               const XJPCG_Mode_t mode) {
+    if (handle == nullptr) return XJPCG_STATUS_NOT_INITIALIZED;
     auto pImpl = reinterpret_cast<PcgImpl*>(handle);
     try {
         auto last = std::chrono::high_resolution_clock::now();
@@ -140,13 +139,15 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
                 pImpl->setCooMat(p_n, p_nnz, p_rowIdx, p_colIdx, p_data, (mode & 0xf0) >> 4);
                 break;
             case XJPCG_MODE_KEEP_NZ_LAYOUT:
-                if(first)
-                    throw xilinx_apps::pcg::CgInvalidValue("wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
+                if (first)
+                    throw xilinx_apps::pcg::CgInvalidValue(
+                        "wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
                 pImpl->updateMat(p_n, p_nnz, p_data);
                 break;
             default:
-                if(first)
-                    throw xilinx_apps::pcg::CgInvalidValue("wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
+                if (first)
+                    throw xilinx_apps::pcg::CgInvalidValue(
+                        "wrong solver mode for the first call, please use XJPCG_MODEL_DEFAULT.");
                 break;
         }
 
@@ -159,8 +160,9 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
         *p_iter = l_res.m_nIters;
         memcpy((char*)x, (char*)l_res.m_x, sizeof(double) * p_n);
         pImpl->getMetrics()->m_solver = getDuration(last);
-        if(*p_res > p_tol) {
-            throw xilinx_apps::pcg::CgExecutionFailed("exit with divergent solution after " + std::to_string(*p_iter) + " iterations.");
+        if (*p_res > p_tol) {
+            throw xilinx_apps::pcg::CgExecutionFailed("exit with divergent solution after " + std::to_string(*p_iter) +
+                                                      " iterations.");
         }
     } catch (const xilinx_apps::pcg::CgException& err) {
         return pImpl->setStatusMessage(err.getStatus(), err.what());
@@ -170,26 +172,23 @@ XJPCG_Status_t xJPCG_cooSolver(XJPCG_Handle_t *handle,
     return pImpl->setStatusMessage(XJPCG_STATUS_SUCCESS, "Solver returns successfully");
 }
 
-XJPCG_Status_t xJPCG_getMetrics(const XJPCG_Handle_t *handle, XJPCG_Metric_t* metric) {
-    if (handle == nullptr)
-        return XJPCG_STATUS_NOT_INITIALIZED;
+XJPCG_Status_t xJPCG_getMetrics(const XJPCG_Handle_t* handle, XJPCG_Metric_t* metric) {
+    if (handle == nullptr) return XJPCG_STATUS_NOT_INITIALIZED;
     auto pImpl = reinterpret_cast<const PcgImpl*>(handle);
     *metric = *pImpl->getMetrics();
     return pImpl->setStatusMessage(XJPCG_STATUS_SUCCESS, "Get metrics successfully");
 }
 
-XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t *handle) {
+XJPCG_Status_t xJPCG_peekAtLastStatus(const XJPCG_Handle_t* handle) {
     // No assert here; we should handle status for a null handle because it may have come that way out
     // of createHandle
-    if (handle == nullptr)
-        return XJPCG_STATUS_NOT_INITIALIZED;
+    if (handle == nullptr) return XJPCG_STATUS_NOT_INITIALIZED;
     auto pImpl = reinterpret_cast<const PcgImpl*>(handle);
     return pImpl->getLastStatus();
 }
 
-const char* xJPCG_getLastMessage(const XJPCG_Handle_t *handle) {
-    if (handle == nullptr)
-        return "Can't retrieve last error message from a null JPCG handle.";
+const char* xJPCG_getLastMessage(const XJPCG_Handle_t* handle) {
+    if (handle == nullptr) return "Can't retrieve last error message from a null JPCG handle.";
     auto pImpl = reinterpret_cast<const PcgImpl*>(handle);
     return pImpl->getLastMessage().c_str();
 }

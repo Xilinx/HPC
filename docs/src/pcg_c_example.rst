@@ -24,7 +24,7 @@ C Example using Makefile
 
    mkdir pcg-example
    cd pcg-example 
-   cp /opt/xilinx/apps/hpc/pcg/1.0/examples.zip .
+   cp /opt/xilinx/apps/hpc/pcg/1.1/examples.zip .
    unzip examples.zip
    cd examples/c
    make

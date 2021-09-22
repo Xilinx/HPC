@@ -32,4 +32,8 @@ Release Note
 1.0
 ----
 
-Xilinx HPC product libraray release 1.0 introduces HLS primitives, Vitis kernle level components and software APIs for PCG solver. 
+Xilinx HPC product libraray release 1.0 introduces HLS primitives, Vitis kernle level components and software APIs for PCG solver.
+
+1.1
+----
+Release 1.1 introduces the auto-detection of Alveo U280 card for running JPCG software API. Users do not need to specify device id when they use the APIs.

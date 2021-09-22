@@ -25,8 +25,8 @@ namespace pcg {
 class CGKernelControl : public Kernel {
    public:
     CGKernelControl(FPGA* p_fpga = nullptr);
-    void setMem(void* p_instr, unsigned int p_instrBytes);
-    void getMem();
+    bool setMem(void* p_instr, unsigned int p_instrBytes);
+    bool getMem();
 
    private:
     cl::Buffer m_buffer_instr;
@@ -35,7 +35,7 @@ class CGKernelControl : public Kernel {
 class CGKernelStoreApk : public Kernel {
    public:
     CGKernelStoreApk(FPGA* p_fpga = nullptr);
-    void setMem(void* p_pk, unsigned int p_pkSize, void* p_Apk, unsigned int p_ApkSize);
+    bool setMem(void* p_pk, unsigned int p_pkSize, void* p_Apk, unsigned int p_ApkSize);
 
    private:
     cl::Buffer m_buffer_pk, m_buffer_Apk;
@@ -44,8 +44,8 @@ class CGKernelStoreApk : public Kernel {
 class CGKernelUpdatePk : public Kernel {
    public:
     CGKernelUpdatePk(FPGA* p_fpga = nullptr);
-    void setMem(void* p_pk, unsigned int p_pkSize, void* p_zk, unsigned int p_zkSize);
-    void getMem();
+    bool setMem(void* p_pk, unsigned int p_pkSize, void* p_zk, unsigned int p_zkSize);
+    bool getMem();
 
    private:
     cl::Buffer m_buffer_pk, m_buffer_zk;
@@ -53,7 +53,7 @@ class CGKernelUpdatePk : public Kernel {
 class CGKernelUpdateRkJacobi : public Kernel {
    public:
     CGKernelUpdateRkJacobi(FPGA* p_fpga = nullptr);
-    void setMem(void* p_rk,
+    bool setMem(void* p_rk,
                 unsigned int p_rkSize,
                 void* p_zk,
                 unsigned int p_zkSize,
@@ -61,7 +61,7 @@ class CGKernelUpdateRkJacobi : public Kernel {
                 unsigned int p_jacobiSize,
                 void* p_Apk,
                 unsigned int p_ApkSize);
-    void getMem();
+    bool getMem();
 
    private:
     cl::Buffer m_buffer_Apk, m_buffer_rk, m_buffer_zk, m_buffer_jacobi;
@@ -69,8 +69,8 @@ class CGKernelUpdateRkJacobi : public Kernel {
 class CGKernelUpdateRk : public Kernel {
    public:
     CGKernelUpdateRk(FPGA* p_fpga = nullptr);
-    void setMem(void* p_rk, unsigned int p_rkSize, void* p_Apk, unsigned int p_ApkSize);
-    void getMem();
+    bool setMem(void* p_rk, unsigned int p_rkSize, void* p_Apk, unsigned int p_ApkSize);
+    bool getMem();
 
    private:
     cl::Buffer m_buffer_Apk, m_buffer_rk;
@@ -78,8 +78,8 @@ class CGKernelUpdateRk : public Kernel {
 class CGKernelUpdateXk : public Kernel {
    public:
     CGKernelUpdateXk(FPGA* p_fpga = nullptr);
-    void setMem(void* p_xk, unsigned int p_xkSize, void* p_pk, unsigned int p_pkSize);
-    void getMem();
+    bool setMem(void* p_xk, unsigned int p_xkSize, void* p_pk, unsigned int p_pkSize);
+    bool getMem();
 
    private:
     cl::Buffer m_buffer_xk, m_buffer_pk;
@@ -88,7 +88,7 @@ class CGKernelUpdateXk : public Kernel {
 class KernelLoadNnz : public Kernel {
    public:
     KernelLoadNnz(FPGA* p_fpga = nullptr);
-    void setMem(std::vector<void*>& p_sigBuf, std::vector<unsigned int>& p_sigBufBytes);
+    bool setMem(std::vector<void*>& p_sigBuf, std::vector<unsigned int>& p_sigBufBytes);
 
    private:
     std::vector<cl::Buffer> m_buffers;
@@ -97,8 +97,8 @@ class KernelLoadCol : public Kernel {
    public:
     KernelLoadCol(FPGA* p_fpga = nullptr);
     // void setMem(void* p_paramBuf, unsigned int p_paramBufSize, void* p_xBuf, unsigned int p_xBufSize);
-    void setParParamMem(void* p_xBuf, unsigned int p_xBufSize);
-    void setXMem(void* p_xBuf, unsigned int p_xBufSize);
+    bool setParParamMem(void* p_xBuf, unsigned int p_xBufSize);
+    bool setXMem(void* p_xBuf, unsigned int p_xBufSize);
 
    private:
     cl::Buffer m_buffers[2];
@@ -106,7 +106,7 @@ class KernelLoadCol : public Kernel {
 class KernelLoadRbParam : public Kernel {
    public:
     KernelLoadRbParam(FPGA* p_fpga = nullptr);
-    void setMem(void* p_buf, unsigned int p_bufSize);
+    bool setMem(void* p_buf, unsigned int p_bufSize);
 
    private:
     cl::Buffer m_buffer;
@@ -115,17 +115,17 @@ class KernelLoadRbParam : public Kernel {
 class xCgHost {
    public:
     xCgHost(){};
-    xCgHost(int p_devId, std::string p_xclbinName);
-    void init(int p_devId, std::string p_xclbinName);
+    xCgHost(std::string p_xclbinName);
+    bool init(std::string p_xclbinName);
 
-    void sendMatDat(std::vector<void*>& p_nnzVal,
+    bool sendMatDat(std::vector<void*>& p_nnzVal,
                     std::vector<unsigned int>& p_nnzValSize,
                     void* p_rbParam,
                     unsigned int p_rbParamSize,
                     void* p_parParam,
                     unsigned int p_parParamSize);
 
-    void sendVecDat(void* p_pk,
+    bool sendVecDat(void* p_pk,
                     unsigned int p_pkSize,
                     void* p_Apk,
                     unsigned int p_ApkSize,
@@ -138,9 +138,9 @@ class xCgHost {
                     void* p_xk,
                     unsigned int p_xkSize);
 
-    void sendInstr(void* p_instr, unsigned int p_instrSize);
-    void run();
-    void getDat();
+    bool sendInstr(void* p_instr, unsigned int p_instrSize);
+    bool run();
+    bool getDat();
     void finish();
 
    private:

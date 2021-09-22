@@ -34,13 +34,12 @@ inline void checkError(const XJPCG_Handle_t* handle, XJPCG_Status_t code, const 
 }
 
 int main(int argc, const char** argv) {
-    if (argc < 3) {
-        printf("Usage: %s <deviceId> <xclbinPath>\n", argv[0]);
+    if (argc < 2) {
+        printf("Usage: %s  <xclbinPath>\n", argv[0]);
         return 1;
     }
 
-    int deviceId = atoi(argv[1]);
-    const char* xclbinPath = argv[2];
+    const char* xclbinPath = argv[1];
 
     const uint32_t p_n = 65536, p_nnz = p_n * 3 - 2;
     const double p_tol = 1e-16;
@@ -59,7 +58,7 @@ int main(int argc, const char** argv) {
     genVec(p_n, b);
 
     XJPCG_Handle_t* pHandle = NULL;
-    CheckError(pHandle, xJPCG_createHandle(&pHandle, deviceId, xclbinPath));
+    CheckError(pHandle, xJPCG_createHandle(&pHandle, xclbinPath));
     CheckError(pHandle, xJPCG_cooSolver(pHandle, p_n, p_nnz, p_rowIdx, p_colIdx, p_data, matJ, b, x, p_maxIter, p_tol,
                                         &p_iter, &p_res,  XJPCG_MODE_DEFAULT));
 

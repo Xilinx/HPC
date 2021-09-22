@@ -33,7 +33,7 @@ class CgException : public std::exception {
     XJPCG_Status_t m_status;
 };
 
-class CgExecutionFailed: public CgException {
+class CgExecutionFailed : public CgException {
    public:
     CgExecutionFailed(std::string str) : CgException("Solver ERROR: " + str, XJPCG_STATUS_EXECUTION_FAILED) {}
 };

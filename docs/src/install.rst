@@ -19,16 +19,16 @@ Install Xilinx PCG Product
 
 * Power off the server, plug Xilinx Alveo U280 card in the PCIe x 16 slot on the motherboard. Power on the server.
 
-* Get the installation package `xilinx-pcg-1.0_7.4.1708-x86_64.rpm from 
-  Xilinx website <https://www.xilinx.com/member/forms/download/design-license-dba_poc-pcg-xef.html?filename=xilinx-pcg-1.0_7.4.1708-x86_64.rpm>`_ 
+* Get the installation package `xilinx-pcg-1.1_7.4.1708-x86_64.rpm from 
+  Xilinx website <https://www.xilinx.com/member/forms/download/design-license-dba_poc-pcg-xef.html?filename=xilinx-pcg-1.1_7.4.1708-x86_64.rpm>`_ 
 
 * Instll Xilinx PCG Alveo Product and dependencies (XRT AND U280 platform packages)
 
 .. code-block:: bash
 
-  sudo yum install ./xilinx-pcg-1.0_7.4.1708-x86_64.rpm (if you don't have PCG product on your machine)
+  sudo yum install ./xilinx-pcg-1.1_7.4.1708-x86_64.rpm (if you don't have PCG product on your machine)
   or 
-  sudo yum reinstall ./xilinx-pcg-1.0_7.4.1708-x86_64.rpm (if you have PCG product on your machine)
+  sudo yum reinstall ./xilinx-pcg-1.1_7.4.1708-x86_64.rpm (if you have PCG product on your machine)
 
 
 * Flash the Alveo U280 card if it is not already running with the shell

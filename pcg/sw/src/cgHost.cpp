@@ -34,70 +34,104 @@
 namespace xilinx_apps {
 namespace pcg {
 CGKernelControl::CGKernelControl(FPGA* p_fpga) : Kernel(p_fpga) {}
-void CGKernelControl::setMem(void* p_instr, unsigned int p_instrBytes) {
+bool CGKernelControl::setMem(void* p_instr, unsigned int p_instrBytes) {
+    bool l_err = true;
+    bool l_each_err = true;
     cl_int err;
     // Running the kernel
-    m_buffer_instr = createDeviceBuffer(CL_MEM_READ_WRITE, p_instr, p_instrBytes);
+    m_buffer_instr = createDeviceBuffer(CL_MEM_READ_WRITE, p_instr, p_instrBytes, &l_each_err);
+    l_err = l_err && l_each_err;
     // Setting Kernel Arguments
-    OCL_CHECK(err, err = m_kernel.setArg(0, m_buffer_instr));
+    err = m_kernel.setArg(0, m_buffer_instr);
     // Copy input data to device global memory
     std::vector<cl::Memory> l_buffers;
     l_buffers.push_back(m_buffer_instr);
-    sendBuffer(l_buffers);
+    l_each_err = sendBuffer(l_buffers);
+    l_err = l_err && l_each_err;
+    if (l_err == true && err == CL_SUCCESS) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
-void CGKernelControl::getMem() {
+bool CGKernelControl::getMem() {
     // Copy Result from Device Global Memory to Host Local Memory
+    bool l_err = true;
     std::vector<cl::Memory> l_buffers;
     l_buffers.push_back(m_buffer_instr);
-    getBuffer(l_buffers);
+    l_err = getBuffer(l_buffers);
+    return l_err;
 }
 
 CGKernelStoreApk::CGKernelStoreApk(FPGA* p_fpga) : Kernel(p_fpga) {}
-void CGKernelStoreApk::setMem(void* p_pk, unsigned int p_pkSize, void* p_Apk, unsigned int p_ApkSize) {
-    cl_int err;
+bool CGKernelStoreApk::setMem(void* p_pk, unsigned int p_pkSize, void* p_Apk, unsigned int p_ApkSize) {
+    bool l_err = true;
+    bool l_each_err = true;
+    cl_int err0, err1;
     // Running the kernel
-    m_buffer_pk = createDeviceBuffer(CL_MEM_READ_WRITE, p_pk, p_pkSize);
-    m_buffer_Apk = createDeviceBuffer(CL_MEM_READ_WRITE, p_Apk, p_ApkSize);
-
+    m_buffer_pk = createDeviceBuffer(CL_MEM_READ_WRITE, p_pk, p_pkSize, &l_each_err);
+    l_err = l_err && l_each_err;
+    m_buffer_Apk = createDeviceBuffer(CL_MEM_READ_WRITE, p_Apk, p_ApkSize, &l_each_err);
+    l_err = l_err && l_each_err;
     // Setting Kernel Arguments
-    OCL_CHECK(err, err = m_kernel.setArg(1, m_buffer_pk));
-    OCL_CHECK(err, err = m_kernel.setArg(2, m_buffer_Apk));
+    err0 = m_kernel.setArg(1, m_buffer_pk);
+    err1 = m_kernel.setArg(2, m_buffer_Apk);
 
     // Copy input data to device global memory
     std::vector<cl::Memory> l_buffers;
     l_buffers.push_back(m_buffer_pk);
-    sendBuffer(l_buffers);
+    l_each_err = sendBuffer(l_buffers);
+    l_err = l_err && l_each_err;
+
+    if (l_err == true && err0 == CL_SUCCESS && err1 == CL_SUCCESS) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 CGKernelUpdatePk::CGKernelUpdatePk(FPGA* p_fpga) : Kernel(p_fpga) {}
-void CGKernelUpdatePk::setMem(void* p_pk, unsigned int p_pkSize, void* p_zk, unsigned int p_zkSize) {
-    cl_int err;
+bool CGKernelUpdatePk::setMem(void* p_pk, unsigned int p_pkSize, void* p_zk, unsigned int p_zkSize) {
+    bool l_err = true;
+    bool l_each_err = true;
+    cl_int err0, err1, err2;
     // Running the kernel
-    m_buffer_pk = createDeviceBuffer(CL_MEM_READ_WRITE, p_pk, p_pkSize);
-    m_buffer_zk = createDeviceBuffer(CL_MEM_READ_WRITE, p_zk, p_zkSize);
+    m_buffer_pk = createDeviceBuffer(CL_MEM_READ_WRITE, p_pk, p_pkSize, &l_each_err);
+    l_err = l_err && l_each_err;
+    m_buffer_zk = createDeviceBuffer(CL_MEM_READ_WRITE, p_zk, p_zkSize, &l_each_err);
+    l_err = l_err && l_each_err;
 
     // Setting Kernel Arguments
     int n_arg = 0;
-    OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_pk));
-    OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_pk));
-    OCL_CHECK(err, err = m_kernel.setArg(n_arg++, m_buffer_zk));
+    err0 = m_kernel.setArg(n_arg++, m_buffer_pk);
+    err1 = m_kernel.setArg(n_arg++, m_buffer_pk);
+    err2 = m_kernel.setArg(n_arg++, m_buffer_zk);
 
     // Copy input data to device global memory
     std::vector<cl::Memory> l_buffers;
     l_buffers.push_back(m_buffer_zk);
     l_buffers.push_back(m_buffer_pk);
-    sendBuffer(l_buffers);
+    l_each_err = sendBuffer(l_buffers);
+    l_err = l_err && l_each_err;
+
+    if (l_err == true && err0 == CL_SUCCESS && err1 == CL_SUCCESS && err2 == CL_SUCCESS) {
+        return true;
+    } else {
+        return false;
+    }
 }
-void CGKernelUpdatePk::getMem() {
+bool CGKernelUpdatePk::getMem() {
     // Copy Result from Device Global Memory to Host Local Memory
+    bool l_err = true;
     std::vector<cl::Memory> l_buffers;
     l_buffers.push_back(m_buffer_pk);
-    getBuffer(l_buffers);
+    l_err = getBuffer(l_buffers);
+    return l_err;
 }
 
 CGKernelUpdateRkJacobi::CGKernelUpdateRkJacobi(FPGA* p_fpga) : Kernel(p_fpga) {}
-void CGKernelUpdateRkJacobi::setMem(void* p_rk,
+bool CGKernelUpdateRkJacobi::setMem(void* p_rk,
                                     unsigned int p_rkSize,
                                     void* p_zk,
                                     unsigned int p_zkSize,
@@ -105,13 +139,19 @@ void CGKernelUpdateRkJacobi::setMem(void* p_rk,
                                     unsigned int p_jacobiSize,
                                     void* p_Apk,
                                     unsigned int p_ApkSize) {
-    cl_int err;
+    bool l_err = true;
+    bool l_each_err = true;
+    cl_int err0, err1, err2, err3, err4;
     std::vector<cl::Memory> l_buffers;
     // Running the kernel
-    m_buffer_rk = createDeviceBuffer(CL_MEM_READ_WRITE, p_rk, p_rkSize);
-    m_buffer_zk = createDeviceBuffer(CL_MEM_READ_WRITE, p_zk, p_zkSize);
-    m_buffer_jacobi = createDeviceBuffer(CL_MEM_READ_ONLY, p_jacobi, p_jacobiSize);
-    m_buffer_Apk = createDeviceBuffer(CL_MEM_READ_WRITE, p_Apk, p_ApkSize);
+    m_buffer_rk = createDeviceBuffer(CL_MEM_READ_WRITE, p_rk, p_rkSize, &l_each_err);
+    l_err = l_err && l_each_err;
+    m_buffer_zk = createDeviceBuffer(CL_MEM_READ_WRITE, p_zk, p_zkSize, &l_each_err);
+    l_err = l_err && l_each_err;
+    m_buffer_jacobi = createDeviceBuffer(CL_MEM_READ_ONLY, p_jacobi, p_jacobiSize, &l_each_err);
+    l_err = l_err && l_each_err;
+    m_buffer_Apk = createDeviceBuffer(CL_MEM_READ_WRITE, p_Apk, p_ApkSize, &l_each_err);
+    l_err = l_err && l_each_err;
 
     l_buffers.push_back(m_buffer_rk);
     l_buffers.push_back(m_buffer_zk);
@@ -120,127 +160,204 @@ void CGKernelUpdateRkJacobi::setMem(void* p_rk,
 
     // Setting Kernel Arguments
     int l_index = 0;
-    OCL_CHECK(err, err = m_kernel.setArg(l_index++, m_buffer_rk));
-    OCL_CHECK(err, err = m_kernel.setArg(l_index++, m_buffer_rk));
-    OCL_CHECK(err, err = m_kernel.setArg(l_index++, m_buffer_zk));
-    OCL_CHECK(err, err = m_kernel.setArg(l_index++, m_buffer_jacobi));
-    OCL_CHECK(err, err = m_kernel.setArg(l_index++, m_buffer_Apk));
+    err0 = m_kernel.setArg(l_index++, m_buffer_rk);
+    err1 = m_kernel.setArg(l_index++, m_buffer_rk);
+    err2 = m_kernel.setArg(l_index++, m_buffer_zk);
+    err3 = m_kernel.setArg(l_index++, m_buffer_jacobi);
+    err4 = m_kernel.setArg(l_index++, m_buffer_Apk);
 
     // Copy input data to device global memory
-    sendBuffer(l_buffers);
+    l_each_err = sendBuffer(l_buffers);
+    l_err = l_err && l_each_err;
+    if (l_err == true && err0 == CL_SUCCESS && err1 == CL_SUCCESS && err2 == CL_SUCCESS && err3 == CL_SUCCESS &&
+        err4 == CL_SUCCESS) {
+        return true;
+    } else {
+        return false;
+    }
 }
-void CGKernelUpdateRkJacobi::getMem() {
+bool CGKernelUpdateRkJacobi::getMem() {
     // Copy Result from Device Global Memory to Host Local Memory
+    bool l_err = true;
     std::vector<cl::Memory> l_buffers;
     l_buffers.push_back(m_buffer_rk);
     l_buffers.push_back(m_buffer_zk);
-    getBuffer(l_buffers);
+    l_err = getBuffer(l_buffers);
+    return l_err;
 }
 
 CGKernelUpdateRk::CGKernelUpdateRk(FPGA* p_fpga) : Kernel(p_fpga) {}
-void CGKernelUpdateRk::setMem(void* p_rk, unsigned int p_rkSize, void* p_Apk, unsigned int p_ApkSize) {
-    cl_int err;
+bool CGKernelUpdateRk::setMem(void* p_rk, unsigned int p_rkSize, void* p_Apk, unsigned int p_ApkSize) {
+    bool l_err = true;
+    bool l_each_err = true;
+    cl_int err0, err1, err2;
     std::vector<cl::Memory> l_buffers;
     // Running the kernel
-    m_buffer_rk = createDeviceBuffer(CL_MEM_READ_WRITE, p_rk, p_rkSize);
-    m_buffer_Apk = createDeviceBuffer(CL_MEM_READ_WRITE, p_Apk, p_ApkSize);
+    m_buffer_rk = createDeviceBuffer(CL_MEM_READ_WRITE, p_rk, p_rkSize, &l_each_err);
+    l_err = l_err && l_each_err;
+    m_buffer_Apk = createDeviceBuffer(CL_MEM_READ_WRITE, p_Apk, p_ApkSize, &l_each_err);
+    l_err = l_err && l_each_err;
 
     l_buffers.push_back(m_buffer_rk);
     l_buffers.push_back(m_buffer_Apk);
 
     // Setting Kernel Arguments
     int l_index = 0;
-    OCL_CHECK(err, err = m_kernel.setArg(l_index++, m_buffer_rk));
-    OCL_CHECK(err, err = m_kernel.setArg(l_index++, m_buffer_rk));
-    OCL_CHECK(err, err = m_kernel.setArg(l_index++, m_buffer_Apk));
+    err0 = m_kernel.setArg(l_index++, m_buffer_rk);
+    err1 = m_kernel.setArg(l_index++, m_buffer_rk);
+    err2 = m_kernel.setArg(l_index++, m_buffer_Apk);
 
     // Copy input data to device global memory
-    sendBuffer(l_buffers);
+    l_each_err = sendBuffer(l_buffers);
+    l_err = l_err && l_each_err;
+    if (l_err == true && err0 == CL_SUCCESS && err1 == CL_SUCCESS && err2 == CL_SUCCESS) {
+        return true;
+    } else {
+        return false;
+    }
 }
-void CGKernelUpdateRk::getMem() {
+bool CGKernelUpdateRk::getMem() {
     // Copy Result from Device Global Memory to Host Local Memory
+    bool l_err = true;
     std::vector<cl::Memory> l_buffers;
     l_buffers.push_back(m_buffer_rk);
-    getBuffer(l_buffers);
+    l_err = getBuffer(l_buffers);
+    return l_err;
 }
 
 CGKernelUpdateXk::CGKernelUpdateXk(FPGA* p_fpga) : Kernel(p_fpga) {}
-void CGKernelUpdateXk::setMem(void* p_xk, unsigned int p_xkSize, void* p_pk, unsigned int p_pkSize) {
-    cl_int err;
+bool CGKernelUpdateXk::setMem(void* p_xk, unsigned int p_xkSize, void* p_pk, unsigned int p_pkSize) {
+    bool l_err = true;
+    bool l_each_err = true;
+    cl_int err0, err1, err2;
     std::vector<cl::Memory> l_buffers;
     // Running the kernel
-    m_buffer_xk = createDeviceBuffer(CL_MEM_READ_WRITE, p_xk, p_xkSize);
-    m_buffer_pk = createDeviceBuffer(CL_MEM_READ_WRITE, p_pk, p_pkSize);
+    m_buffer_xk = createDeviceBuffer(CL_MEM_READ_WRITE, p_xk, p_xkSize, &l_each_err);
+    l_err = l_err && l_each_err;
+    m_buffer_pk = createDeviceBuffer(CL_MEM_READ_WRITE, p_pk, p_pkSize, &l_each_err);
+    l_err = l_err && l_each_err;
 
     l_buffers.push_back(m_buffer_xk);
     l_buffers.push_back(m_buffer_pk);
 
     // Setting Kernel Arguments
     int l_index = 0;
-    OCL_CHECK(err, err = m_kernel.setArg(l_index++, m_buffer_xk));
-    OCL_CHECK(err, err = m_kernel.setArg(l_index++, m_buffer_xk));
-    OCL_CHECK(err, err = m_kernel.setArg(l_index++, m_buffer_pk));
+    err0 = m_kernel.setArg(l_index++, m_buffer_xk);
+    err1 = m_kernel.setArg(l_index++, m_buffer_xk);
+    err2 = m_kernel.setArg(l_index++, m_buffer_pk);
 
     // Copy input data to device global memory
-    sendBuffer(l_buffers);
+    l_each_err = sendBuffer(l_buffers);
+    l_err = l_err && l_each_err;
+
+    if (l_err == true && err0 == CL_SUCCESS && err1 == CL_SUCCESS && err2 == CL_SUCCESS) {
+        return true;
+    } else {
+        return false;
+    }
 }
-void CGKernelUpdateXk::getMem() {
+bool CGKernelUpdateXk::getMem() {
     // Copy Result from Device Global Memory to Host Local Memory
+    bool l_err = true;
     std::vector<cl::Memory> l_buffers;
     l_buffers.push_back(m_buffer_xk);
-    getBuffer(l_buffers);
+    l_err = getBuffer(l_buffers);
+    return l_err;
 }
 
 KernelLoadNnz::KernelLoadNnz(FPGA* p_fpga) : Kernel(p_fpga) {}
-void KernelLoadNnz::setMem(std::vector<void*>& p_sigBuf, std::vector<unsigned int>& p_sigBufBytes) {
-    cl_int err;
+bool KernelLoadNnz::setMem(std::vector<void*>& p_sigBuf, std::vector<unsigned int>& p_sigBufBytes) {
+    bool l_err = true;
+    bool l_each_err = true;
+    cl_int err = CL_SUCCESS;
     unsigned int l_numChannels = p_sigBuf.size();
     m_buffers.resize(l_numChannels);
     std::vector<cl::Memory> l_buffers;
     for (unsigned int i = 0; i < l_numChannels; ++i) {
-        m_buffers[i] = createDeviceBuffer(CL_MEM_READ_ONLY, p_sigBuf[i], p_sigBufBytes[i]);
+        m_buffers[i] = createDeviceBuffer(CL_MEM_READ_ONLY, p_sigBuf[i], p_sigBufBytes[i], &l_each_err);
+        l_err = l_err && l_each_err;
         l_buffers.push_back(m_buffers[i]);
-        OCL_CHECK(err, err = m_kernel.setArg(i, m_buffers[i]));
+        err = m_kernel.setArg(i, m_buffers[i]);
     }
     // Copy input data to device global memory
-    sendBuffer(l_buffers);
+    l_each_err = sendBuffer(l_buffers);
+    l_err = l_err && l_each_err;
+
+    if (l_err == true && err == CL_SUCCESS) {
+        return true;
+    } else {
+        return false;
+    }
 }
 KernelLoadCol::KernelLoadCol(FPGA* p_fpga) : Kernel(p_fpga) {}
-void KernelLoadCol::setParParamMem(void* p_paramBuf, unsigned int p_paramBufSize) {
+bool KernelLoadCol::setParParamMem(void* p_paramBuf, unsigned int p_paramBufSize) {
+    bool l_err = true;
+    bool l_each_err = true;
     cl_int err;
     std::vector<cl::Memory> l_buffers;
-    m_buffers[0] = createDeviceBuffer(CL_MEM_READ_ONLY, p_paramBuf, p_paramBufSize);
-    OCL_CHECK(err, err = m_kernel.setArg(0, m_buffers[0]));
+    m_buffers[0] = createDeviceBuffer(CL_MEM_READ_ONLY, p_paramBuf, p_paramBufSize, &l_each_err);
+    l_err = l_err && l_each_err;
+    err = m_kernel.setArg(0, m_buffers[0]);
     l_buffers.push_back(m_buffers[0]);
     // Copy input data to device global memory
-    sendBuffer(l_buffers);
+    l_each_err = sendBuffer(l_buffers);
+    l_err = l_err && l_each_err;
+
+    if (l_err == true && err == CL_SUCCESS) {
+        return true;
+    } else {
+        return false;
+    }
 }
-void KernelLoadCol::setXMem(void* p_xBuf, unsigned int p_xBufSize) {
+bool KernelLoadCol::setXMem(void* p_xBuf, unsigned int p_xBufSize) {
+    bool l_err = true;
+    bool l_each_err = true;
     cl_int err;
     std::vector<cl::Memory> l_buffers;
-    m_buffers[1] = createDeviceBuffer(CL_MEM_READ_ONLY, p_xBuf, p_xBufSize);
-    OCL_CHECK(err, err = m_kernel.setArg(1, m_buffers[1]));
+    m_buffers[1] = createDeviceBuffer(CL_MEM_READ_ONLY, p_xBuf, p_xBufSize, &l_each_err);
+    l_err = l_err && l_each_err;
+    err = m_kernel.setArg(1, m_buffers[1]);
     l_buffers.push_back(m_buffers[1]);
     // Copy input data to device global memory
-    sendBuffer(l_buffers);
+    l_each_err = sendBuffer(l_buffers);
+    l_err = l_err && l_each_err;
+
+    if (l_err == true && err == CL_SUCCESS) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 KernelLoadRbParam::KernelLoadRbParam(FPGA* p_fpga) : Kernel(p_fpga) {}
-void KernelLoadRbParam::setMem(void* p_buf, unsigned int p_bufSize) {
+bool KernelLoadRbParam::setMem(void* p_buf, unsigned int p_bufSize) {
+    bool l_err = true;
+    bool l_each_err = true;
     cl_int err;
-    m_buffer = createDeviceBuffer(CL_MEM_READ_ONLY, p_buf, p_bufSize);
-    OCL_CHECK(err, err = m_kernel.setArg(0, m_buffer));
+    m_buffer = createDeviceBuffer(CL_MEM_READ_ONLY, p_buf, p_bufSize, &l_each_err);
+    l_err = l_err && l_each_err;
+    err = m_kernel.setArg(0, m_buffer);
     // Copy input data to device global memory
     std::vector<cl::Memory> l_buffers;
     l_buffers.push_back(m_buffer);
-    sendBuffer(l_buffers);
+    l_each_err = sendBuffer(l_buffers);
+    l_err = l_err && l_each_err;
+
+    if (l_err == true && err == CL_SUCCESS) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
-xCgHost::xCgHost(int p_devId, std::string p_xclbinName) {
-    init(p_devId, p_xclbinName);
+xCgHost::xCgHost(std::string p_xclbinName) {
+    init(p_xclbinName);
 };
-void xCgHost::init(int p_devId, std::string p_xclbinName) {
-    m_card.init(p_devId, p_xclbinName);
+bool xCgHost::init(std::string p_xclbinName) {
+    bool l_err = true;
+    bool l_each_err = true;
+    m_card.init(p_xclbinName, &l_each_err);
+    l_err = l_err && l_each_err;
     m_krnCtl.fpga(&m_card);
     m_krnLoadArbParam.fpga(&m_card);
     m_krnLoadAval.fpga(&m_card);
@@ -249,26 +366,50 @@ void xCgHost::init(int p_devId, std::string p_xclbinName) {
     m_krnUpdatePk.fpga(&m_card);
     m_krnUpdateRkJacobi.fpga(&m_card);
     m_krnUpdateXk.fpga(&m_card);
-    m_krnCtl.getCU("krnl_control");
-    m_krnLoadAval.getCU("krnl_loadAval:{krnl_loadAval}");
-    m_krnLoadPkApar.getCU("krnl_loadPkApar:{krnl_loadPkApar}");
-    m_krnLoadArbParam.getCU("krnl_loadArbParam:{krnl_loadArbParam}");
-    m_krnStoreApk.getCU("krnl_storeApk:{krnl_storeApk}");
-    m_krnUpdatePk.getCU("krnl_update_pk");
-    m_krnUpdateRkJacobi.getCU("krnl_update_rk_jacobi");
-    m_krnUpdateXk.getCU("krnl_update_xk");
+    l_each_err = m_krnCtl.getCU("krnl_control");
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnLoadAval.getCU("krnl_loadAval:{krnl_loadAval}");
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnLoadPkApar.getCU("krnl_loadPkApar:{krnl_loadPkApar}");
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnLoadArbParam.getCU("krnl_loadArbParam:{krnl_loadArbParam}");
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnStoreApk.getCU("krnl_storeApk:{krnl_storeApk}");
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnUpdatePk.getCU("krnl_update_pk");
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnUpdateRkJacobi.getCU("krnl_update_rk_jacobi");
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnUpdateXk.getCU("krnl_update_xk");
+    l_err = l_err && l_each_err;
+    if (l_err == true) {
+        return true;
+    } else {
+        return false;
+    }
 }
-void xCgHost::sendMatDat(std::vector<void*>& p_nnzVal,
+bool xCgHost::sendMatDat(std::vector<void*>& p_nnzVal,
                          std::vector<unsigned int>& p_nnzValSize,
                          void* p_rbParam,
                          unsigned int p_rbParamSize,
                          void* p_parParam,
                          unsigned int p_parParamSize) {
-    m_krnLoadAval.setMem(p_nnzVal, p_nnzValSize);
-    m_krnLoadArbParam.setMem(p_rbParam, p_rbParamSize);
-    m_krnLoadPkApar.setParParamMem(p_parParam, p_parParamSize);
+    bool l_err = true;
+    bool l_each_err = true;
+    l_each_err = m_krnLoadAval.setMem(p_nnzVal, p_nnzValSize);
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnLoadArbParam.setMem(p_rbParam, p_rbParamSize);
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnLoadPkApar.setParParamMem(p_parParam, p_parParamSize);
+    l_err = l_err && l_each_err;
+
+    if (l_err == true) {
+        return true;
+    } else {
+        return false;
+    }
 }
-void xCgHost::sendVecDat(void* p_pk,
+bool xCgHost::sendVecDat(void* p_pk,
                          unsigned int p_pkSize,
                          void* p_Apk,
                          unsigned int p_ApkSize,
@@ -280,29 +421,68 @@ void xCgHost::sendVecDat(void* p_pk,
                          unsigned int p_jacobiSize,
                          void* p_xk,
                          unsigned int p_xkSize) {
-    m_krnLoadPkApar.setXMem(p_pk, p_pkSize);
-    m_krnStoreApk.setMem(p_pk, p_pkSize, p_Apk, p_ApkSize);
-    m_krnUpdatePk.setMem(p_pk, p_pkSize, p_zk, p_zkSize);
-    m_krnUpdateRkJacobi.setMem(p_rk, p_rkSize, p_zk, p_zkSize, p_jacobi, p_jacobiSize, p_Apk, p_ApkSize);
-    m_krnUpdateXk.setMem(p_xk, p_xkSize, p_pk, p_pkSize);
+    bool l_err = true;
+    bool l_each_err = true;
+    l_each_err = m_krnLoadPkApar.setXMem(p_pk, p_pkSize);
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnStoreApk.setMem(p_pk, p_pkSize, p_Apk, p_ApkSize);
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnUpdatePk.setMem(p_pk, p_pkSize, p_zk, p_zkSize);
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnUpdateRkJacobi.setMem(p_rk, p_rkSize, p_zk, p_zkSize, p_jacobi, p_jacobiSize, p_Apk, p_ApkSize);
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnUpdateXk.setMem(p_xk, p_xkSize, p_pk, p_pkSize);
+    l_err = l_err && l_each_err;
+
+    if (l_err == true) {
+        return true;
+    } else {
+        return false;
+    }
 }
-void xCgHost::sendInstr(void* p_instr, unsigned int p_instrSize) {
-    m_krnCtl.setMem(p_instr, p_instrSize);
+bool xCgHost::sendInstr(void* p_instr, unsigned int p_instrSize) {
+    bool l_err = m_krnCtl.setMem(p_instr, p_instrSize);
+    return l_err;
 }
-void xCgHost::run() {
-    m_krnCtl.enqueueTask();
-    m_krnLoadArbParam.enqueueTask();
-    m_krnLoadAval.enqueueTask();
-    m_krnLoadPkApar.enqueueTask();
-    m_krnStoreApk.enqueueTask();
-    m_krnUpdatePk.enqueueTask();
-    m_krnUpdateXk.enqueueTask();
-    m_krnUpdateRkJacobi.enqueueTask();
+bool xCgHost::run() {
+    bool l_err = true;
+    bool l_each_err = true;
+    l_each_err = m_krnCtl.enqueueTask();
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnLoadArbParam.enqueueTask();
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnLoadAval.enqueueTask();
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnLoadPkApar.enqueueTask();
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnStoreApk.enqueueTask();
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnUpdatePk.enqueueTask();
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnUpdateXk.enqueueTask();
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnUpdateRkJacobi.enqueueTask();
+    l_err = l_err && l_each_err;
+    if (l_err == true) {
+        return true;
+    } else {
+        return false;
+    }
 }
-void xCgHost::getDat() {
-    m_krnCtl.getMem();
-    m_krnUpdateXk.getMem();
-    m_krnUpdateRkJacobi.getMem();
+bool xCgHost::getDat() {
+    bool l_err = true;
+    bool l_each_err = true;
+    l_each_err = m_krnCtl.getMem();
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnUpdateXk.getMem();
+    l_err = l_err && l_each_err;
+    l_each_err = m_krnUpdateRkJacobi.getMem();
+    l_err = l_err && l_each_err;
+    if (l_err == true) {
+        return true;
+    } else {
+        return false;
+    }
 }
 void xCgHost::finish() {
     m_krnCtl.finish();

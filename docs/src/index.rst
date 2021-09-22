@@ -51,7 +51,8 @@ It currently includes following product:
    :maxdepth: 1
    :hidden:
 
-   1.0 <https://xilinx.github.io/hpc/>
+   1.0 <https://xilinx.github.io/HPC/1.0/index.html>
+   1.1 <https://xilinx.github.io/HPC/1.1/index.html>
 
 .. toctree::
    :caption:  Release Notes

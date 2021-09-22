@@ -14,9 +14,6 @@
 # limitations under the License.
 #
 
-# Which Alveo device to use for running tests.  Run with "make run DEVICE_ID=<n>" to use device <n>
-DEVICE_ID ?= 1
-
 # Run make using "make DEBUG=1" to build debuggable executables
 
 # Location of cosine similarity Alveo product 
@@ -33,7 +30,7 @@ endif
 
 #the default PROD_VERSION as the latest version
 ifndef PROD_VERSION 
-    PROD_VERSION = 1.0
+    PROD_VERSION = 1.1
 endif
 
 # Location of Alveo product if installed from sources
@@ -87,20 +84,20 @@ run:
 	@set -e; \
 	. $(XILINX_XRT)/setup.sh; \
 	export LD_LIBRARY_PATH=$(LIB_PATH):$$LD_LIBRARY_PATH; \
-	gdb --args ./example $(DEVICE_ID) $(XCLBIN_PATH)/*.xclbin
+	gdb --args ./example $(XCLBIN_PATH)/*.xclbin
 else
 run:
 	@set -e; \
 	. $(XILINX_XRT)/setup.sh; \
 	export LD_LIBRARY_PATH=$(LIB_PATH):$$LD_LIBRARY_PATH; \
-	./example $(DEVICE_ID) $(XCLBIN_PATH)/*.xclbin
+	./example $(XCLBIN_PATH)/*.xclbin
 endif
 
 run-dyn:
 	@set -e; \
 	. $(XILINX_XRT)/setup.sh; \
 	export LD_LIBRARY_PATH=$(LIB_PATH):$$LD_LIBRARY_PATH; \
-	./example-dyn $(DEVICE_ID) $(XCLBIN_PATH)/*.xclbin
+	./example-dyn $(XCLBIN_PATH)/*.xclbin
 
 clean:
 	rm -f example example-dyn
