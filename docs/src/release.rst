@@ -37,3 +37,7 @@ Xilinx HPC product libraray release 1.0 introduces HLS primitives, Vitis kernle 
 1.1
 ----
 Release 1.1 introduces the auto-detection of Alveo U280 card for running JPCG software API. Users do not need to specify device id when they use the APIs.
+
+1.2
+----
+Release 1.2 introduces XNIK (Xilinx Network Interface Kernel), the UDP-based Alveo-2-Alveo connection support.

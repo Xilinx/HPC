@@ -24,14 +24,15 @@ int main(int argc, char** argv) {
     string dataPath = argv[++arg];
     int l_runs = atoi(argv[++arg]);
     int l_update = atoi(argv[++arg]);
-    xf::sparse::CooMatInfo l_matInfo = xf::sparse::loadMatInfo(dataPath);
+    string l_dataPath = dataPath + "/"; 
+    xf::sparse::CooMatInfo l_matInfo = xf::sparse::loadMatInfo(l_dataPath);
     std::vector<uint32_t> l_rowIdx(l_matInfo.m_nnz);
     std::vector<uint32_t> l_colIdx(l_matInfo.m_nnz);
     std::vector<SPARSE_dataType> l_data(l_matInfo.m_nnz);
     xf::sparse::SpmPar<SPARSE_dataType> l_spmPar(SPARSE_parEntries, SPARSE_accLatency, SPARSE_hbmChannels, SPARSE_maxRows, SPARSE_maxCols,
            SPARSE_hbmMemBits);
     for (unsigned int i=0; i<l_runs; ++i) {
-        string l_dataPath = dataPath + "/" + to_string(i) + "/"; 
+        //string l_dataPath = dataPath + "/" + to_string(i) + "/"; 
         readBin(l_dataPath + "row.bin", l_rowIdx.data(), l_matInfo.m_nnz * sizeof(uint32_t));
         readBin(l_dataPath + "col.bin", l_colIdx.data(), l_matInfo.m_nnz * sizeof(uint32_t));
         readBin(l_dataPath + "data.bin", l_data.data(), l_matInfo.m_nnz * sizeof(SPARSE_dataType));
@@ -41,7 +42,7 @@ int main(int argc, char** argv) {
         xf::sparse::MatPartition l_matPar;
          if ((i == 0) || (l_update == 0)) {
             l_matPar = l_spmPar.partitionCooMat(l_matInfo.m_m, l_matInfo.m_n, l_matInfo.m_nnz, l_rowIdx.data(),
-                                                         l_colIdx.data(), l_data.data());
+                                                         l_colIdx.data(), l_data.data(), 0); //partition sparse matrix with C storage type
         }
         else {
             l_matPar = l_spmPar.updateMat(l_data.data());

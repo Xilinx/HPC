@@ -27,6 +27,9 @@
 #include <iostream>
 #include <iomanip>
 #endif
+#if XANS_INSTR
+#include "ap_int.h"
+#endif
 
 namespace xf {
 
@@ -73,6 +76,11 @@ void b2v<double>(double& p_val, const uint8_t* p_ch) {
 
 template <unsigned int t_InstrBytes>
 class MemInstr {
+#if XANS_INSTR
+    public:
+    static const unsigned int t_TypeWidth = t_InstrBytes*8;
+    typedef ap_uint<t_TypeWidth> t_TypeInt;    
+#endif
    public:
     MemInstr() {
 #ifdef __SYNTHESIS__
@@ -81,6 +89,29 @@ class MemInstr {
 #endif
         init();
     }
+
+#if XANS_INSTR
+    MemInstr(const t_TypeInt& p_val) {
+#pragma HLS INLINE
+#pragma HLS ARRAY_PARTITION variable = m_Instr complete dim = 1
+        for (int i = 0; i < t_InstrBytes; ++i) {
+#pragma HLS UNROLL
+            ap_uint<8> l_val = p_val.range(8 * (1 + i) - 1, 8 * i);
+            m_Instr[i] = *reinterpret_cast<uint8_t*>(&l_val);
+        }
+    }
+
+    operator const t_TypeInt() {
+        t_TypeInt l_fVal;
+        for (int i = 0; i < t_InstrBytes; ++i) {
+#pragma HLS UNROLL
+            uint8_t l_v = m_Instr[i];
+            ap_uint<8> l_val = *reinterpret_cast<ap_uint<8>*>(&l_v);
+            l_fVal.range(8 * (1 + i) - 1, 8 * i) = l_val;
+        }
+        return l_fVal;
+    }
+#endif
 
     void init() {
         for (unsigned int i = 0; i < t_InstrBytes; i++)
