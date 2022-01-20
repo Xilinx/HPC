@@ -41,3 +41,7 @@ Release 1.1 introduces the auto-detection of Alveo U280 card for running JPCG so
 1.2
 ----
 Release 1.2 introduces XNIK (Xilinx Network Interface Kernel), the UDP-based Alveo-2-Alveo connection support.
+
+1.3
+---
+Release 1.3 introduces GEMM-based MLP solution running on U250 and AWS.

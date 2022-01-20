@@ -1,0 +1,1 @@
+make build TARGET=hw PLATFORM_REPO_PATHS=/proj/xbuilds/2020.2_daily_latest/internal_platforms DEVICE=xilinx_u250_gen3x16_xdma_3_1_202020_1

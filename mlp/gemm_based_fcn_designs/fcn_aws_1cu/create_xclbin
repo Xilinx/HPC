@@ -1,0 +1,1 @@
+make build TARGET=hw PLATFORM_REPO_PATHS=/proj/xbuilds/2020.2_daily_latest/internal_platforms DEVICE=xilinx_aws-vu9p-f1_shell-v04261818_201920_2
