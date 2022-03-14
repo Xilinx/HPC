@@ -84,12 +84,12 @@ or you could run each command in each machine separately
 
 2. navigate to xans/hw/xnik/designs/xnik_mem_basic/xnik_mem_benchmark/driver
 
-3. make cleanall PLATFORM_REPO_PATHS=/opt/xilinx/platforms DEVICE=xilinx_u55c_gen3x16_xdma_2_202110_1 TARGET=hw INTERFACE=0
+3. make cleanall PLATFORM=/opt/xilinx/platforms/xilinx_u55c_gen3x16_xdma_2_202110_1/xilinx_u55c_gen3x16_xdma_2_202110_1.xpfm DEVICE=xilinx_u55c_gen3x16_xdma_2_202110_1 TARGET=hw INTERFACE=0
 
-4. make xclbin PLATFORM_REPO_PATHS=/opt/xilinx/platforms DEVICE=xilinx_u55c_gen3x16_xdma_2_202110_1 TARGET=hw INTERFACE=0
+4. make xclbin PLATFORM=/opt/xilinx/platforms/xilinx_u55c_gen3x16_xdma_2_202110_1/xilinx_u55c_gen3x16_xdma_2_202110_1.xpfm DEVICE=xilinx_u55c_gen3x16_xdma_2_202110_1 TARGET=hw INTERFACE=0
 
 5. navigate to xans/hw/xnik/designs/xnik_mem_basic/xnik_mem_benchmark/xnik_echo
 
-6. make cleanall PLATFORM_REPO_PATHS=/opt/xilinx/platforms DEVICE=xilinx_u55c_gen3x16_xdma_2_202110_1 TARGET=hw INTERFACE=0
+6. make cleanall PLATFORM=/opt/xilinx/platforms/xilinx_u55c_gen3x16_xdma_2_202110_1/xilinx_u55c_gen3x16_xdma_2_202110_1.xpfm DEVICE=xilinx_u55c_gen3x16_xdma_2_202110_1 TARGET=hw INTERFACE=0
 
-7. make xclbin PLATFORM_REPO_PATHS=/opt/xilinx/platforms DEVICE=xilinx_u55c_gen3x16_xdma_2_202110_1 TARGET=hw INTERFACE=0
+7. make xclbin PLATFORM=/opt/xilinx/platforms/xilinx_u55c_gen3x16_xdma_2_202110_1/xilinx_u55c_gen3x16_xdma_2_202110_1.xpfm DEVICE=xilinx_u55c_gen3x16_xdma_2_202110_1 TARGET=hw INTERFACE=0

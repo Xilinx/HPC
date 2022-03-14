@@ -112,7 +112,7 @@ EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
 EXE_FILE_DEPS := $(HOST_SRCS) $(EXE_FILE_DEPS)
 
 ########################## Kernel compiler global settings ##########################
-VPP_FLAGS +=  -D XANS_mtuBytes=1472  -D XANS_memBits=256 -D XANS_maxInstrs=64 -D XANS_netDataBits=512 -D XANS_userBits=1 -D XANS_destBits=16
+VPP_FLAGS +=  -D XANS_INSTR=1 -D XANS_mtuBytes=1472  -D XANS_memBits=256 -D XANS_maxInstrs=64 -D XANS_netDataBits=512 -D XANS_userBits=1 -D XANS_destBits=16
 VPP_FLAGS +=  -I $(XFLIB_DIR)/L1//blas/include/hw -I $(XFLIB_DIR)/L1/hpc/include -I $(XFLIB_DIR)/L2/common/include -I $(XFLIB_DIR)/xans/hw/xnik/include
 
 VPP_FLAGS_krnl_xnik += --hls.clock 300000000:krnl_xnik
